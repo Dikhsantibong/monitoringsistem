@@ -70,23 +70,7 @@
         .ai-insight-text { font-size: 0.8rem; color: #475569; line-height: 1.5; }
         .text-blue { color: var(--blue); } .text-orange { color: var(--orange); }
 
-        /* Data Tables & Toolbar */
-        .data-card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; margin-bottom: 24px; }
-        .toolbar { padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; background: #fdfdfd; border-bottom: 1px solid var(--border); gap: 10px; flex-wrap: wrap; }
-        .search-box { position: relative; width: 260px; }
-        .search-box i { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem; }
-        .search-input { width: 100%; padding: 8px 10px 8px 30px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem; outline: none; transition: border 0.2s; }
-        .search-input:focus { border-color: var(--primary); }
-        .pagination { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; }
-        .page-btn { padding: 4px 10px; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; color: var(--text-main); }
-        .page-btn:hover:not(:disabled) { background: #f1f5f9; }
-        .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .table-wrap { overflow-x: auto; max-height: 500px; }
-        table.dt { width: 100%; border-collapse: collapse; font-size: 0.75rem; text-align: left; }
-        table.dt th { background: #f8fafc; padding: 10px 14px; font-weight: 700; color: var(--text-muted); border-bottom: 2px solid var(--border); white-space: nowrap; position: sticky; top: 0; z-index: 10; }
-        table.dt td { padding: 8px 14px; border-bottom: 1px solid var(--border); white-space: nowrap; color: var(--text-main); }
-        table.dt tbody tr:hover td { background: #f1f5f9; }
 
         /* Badges */
         .badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 20px; font-weight: 600; font-size: 0.72rem; }
@@ -188,107 +172,23 @@
 
         </div>
 
-        <!-- Navitas Table -->
-        <div class="data-card">
-            <div class="chart-header" style="margin: 0; padding: 16px 20px;">
-                <i class="fas fa-cogs"></i> Tabel Master Data Parameter Navitas
-            </div>
-            <div class="toolbar">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="search-nav" class="search-input" placeholder="Cari plant, unit, status..." oninput="handleSearchNav()">
-                </div>
-                <div class="pagination" id="pag-nav">
-                    <span id="info-nav">Data: 0</span>
-                    <button class="page-btn" onclick="navitasPage(-1)" id="btn-prev-nav"><i class="fas fa-chevron-left"></i></button>
-                    <span id="page-txt-nav">1 / 1</span>
-                    <button class="page-btn" onclick="navitasPage(1)" id="btn-next-nav"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-            <div class="table-wrap">
-                <table class="dt">
-                    <thead>
-                        <tr>
-                            <th>Cabang Pembangkit</th>
-                            <th>Nama Unit</th>
-                            <th>Status Kinerja</th>
-                            <th>Beban (MW)</th>
-                            <th>MVAR</th>
-                            <th>Freegov</th>
-                            <th>AGC</th>
-                            <th>LFC</th>
-                            <th>Penyebab</th>
-                            <th>WO Status</th>
-                            <th>Derate</th>
-                            <th>SDOF</th>
-                            <th>Est. Selesai</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dt-body">
-                        <tr><td colspan="13" class="loading-msg"><div class="spinner"></div> Menunggu data...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
-        <!-- Omamo Patrol Table -->
-        <div class="data-card">
-            <div class="chart-header" style="margin: 0; padding: 16px 20px;">
-                <i class="fas fa-shield-alt"></i> Tabel Lengkap Historis Patrol Pekerja (OMAMO)
-            </div>
-            <div class="toolbar">
-                <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="search-patrol" class="search-input" placeholder="Cari instrumen, area, komentar..." oninput="handleSearchPatrol()">
-                </div>
-                <div class="pagination" id="pag-patrol">
-                    <span id="info-patrol">Data: 0</span>
-                    <button class="page-btn" onclick="patrolPage(-1)" id="btn-prev-patrol"><i class="fas fa-chevron-left"></i></button>
-                    <span id="page-txt-patrol">1 / 1</span>
-                    <button class="page-btn" onclick="patrolPage(1)" id="btn-next-patrol"><i class="fas fa-chevron-right"></i></button>
-                </div>
-            </div>
-            <div class="table-wrap">
-                <table class="dt">
-                    <thead>
-                        <tr>
-                            <th>Cabang / Pembangkit</th>
-                            <th>Unit</th>
-                            <th>Area Cek</th>
-                            <th>Instrumen</th>
-                            <th>Aturan Info</th>
-                            <th>Nilai</th>
-                            <th>Satuan</th>
-                            <th>Status</th>
-                            <th>Komentar Temuan</th>
-                            <th>Jam Patroli</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dt-patrol-body">
-                        <tr><td colspan="10" class="loading-msg"><div class="spinner"></div> Menunggu data OMAMO...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
 
     </div>
 @endsection
 
 @section('scripts')
-<!-- Chart.js untuk Donut/Pie (karena lightweight-charts tidak support Donut/Pie) -->
+<!-- Chart.js -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- TradingView Lightweight Charts -->
-<script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
 <script>
 (function(){
     Chart.defaults.color = '#64748b';
     Chart.defaults.borderColor = '#e2e8f0';
     Chart.defaults.font.family = "'Inter', sans-serif";
 
-    // Referensi Chart.js (Donut/Pie)
+    // Referensi Chart.js
     let cStatus=null, cPatrol=null, cNavFeat=null;
-    // Referensi Lightweight Charts
-    let lwBeban=null, lwTopAlarm=null, lwAreaAlarm=null, lwMvar=null, lwInstrAlarm=null;
+    let cBeban=null, cTopAlarm=null, cAreaAlarm=null, cMvar=null, cInstrAlarm=null;
 
     const RK = { 'KDN':'NII TANASA','KDR':'RONGI','KDB':'BAU-BAU','KDM':'MIKUASI','KDI':'WINNING','KDS':'SABILAMBO','KDW':'WANGI-WANGI','KDE':'EREKE','KDK':'KOLAKA','KDH':'RAHA','KDL':'LADUMPI','KDA':'LANIPA NIPA','KDP':'POASIA','KDU':'WUA-WUA','KDG':'LANGARA','Z':'COMMON UPDK' };
     const RU = {
@@ -316,33 +216,6 @@
     const dateEl = document.getElementById('dash-date');
     dateEl.value = new Date().toISOString().split('T')[0];
 
-    function createDummyTime(index) {
-        const d = new Date(2024, 0, index + 1);
-        return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    }
-    function formatTimeLabel(time, map) {
-        if(!time) return '';
-        let key = '';
-        if(typeof time === 'string') key = time;
-        else if(time.year) key = time.year + '-' + String(time.month).padStart(2,'0') + '-' + String(time.day).padStart(2,'0');
-        else if(typeof time === 'number') {
-            const d = new Date(time*1000);
-            key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-        }
-        return map[key] || key;
-    }
-
-    // Globals for Navitas Pagination
-    window.masterNavitas = [];
-    window.filteredNavitas = [];
-    window.currNavPage = 1;
-    const itemsPerPageNav = 15;
-
-    // Globals for Patrol OMAMO Pagination
-    window.masterPatrol = [];
-    window.filteredPatrol = [];
-    window.currPatPage = 1;
-    const itemsPerPagePat = 15;
 
     function showLoading(id){ document.getElementById(id).innerHTML = `<div class="loading-msg"><div class="spinner"></div></div>`; }
 
@@ -351,8 +224,6 @@
         if(!tgl) return alert('Pilih tanggal');
 
         ['cb-status','cb-beban','cb-patrol','cb-topalarm','cb-omamo-area', 'cb-mvar', 'cb-nav-feat', 'cb-instr-alarm'].forEach(id => showLoading(id));
-        document.getElementById('dt-body').innerHTML = `<tr><td colspan="13" class="loading-msg"><div class="spinner"></div> Memuat Navitas...</td></tr>`;
-        document.getElementById('dt-patrol-body').innerHTML = `<tr><td colspan="10" class="loading-msg"><div class="spinner"></div> Memuat OMAMO...</td></tr>`;
         document.getElementById('ai-section').style.display = 'none';
 
         const navStatusUrl = '/api/monitoring-mesin/navitas-status?tanggal=' + tgl;
@@ -368,8 +239,8 @@
 
         // 2. Process Navitas (Faster) as soon as ready
         Promise.all([fStatus, fBeban]).then(([s, b]) => {
-            statusData = s ? s.entry || [] : [];
-            bebanData = b ? b.entry || [] : [];
+            statusData = s ? (s.entry || (Array.isArray(s) ? s : [])) : [];
+            bebanData = b ? (b.entry || (Array.isArray(b) ? b : [])) : [];
             processNavitas(statusData, bebanData);
             if (patData.length > 0 || patFetched) generateAIInsights(patData, statusData);
         });
@@ -378,20 +249,27 @@
         let patFetched = false;
         fPatrol.then(p => {
             patFetched = true;
-            patData = p ? (p.status !== false ? p.data || [] : []) : [];
+            if (p) {
+                if (Array.isArray(p)) patData = p;
+                else if (p.status !== false) patData = p.data || [];
+                else patData = [];
+            } else {
+                patData = [];
+            }
             processPatrolData(patData);
             if (statusData.length > 0) generateAIInsights(patData, statusData);
         }).catch(e => {
             patFetched = true;
             console.error("OMAMO Fetch Error:", e);
-            document.getElementById('dt-patrol-body').innerHTML = '<tr><td colspan="10" class="loading-msg">Gagal memuat data OMAMO</td></tr>';
         });
     };
 
     function processNavitas(statusData, bebanData){
         if(!statusData.length && !bebanData.length){
-            document.getElementById('dt-body').innerHTML = `<tr><td colspan="13" class="loading-msg">Data kinerja & beban kosong.</td></tr>`;
             ['k-total','k-mw','k-op','k-sb','k-fo','k-mo'].forEach(id=>document.getElementById(id).textContent='0');
+            ['cb-status','cb-beban','cb-mvar','cb-nav-feat'].forEach(id => {
+                document.getElementById(id).innerHTML = '<div class="loading-msg">Tidak ada data.</div>';
+            });
             return;
         }
 
@@ -438,73 +316,88 @@
 
         // Pengecekan & Pembersihan Chart Lama
         if(cStatus) cStatus.destroy();
-        if(lwBeban) { lwBeban.remove(); lwBeban = null; }
+        if(cBeban) cBeban.destroy();
 
         // Chart.js untuk Donut Status
         document.getElementById('cb-status').innerHTML = '<canvas id="chart-status" style="max-height:240px; display:block; margin:auto;"></canvas>';
         const sL=Object.keys(statusCounts), sD=sL.map(k=>statusCounts[k]), sC=sL.map(l=>colors[ST[l.split(' - ')[0]]?.c||'oth']);
         cStatus = new Chart(document.getElementById('chart-status'), { type: 'doughnut', data: { labels: sL, datasets: [{ data: sD, backgroundColor: sC, borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right', labels: { boxWidth: 10, font: { size: 10 } } } } } });
 
-        // Lightweight Chart (Tampilan Trading) untuk Beban MW per Pembangkit (Area Series)
+        // Chart.js untuk Beban MW per Pembangkit (Bar Chart Gradient/Solid)
         const cbBebanContainer = document.getElementById('cb-beban');
         cbBebanContainer.innerHTML = '';
         const pK = Object.keys(pBeban).sort((a,b)=>pBeban[b]-pBeban[a]);
         
-        let catMapBeban = {};
-        let dataBebanLW = [];
+        let labelsBeban = [];
+        let dataBeban = [];
         pK.forEach((r, i) => {
             if(pBeban[r] > 0) {
-                const tStr = createDummyTime(dataBebanLW.length);
-                catMapBeban[tStr] = pName(r);
-                dataBebanLW.push({ time: tStr, value: pBeban[r] });
+                labelsBeban.push(pName(r));
+                dataBeban.push(pBeban[r]);
             }
         });
 
-        if(dataBebanLW.length > 0) {
-            lwBeban = LightweightCharts.createChart(cbBebanContainer, {
-                autoSize: true, // Otomatis menyesuaikan ukuran
-                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
-                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
-                localization: { timeFormatter: t => formatTimeLabel(t, catMapBeban) },
-                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapBeban), fixLeftEdge: true, fixRightEdge: true },
-                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+        if(dataBeban.length > 0) {
+            cbBebanContainer.innerHTML = '<canvas id="chart-beban" style="max-height:240px; width:100%; display:block; margin:auto;"></canvas>';
+            cBeban = new Chart(document.getElementById('chart-beban'), {
+                type: 'bar',
+                data: {
+                    labels: labelsBeban,
+                    datasets: [{
+                        label: 'Total Beban (MW)',
+                        data: dataBeban,
+                        backgroundColor: 'rgba(14, 165, 233, 0.8)',
+                        hoverBackgroundColor: 'rgba(2, 132, 199, 1)',
+                        borderColor: '#0ea5e9',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, grid: { color: '#e2e8f0' } }, x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } } },
+                    plugins: { legend: { display: false } }
+                }
             });
-            const areaSeries = lwBeban.addAreaSeries({ 
-                title: 'Beban (MW)',
-                lineColor: '#0ea5e9', topColor: 'rgba(14, 165, 233, 0.4)', bottomColor: 'rgba(14, 165, 233, 0.0)', lineWidth: 2 
-            });
-            areaSeries.setData(dataBebanLW);
-            lwBeban.timeScale().fitContent();
         } else {
             cbBebanContainer.innerHTML = '<div class="loading-msg">Tidak ada beban mesin saat ini (0 MW).</div>';
         }
 
-        // --- NEW: MVAR Aktual Per Pembangkit (Histogram) ---
-        if(lwMvar) { lwMvar.remove(); lwMvar = null; }
+        // --- NEW: Chart.js MVAR Aktual Per Pembangkit (Bar Chart) ---
+        if(cMvar) cMvar.destroy();
         const cbMvarContainer = document.getElementById('cb-mvar');
         cbMvarContainer.innerHTML = '';
         const pKmvar = Object.keys(pMvar).sort((a,b)=>Math.abs(pMvar[b])-Math.abs(pMvar[a]));
         
-        let catMapMvar = {};
-        let dataMvarLW = [];
+        let labelsMvar = [];
+        let dataMvar = [];
+        let bgColorsMvar = [];
         pKmvar.forEach((r, i) => {
-            const tStr = createDummyTime(dataMvarLW.length);
-            catMapMvar[tStr] = pName(r);
-            dataMvarLW.push({ time: tStr, value: pMvar[r], color: pMvar[r] < 0 ? '#ef4444' : '#8b5cf6' });
+            labelsMvar.push(pName(r));
+            dataMvar.push(pMvar[r]);
+            bgColorsMvar.push(pMvar[r] < 0 ? 'rgba(239, 68, 68, 0.8)' : 'rgba(139, 92, 246, 0.8)');
         });
 
-        if(dataMvarLW.length > 0) {
-            lwMvar = LightweightCharts.createChart(cbMvarContainer, {
-                autoSize: true, 
-                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
-                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
-                localization: { timeFormatter: t => formatTimeLabel(t, catMapMvar) },
-                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapMvar), fixLeftEdge: true, fixRightEdge: true },
-                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+        if(dataMvar.length > 0) {
+            cbMvarContainer.innerHTML = '<canvas id="chart-mvar" style="max-height:240px; width:100%; display:block; margin:auto;"></canvas>';
+            cMvar = new Chart(document.getElementById('chart-mvar'), {
+                type: 'bar',
+                data: {
+                    labels: labelsMvar,
+                    datasets: [{
+                        label: 'MVAR',
+                        data: dataMvar,
+                        backgroundColor: bgColorsMvar,
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, grid: { color: '#e2e8f0' } }, x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } } },
+                    plugins: { legend: { display: false } }
+                }
             });
-            const mvarSeries = lwMvar.addHistogramSeries({ title: 'MVAR' });
-            mvarSeries.setData(dataMvarLW);
-            lwMvar.timeScale().fitContent();
         } else {
             cbMvarContainer.innerHTML = '<div class="loading-msg">Tidak ada data MVAR saat ini.</div>';
         }
@@ -528,16 +421,14 @@
             } 
         });
 
-        // Init Data Table
-        document.getElementById('search-nav').value = '';
-        window.filteredNavitas = [...window.masterNavitas];
-        navitasPage(0, true);
     }
 
     function processPatrolData(items){
         if(!items.length){
-            document.getElementById('dt-patrol-body').innerHTML = '<tr><td colspan="10" class="loading-msg">Tidak ada temuan patroli OMAMO</td></tr>';
             document.getElementById('k-alarm').textContent = 0; document.getElementById('k-normal').textContent = 0;
+            ['cb-patrol','cb-topalarm','cb-omamo-area','cb-instr-alarm'].forEach(id => {
+                document.getElementById(id).innerHTML = '<div class="loading-msg">Data tidak tersedia / Kosong.</div>';
+            });
             return;
         }
 
@@ -559,205 +450,102 @@
 
         // Bersihkan Chart Lama
         if(cPatrol) cPatrol.destroy();
-        if(lwTopAlarm) { lwTopAlarm.remove(); lwTopAlarm = null; }
-        if(lwAreaAlarm) { lwAreaAlarm.remove(); lwAreaAlarm = null; }
+        if(cTopAlarm) cTopAlarm.destroy();
+        if(cAreaAlarm) cAreaAlarm.destroy();
+        if(cInstrAlarm) cInstrAlarm.destroy();
 
         // Chart OMAMO Doughnut (Polar Area dipertahankan dari ChartJS)
         document.getElementById('cb-patrol').innerHTML = '<canvas id="chart-patrol" style="max-height:240px; display:block; margin:auto;"></canvas>';
         cPatrol = new Chart(document.getElementById('chart-patrol'), { type: 'polarArea', data: { labels: ['Alarm', 'Normal'], datasets: [{ data: [al, nm], backgroundColor: [colors.patAl, colors.patNm], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } } });
 
-        // Chart OMAMO Alarm Cabang - Lightweight Chart Histogram
+        // Chart OMAMO Alarm Cabang - Chart.js
         const cbTopAlarmContainer = document.getElementById('cb-topalarm');
         cbTopAlarmContainer.innerHTML = '';
         const cbLabels = Object.keys(alarmByCabang).sort((a,b)=>alarmByCabang[b]-alarmByCabang[a]).slice(0,5);
         
-        let catMapTA = {};
-        let taDataLW = [];
-        cbLabels.forEach((l, i) => {
-            const tStr = createDummyTime(i);
-            catMapTA[tStr] = l;
-            taDataLW.push({ time: tStr, value: alarmByCabang[l], color: colors.fo });
-        });
-
-        if(taDataLW.length > 0) {
-            lwTopAlarm = LightweightCharts.createChart(cbTopAlarmContainer, {
-                autoSize: true, // Otomatis menyesuaikan dengan container
-                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
-                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
-                localization: { timeFormatter: t => formatTimeLabel(t, catMapTA) },
-                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapTA), fixLeftEdge: true, fixRightEdge: true },
-                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+        if(cbLabels.length > 0) {
+            cbTopAlarmContainer.innerHTML = '<canvas id="chart-topalarm" style="max-height:240px; width:100%; display:block; margin:auto;"></canvas>';
+            cTopAlarm = new Chart(document.getElementById('chart-topalarm'), {
+                type: 'bar',
+                data: {
+                    labels: cbLabels,
+                    datasets: [{
+                        label: 'Kasus Alarm',
+                        data: cbLabels.map(l => alarmByCabang[l]),
+                        backgroundColor: colors.fo,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, grid: { color: '#e2e8f0' } }, x: { grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45 } } }
+                }
             });
-            const taSeries = lwTopAlarm.addHistogramSeries({ title: 'Kasus Alarm' });
-            taSeries.setData(taDataLW);
-            lwTopAlarm.timeScale().fitContent();
         } else {
             cbTopAlarmContainer.innerHTML = '<div class="loading-msg">Aman, tidak ada Alarm.</div>';
         }
 
-        // Chart OMAMO Alarm Area - Lightweight Chart Histogram
+        // Chart OMAMO Alarm Area - Chart.js Horizontal Bar
         const cbAreaAlarmContainer = document.getElementById('cb-omamo-area');
         cbAreaAlarmContainer.innerHTML = '';
         const arLabels = Object.keys(alarmByArea).sort((a,b)=>alarmByArea[b]-alarmByArea[a]).slice(0,5);
         
-        let catMapAA = {};
-        let aaDataLW = [];
-        arLabels.forEach((l, i) => {
-            const tStr = createDummyTime(i);
-            const title = l.length > 20 ? l.substring(0,20)+'..' : l;
-            catMapAA[tStr] = title;
-            aaDataLW.push({ time: tStr, value: alarmByArea[l], color: colors.orange });
-        });
-
-        if(aaDataLW.length > 0) {
-            lwAreaAlarm = LightweightCharts.createChart(cbAreaAlarmContainer, {
-                autoSize: true,
-                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
-                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
-                localization: { timeFormatter: t => formatTimeLabel(t, catMapAA) },
-                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapAA), fixLeftEdge: true, fixRightEdge: true },
-                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+        if(arLabels.length > 0) {
+            cbAreaAlarmContainer.innerHTML = '<canvas id="chart-omamo-area" style="max-height:240px; width:100%; display:block; margin:auto;"></canvas>';
+            
+            cAreaAlarm = new Chart(document.getElementById('chart-omamo-area'), {
+                type: 'bar',
+                data: {
+                    labels: arLabels.map(l => l.length > 20 ? l.substring(0,20)+'..' : l),
+                    datasets: [{
+                        label: 'Alarm Lokasi',
+                        data: arLabels.map(l => alarmByArea[l]),
+                        backgroundColor: colors.orange,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, grid: { color: '#e2e8f0' } }, y: { grid: { display: false } } }
+                }
             });
-            const aaSeries = lwAreaAlarm.addHistogramSeries({ title: 'Alarm Lokasi' });
-            aaSeries.setData(aaDataLW);
-            lwAreaAlarm.timeScale().fitContent();
         } else {
             cbAreaAlarmContainer.innerHTML = '<div class="loading-msg">Aman, tidak ada temuan Alarm Area.</div>';
         }
 
-        // --- NEW: Top 10 Instrumen Alarm ---
-        if(lwInstrAlarm) { lwInstrAlarm.remove(); lwInstrAlarm = null; }
+        // --- NEW: Top 10 Instrumen Alarm - Chart.js Horizontal Bar ---
         const cbInstrContainer = document.getElementById('cb-instr-alarm');
         cbInstrContainer.innerHTML = '';
         const inLabels = Object.keys(alarmByInstr).sort((a,b)=>alarmByInstr[b]-alarmByInstr[a]).slice(0, 10);
         
-        let catMapInstr = {};
-        let inDataLW = [];
-        inLabels.forEach((l, i) => {
-            const tStr = createDummyTime(i);
-            const title = l.length > 35 ? l.substring(0,35)+'..' : l;
-            catMapInstr[tStr] = title;
-            inDataLW.push({ time: tStr, value: alarmByInstr[l], color: '#ef4444' });
-        });
-
-        if(inDataLW.length > 0) {
-            lwInstrAlarm = LightweightCharts.createChart(cbInstrContainer, {
-                autoSize: true,
-                layout: { background: { type: 'solid', color: 'transparent' }, textColor: '#64748b', fontFamily: "'Inter', sans-serif" },
-                grid: { vertLines: { visible: false }, horzLines: { color: '#e2e8f0', style: 1 } },
-                localization: { timeFormatter: t => formatTimeLabel(t, catMapInstr) },
-                timeScale: { tickMarkFormatter: t => formatTimeLabel(t, catMapInstr), fixLeftEdge: true, fixRightEdge: true },
-                crosshair: { mode: LightweightCharts.CrosshairMode.Normal }
+        if(inLabels.length > 0) {
+            cbInstrContainer.innerHTML = '<canvas id="chart-instr-alarm" style="max-height:240px; width:100%; display:block; margin:auto;"></canvas>';
+            
+            cInstrAlarm = new Chart(document.getElementById('chart-instr-alarm'), {
+                type: 'bar',
+                data: {
+                    labels: inLabels.map(l => l.length > 35 ? l.substring(0,35)+'..' : l),
+                    datasets: [{
+                        label: 'Total Freq Error',
+                        data: inLabels.map(l => alarmByInstr[l]),
+                        backgroundColor: '#ef4444',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, grid: { color: '#e2e8f0' } }, y: { grid: { display: false }, ticks: { font: { size: 10 } } } }
+                }
             });
-            const inSeries = lwInstrAlarm.addHistogramSeries({ title: 'Total Freq Error' });
-            inSeries.setData(inDataLW);
-            lwInstrAlarm.timeScale().fitContent();
         } else {
             cbInstrContainer.innerHTML = '<div class="loading-msg">Aman, tidak ada temuan sensor bermasalah.</div>';
         }
-
-        document.getElementById('search-patrol').value = '';
-        window.filteredPatrol = [...window.masterPatrol];
-        patrolPage(0, true);
     }
-
-    /* ==== PAGINATION LOGIC NAVITAS ==== */
-    window.handleSearchNav = function(){
-        const v = document.getElementById('search-nav').value.toLowerCase();
-        if(!v) window.filteredNavitas = [...window.masterNavitas];
-        else window.filteredNavitas = window.masterNavitas.filter(u => u._search.includes(v));
-        navitasPage(0, true);
-    };
-
-    window.navitasPage = function(step, reset=false){
-        if(reset) window.currNavPage = 1;
-        else window.currNavPage += step;
-        
-        const total = window.filteredNavitas.length;
-        const totalPages = Math.ceil(total / itemsPerPageNav) || 1;
-        if(window.currNavPage < 1) window.currNavPage = 1;
-        if(window.currNavPage > totalPages) window.currNavPage = totalPages;
-
-        document.getElementById('info-nav').textContent = `Total: ${total}`;
-        document.getElementById('page-txt-nav').textContent = `${window.currNavPage} / ${totalPages}`;
-        document.getElementById('btn-prev-nav').disabled = (window.currNavPage === 1);
-        document.getElementById('btn-next-nav').disabled = (window.currNavPage === totalPages);
-
-        const start = (window.currNavPage - 1) * itemsPerPageNav;
-        const pageData = window.filteredNavitas.slice(start, start + itemsPerPageNav);
-        
-        let html = '';
-        if(!pageData.length) html = '<tr><td colspan="13" style="text-align:center;padding:20px;color:var(--text-muted)">Pencarian tidak ditemukan</td></tr>';
-        
-        pageData.forEach(u => {
-            const detailStatus = u.stat !== 'UKN' ? (u.stat + ' - ' + u.stDesc) : '-';
-            const bg = `<span class="badge ${sCls(u.stat)}">${detailStatus}</span>`;
-            const mwv = u.mw !== null ? `<span class="text-green">${parseFloat(u.mw).toFixed(2)}</span>` : '-';
-            const foh = u.cause && u.cause !== '-' ? `<span class="text-red">${u.cause}</span>` : '-';
-            html += `<tr>
-                <td style="font-weight:600;color:var(--text-muted);">${u.plant}</td>
-                <td style="font-weight:700;">${u.name}</td>
-                <td>${bg}</td>
-                <td>${mwv}</td>
-                <td>${u.mvar}</td>
-                <td>${u.freegov}</td>
-                <td>${u.agc}</td>
-                <td>${u.lfc}</td>
-                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${foh}">${foh}</td>
-                <td title="${u.wo}">${u.wo !== '-' && u.wo.length > 15 ? u.wo.substring(0,15)+'...' : u.wo}</td>
-                <td class="text-orange">${u.derate !== '-' ? u.derate : '-'}</td>
-                <td>${u.sdof}</td>
-                <td>${u.est}</td>
-            </tr>`;
-        });
-        document.getElementById('dt-body').innerHTML = html;
-    };
-
-    /* ==== PAGINATION LOGIC PATROL ==== */
-    window.handleSearchPatrol = function(){
-        const v = document.getElementById('search-patrol').value.toLowerCase();
-        if(!v) window.filteredPatrol = [...window.masterPatrol];
-        else window.filteredPatrol = window.masterPatrol.filter(u => u._search.includes(v));
-        patrolPage(0, true);
-    };
-
-    window.patrolPage = function(step, reset=false){
-        if(reset) window.currPatPage = 1;
-        else window.currPatPage += step;
-        
-        const total = window.filteredPatrol.length;
-        const totalPages = Math.ceil(total / itemsPerPagePat) || 1;
-        if(window.currPatPage < 1) window.currPatPage = 1;
-        if(window.currPatPage > totalPages) window.currPatPage = totalPages;
-
-        document.getElementById('info-patrol').textContent = `Total: ${total}`;
-        document.getElementById('page-txt-patrol').textContent = `${window.currPatPage} / ${totalPages}`;
-        document.getElementById('btn-prev-patrol').disabled = (window.currPatPage === 1);
-        document.getElementById('btn-next-patrol').disabled = (window.currPatPage === totalPages);
-
-        const start = (window.currPatPage - 1) * itemsPerPagePat;
-        const pageData = window.filteredPatrol.slice(start, start + itemsPerPagePat);
-        
-        let html = '';
-        if(!pageData.length) html = '<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--text-muted)">Pencarian tidak ditemukan</td></tr>';
-        
-        pageData.forEach(e => {
-            const bCls = e.status==='ALARM' ? 'alarm' : 'normal';
-            html += `<tr>
-                <td style="font-weight:600;color:var(--text-muted)">${e.cabang || '-'}</td>
-                <td style="font-weight:700;">${e.unit || '-'}</td>
-                <td title="${e.area}">${e.area && e.area.length>25 ? e.area.substring(0,25)+'...' : (e.area||'-')}</td>
-                <td>${e.instrument || '-'}</td>
-                <td title="${e.instrument_info}" style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">${e.instrument_info || '-'}</td>
-                <td class="${e.status==='ALARM'?'text-red':'text-green'}">${e.nilai || '0'}</td>
-                <td>${e.instrument_unit || '-'}</td>
-                <td><span class="badge-patrol ${bCls}">${e.status}</span></td>
-                <td>${e.komentar || '-'}</td>
-                <td>${e.created_date ? e.created_date.substring(11,19) : '-'}</td>
-            </tr>`;
-        });
-        document.getElementById('dt-patrol-body').innerHTML = html;
-    };
 
     function generateAIInsights(patData, statusData) {
         document.getElementById('ai-section').style.display = 'flex';
