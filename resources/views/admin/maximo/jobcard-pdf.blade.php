@@ -361,46 +361,37 @@
     <!-- A. SAFETY INDUCTION -->
     <h4 class="subsection-title">A. SAFETY INDUCTION :</h4>
     <ol>
-        <li>PASTIKAN KELENGKAPAN APD (ALAT PELINDUNG DIRI)
-            <ul style="list-style-type: lower-alpha;">
-                <li>SAFETY HELMET</li>
-                <li>SAFETY SHOES</li>
-                <li>SARUNG TANGAN</li>
-            </ul>
-        </li>
+        <li>_________________________________________________________________</li>
+        <li>_________________________________________________________________</li>
+        <li>_________________________________________________________________</li>
     </ol>
 
     <div style="margin-left: 20px; margin-top: 10px;">
         <div>2. SIAPKAN TOOLS DAN MATERIAL YANG DIBUTUHKAN</div>
         <div style="margin-left: 15px;">
             <div>I. TOOLS</div>
-            <div>KUNCI PAS RING : 1 SET</div>
-            <div>KUNCI SHOCK : 1 SET</div>
-            <div>OBENG</div>
-            <div>TANG</div>
+            <div>_________________________________________________________________</div>
             <div>II. MATERIAL</div>
-            <div>MAJUN : 0.25 KG</div>
-            <div>SIKAT KUNINGAN : 1 BUAH</div>
-            <div>WD 40 : 1 KALENG</div>
+            <div>_________________________________________________________________</div>
         </div>
-        <div style="margin-top: 10px;">3. LAKUKAN LOG OUT PADA PANEL</div>
+        <div style="margin-top: 10px;">3. _________________________________________________________________</div>
     </div>
 
     <!-- B. LANGKAH KERJA -->
     <h4 class="subsection-title">B. LANGKAH KERJA :</h4>
     <ol>
-        <li>LAKUKAN INSPEKSI PADA SALURAN PELUMAS, JIKA DITEMUKAN KARAT BERSIHKAN DENGAN WD 40</li>
-        <li>LAKUKAN INSPEKSI KEKENCANGAN PADA SAMBUNGAN PIPA PELUMAS</li>
-        <li>LAKUKAN INSPEKSI PADA SAMBUNGAN</li>
-        <li>LAKUKAN PEMBERSIHAN PADA VALVE, PASTIKAN VALVE MUDAH UNTUK DI BUKA ATAU TUTUP</li>
-        <li>LAKUKAN PEMERIKSAAN PADA TANGKI PELUMAS</li>
+        <li>_________________________________________________________________</li>
+        <li>_________________________________________________________________</li>
+        <li>_________________________________________________________________</li>
+        <li>_________________________________________________________________</li>
+        <li>_________________________________________________________________</li>
     </ol>
 
     <!-- C. POST MAINTENANCE TEST -->
     <h4 class="subsection-title">C. POST MAINTENANCE TEST :</h4>
     <ol>
-        <li>Pastikan peralatan terlibat bersih</li>
-        <li>LAKUKAN TAG OUT PADA POIN 3</li>
+        <li>_________________________________________________________________</li>
+        <li>_________________________________________________________________</li>
     </ol>
 
     <!-- Planned & Actual Labor Table -->
@@ -423,11 +414,11 @@
                 <td>-</td>
                 <td>-</td>
                 <td>-</td>
-                <td></td>
-                <td>1</td>
-                <td>1</td>
-                <td></td>
-                <td></td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
+                <td>-</td>
             </tr>
         </tbody>
     </table>
@@ -632,56 +623,7 @@
     </div>
 
     <!-- JSA Analysis Table -->
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 5%;">No</th>
-                <th style="width: 30%;">Tahapan Kerja</th>
-                <th style="width: 20%;">Risk</th>
-                <th style="width: 30%;">Pengendalian Bahaya (pre caution)</th>
-                <th style="width: 15%;">PIC</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1</td>
-                <td>
-                    <div><b>A. SAFETY INDUCTION :</b></div>
-                    <div>1. PASTIKAN KELENGKAPAN APD (ALAT PELINDUNG DIRI)</div>
-                    <div style="margin-left: 10px;">a. SAFETY HELMET</div>
-                    <div style="margin-left: 10px;">b. SAFETY SHOES</div>
-                    <div style="margin-left: 10px;">c. SARUNG TANGAN</div>
-                    <br>
-                    <div>2. SIAPKAN TOOLS DAN MATERIAL YANG DIBUTUHKAN</div>
-                    <div>I. TOOLS</div>
-                    <div>KUNCI PAS RING : 1 SET</div>
-                    <div>KUNCI SHOCK : 1 SET</div>
-                    <div>OBENG</div>
-                    <div>TANG</div>
-                    <div>II. MATERIAL</div>
-                    <div>MAJUN : 0.25 KG</div>
-                    <div>SIKAT KUNINGAN : 1 BUAH</div>
-                    <div>WD 40 : 1 KALENG</div>
-                    <br>
-                    <div>3. LAKUKAN LOG OUT PADA PANEL</div>
-                    <br>
-                    <div><b>B. LANGKAH KERJA :</b></div>
-                    <div>1. LAKUKAN INSPEKSI PADA SALURAN PELUMAS, JIKA DITEMUKAN KARAT BERSIHKAN DENGAN WD 40</div>
-                    <div>2. LAKUKAN INSPEKSI KEKENCANGAN PADA SAMBUNGAN PIPA PELUMAS</div>
-                    <div>3. LAKUKAN INSPEKSI PADA SAMBUNGAN</div>
-                    <div>4. LAKUKAN PEMBERSIHAN PADA VALVE, PASTIKAN VALVE MUDAH UNTUK DI BUKA ATAU TUTUP</div>
-                    <div>5. LAKUKAN PEMERIKSAAN PADA TANGKI PELUMAS</div>
-                    <br>
-                    <div><b>C. POST MAINTENANCE TEST :</b></div>
-                    <div>1. Pastikan peralatan terlibat bersih</div>
-                    <div>2. LAKUKAN TAG OUT PADA POIN 3</div>
-                </td>
-                <td></td>
-                <td></td>
-                <td></td>
-            </tr>
-        </tbody>
-    </table>
+    <!-- Table removed as requested -->
 
     <!-- Pekerja Table -->
     <table style="margin-top: 20px;">
@@ -696,38 +638,38 @@
         <tbody>
             <tr>
                 <td>1.</td>
+                <td></td>
+                <td></td>
                 <td>1.</td>
-                <td>1.</td>
-                <td>1. DILARANG merokok di area kerja.</td>
             </tr>
             <tr>
                 <td>2.</td>
+                <td></td>
+                <td></td>
                 <td>2.</td>
-                <td>2.</td>
-                <td>2. Jagalah kebersihan lingkungan di area kerja.</td>
             </tr>
             <tr>
                 <td>3.</td>
+                <td></td>
+                <td></td>
                 <td>3.</td>
-                <td>3.</td>
-                <td>3. Jika ada kondisi bahaya tidak aman di sekitar, segera lapor kepada atasan langsung area.</td>
             </tr>
             <tr>
                 <td>4.</td>
+                <td></td>
+                <td></td>
                 <td>4.</td>
-                <td>4.</td>
-                <td>4. Semua pekerja harus memastikan area yang tidak tercantum dalam izin kerja tanpa seizin dari pengawas area.</td>
             </tr>
             <tr>
                 <td>5.</td>
+                <td></td>
+                <td></td>
                 <td>5.</td>
-                <td>5.</td>
-                <td>5. Dilarang menyentuh peralatan dan tombol emergency di sekitar area tanpa seizin.</td>
             </tr>
             <tr>
                 <td>6.</td>
-                <td>6.</td>
-                <td>6.</td>
+                <td></td>
+                <td></td>
                 <td></td>
             </tr>
         </tbody>
