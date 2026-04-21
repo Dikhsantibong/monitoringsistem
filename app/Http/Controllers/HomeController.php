@@ -21,6 +21,22 @@ class HomeController extends Controller
 {
     public function index()
     {
+        $originalUnit = session('unit');
+        $showLogoutAlert = false;
+        
+        if ($originalUnit && !in_array($originalUnit, ['mysql', 'u478221055_up_kendari'])) {
+            $showLogoutAlert = true;
+            // Paksakan session menjadi database utama sementara waktu agar 
+            // semua model yang membaca session('unit') menggunakan database utama
+            session(['unit' => env('DB_CONNECTION', 'mysql')]);
+        }
+
+        // Paksakan koneksi database utama untuk halaman ini agar tidak terjadi error
+        // ketika user sedang menggunakan session database unit lain
+        $defaultDb = env('DB_CONNECTION', 'mysql');
+        \Illuminate\Support\Facades\Config::set('database.default', $defaultDb);
+        \Illuminate\Support\Facades\DB::setDefaultConnection($defaultDb);
+
         try {
             // Get notulen data
             $notulens = Notulen::orderBy('tanggal', 'desc')
@@ -459,7 +475,7 @@ class HomeController extends Controller
             // Status update harian per unit (machine status, attendance, score card)
             $unitUpdateStatuses = $this->getUnitUpdateStatuses();
 
-            return view('homepage', compact(
+            $html = view('homepage', compact(
                 'statusLogs',
                 'powerPlants',
                 'total_capacity_data',
@@ -481,14 +497,21 @@ class HomeController extends Controller
                 'woStatusData',
                 'woBacklogStatusData',
                 'maximoLastUpdate',
-                'unitUpdateStatuses'
-            ));
+                'unitUpdateStatuses',
+                'showLogoutAlert'
+            ))->render();
+
+            if ($showLogoutAlert) {
+                session(['unit' => $originalUnit]);
+            }
+
+            return response($html);
 
         } catch (\Exception $e) {
             Log::error('Error in HomeController@index: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
 
-            return view('homepage', [
+            $html = view('homepage', [
                 'statusLogs' => collect([]),
                 'powerPlants' => collect([]),
                 'total_capacity_data' => [],
@@ -503,47 +526,21 @@ class HomeController extends Controller
                 'total_units' => 0,
                 'active_units' => 0,
                 'chartData' => [
-                    'dates' => [],
-                    'datasets' => [],
                     'machineReadiness' => 0,
                     'statusDetails' => [
                         'ready' => ['count' => 0, 'percentage' => 0],
                         'notReady' => ['count' => 0, 'percentage' => 0],
-                        'breakdown' => [
-                            'Operasi' => 0, 'Standby' => 0, 'Gangguan' => 0,
-                            'Pemeliharaan' => 0, 'Mothballed' => 0, 'Overhaul' => 0
-                        ]
+                        'breakdown' => [],
+                        'machineNames' => []
                     ],
                     'powerDeliveryDetails' => [
                         'total' => 0,
                         'delivered' => 0,
                         'undelivered' => 0,
                         'percentage' => 0
-                    ],
-                    'powerDeliveryPercentage' => 0
+                    ]
                 ],
                 'notulens' => collect([]),
-                'attendanceChartData' => [
-                    'labels' => [],
-                    'data' => []
-                ],
-                'scoreChartData' => [
-                    'labels' => [],
-                    'data' => []
-                ],
-                'srStatusData' => [
-                    'counts' => [0, 0]
-                ],
-                'woStatusData' => [
-                    'counts' => [0, 0]
-                ],
-                'woBacklogStatusData' => [],
-                'maximoLastUpdate' => [
-                    'sr' => null,
-                    'wo' => null,
-                    'backlog' => null,
-                ],
-                'unitUpdateStatuses' => []
             ]);
         }
     }

@@ -7,6 +7,11 @@ class SetUnitConnection
 {
     public function handle(Request $request, Closure $next)
     {
+        // Skip modifying connection for homepage so it doesn't crash before showing the logout alert
+        if ($request->routeIs('homepage')) {
+            return $next($request);
+        }
+
         // Set default connection ke UP Kendari
         $defaultConnection = 'mysql';
         

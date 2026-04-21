@@ -3939,13 +3939,13 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-@if(session()->has('unit') && !in_array(session('unit'), ['mysql', 'u478221055_up_kendari']))
+@if(isset($showLogoutAlert) && $showLogoutAlert)
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         Swal.fire({
             icon: 'warning',
             title: 'Perhatian!',
-            text: 'Silahkan logout terlebih dahulu untuk menghindari error database. Halaman utama hanya menggunakan database UP Kendari.',
+            text: 'Silahkan logout terlebih dahulu. Halaman utama hanya menggunakan database UP Kendari.',
             confirmButtonText: 'Logout Sekarang',
             allowOutsideClick: false,
             allowEscapeKey: false

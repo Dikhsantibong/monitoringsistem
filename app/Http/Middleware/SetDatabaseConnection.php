@@ -10,6 +10,11 @@ class SetDatabaseConnection
 {
     public function handle($request, Closure $next)
     {
+        // Skip modifying connection for homepage so it doesn't crash before showing the logout alert
+        if ($request->routeIs('homepage')) {
+            return $next($request);
+        }
+
         // Ambil nama unit dari session
         $unit = session('unit', 'up_kendari'); // Default ke up_kendari jika session kosong
 
