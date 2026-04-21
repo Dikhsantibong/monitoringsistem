@@ -3938,5 +3938,23 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-@endpush
 
+@if(session()->has('unit') && !in_array(session('unit'), ['mysql', 'u478221055_up_kendari']))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Perhatian!',
+            text: 'Silahkan logout terlebih dahulu untuk menghindari error database. Halaman utama hanya menggunakan database UP Kendari.',
+            confirmButtonText: 'Logout Sekarang',
+            allowOutsideClick: false,
+            allowEscapeKey: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    });
+</script>
+@endif
+@endpush
