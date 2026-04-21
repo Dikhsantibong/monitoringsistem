@@ -303,127 +303,108 @@
     
     <div class="doc-title">JOB CARD</div>
 
-    <!-- Service Request Information -->
-    <div class="info-grid">
-        <div class="info-row">
-            <div class="info-cell"><b>No. WO</b> : {{ $wo['wonum'] ?? '-' }}</div>
-            <div class="info-cell"><b>{{ $wo['description'] ?? '-' }}</b></div>
-        </div>
-        <div class="info-row">
-            <div class="info-cell"><b>Job Plan</b> : -</div>
-            <div class="info-cell"><b>{{ $wo['description'] ?? '-' }}</b></div>
-        </div>
-    </div>
-
-    <h3 class="section-title">Service Request Information</h3>
-
-    <div class="info-grid">
-        <div class="info-row">
-            <div class="info-cell"><b>Task</b> : -</div>
-            <div class="info-cell"></div>
-        </div>
-        <div class="info-row">
-            <div class="info-cell"><b>Site</b> : {{ $wo['siteid'] ?? '-' }}</div>
-            <div class="info-cell"><b>Sched Start</b> : {{ $wo['schedstart'] ?? '-' }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-cell"><b>Status</b> : {{ $wo['status'] ?? '-' }}</div>
-            <div class="info-cell"><b>Target Start</b> : {{ $wo['schedstart'] ?? '-' }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-cell"><b>Parent</b> : {{ $wo['parent'] ?? '-' }}</div>
-            <div class="info-cell"><b>Actual Start</b> : -</div>
-        </div>
-        <div class="info-row">
-            <div class="info-cell"><b>Work Type</b> : {{ $wo['worktype'] ?? '-' }}</div>
-            <div class="info-cell"><b>Report Date</b> : {{ $wo['reportdate'] ?? '-' }}</div>
-        </div>
-        <div class="info-row">
-            <div class="info-cell"><b>Assign</b> : -</div>
-            <div class="info-cell"><b>Failure Class</b> : -</div>
-        </div>
-        <div class="info-row">
-            <div class="info-cell"><b>Priority</b> : {{ $wo['wopriority'] ?? '-' }}</div>
-            <div class="info-cell"><b>Person Group</b> : -</div>
-        </div>
-        <div class="info-row">
-            <div class="info-cell"><b>Asset</b> : {{ $wo['assetnum'] ?? '-' }}</div>
-            <div class="info-cell"><b>{{ $wo['location'] ?? '-' }}</b></div>
-        </div>
-        <div class="info-row">
-            <div class="info-cell"><b>Location</b> : {{ $wo['location'] ?? '-' }}</div>
-            <div class="info-cell"><b>-</b></div>
-        </div>
-    </div>
-
-    <div class="task-title">Task : {{ $wo['description'] ?? '-' }}</div>
-
-    <!-- A. SAFETY INDUCTION -->
-    <h4 class="subsection-title">A. SAFETY INDUCTION :</h4>
-    <ol>
-        <li>_________________________________________________________________</li>
-        <li>_________________________________________________________________</li>
-        <li>_________________________________________________________________</li>
-    </ol>
-
-    <div style="margin-left: 20px; margin-top: 10px;">
-        <div>2. SIAPKAN TOOLS DAN MATERIAL YANG DIBUTUHKAN</div>
-        <div style="margin-left: 15px;">
-            <div>I. TOOLS</div>
-            <div>_________________________________________________________________</div>
-            <div>II. MATERIAL</div>
-            <div>_________________________________________________________________</div>
-        </div>
-        <div style="margin-top: 10px;">3. _________________________________________________________________</div>
-    </div>
-
-    <!-- B. LANGKAH KERJA -->
-    <h4 class="subsection-title">B. LANGKAH KERJA :</h4>
-    <ol>
-        <li>_________________________________________________________________</li>
-        <li>_________________________________________________________________</li>
-        <li>_________________________________________________________________</li>
-        <li>_________________________________________________________________</li>
-        <li>_________________________________________________________________</li>
-    </ol>
-
-    <!-- C. POST MAINTENANCE TEST -->
-    <h4 class="subsection-title">C. POST MAINTENANCE TEST :</h4>
-    <ol>
-        <li>_________________________________________________________________</li>
-        <li>_________________________________________________________________</li>
-    </ol>
-
-    <!-- Planned & Actual Labor Table -->
-    <h3 class="section-title">Planned & Actual Labor</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Task ID</th>
-                <th>Craft</th>
-                <th>Skill Level</th>
-                <th>Labor</th>
-                <th>Planned Quantity</th>
-                <th>Planned Hours</th>
-                <th>Actual Quantity</th>
-                <th>Actual Hours</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-                <td>-</td>
-            </tr>
-        </tbody>
+    <!-- No. WO & Description -->
+    <table style="border: none; margin: 8px 0 5px 0;">
+        <tr>
+            <td style="border: none; padding: 3px 5px; width: 25%; font-size: 10pt;"><b>No. WO</b> : {{ $wo['wonum'] ?? '-' }}</td>
+            <td style="border: none; padding: 3px 5px; font-size: 10pt;">{{ $wo['description'] ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="border: none; padding: 3px 5px; font-size: 10pt;"><b>Job Plan</b> :</td>
+            <td style="border: none; padding: 3px 5px; font-size: 10pt;"></td>
+        </tr>
     </table>
 
-    <div style="text-align: right; margin-top: 20px; font-size: 10pt;">Halaman : 1</div>
+    <!-- Service Request Information (bordered box) -->
+    <div style="border: 1px solid #000; padding: 8px 10px; margin: 10px 0;">
+        <div style="font-weight: bold; font-size: 10pt; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 6px;">Service Request Information</div>
+        
+        <table style="border: none; margin: 0;">
+            <tr>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 15%;"><b>No. SR :</b></td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 10%;">-</td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 40%;">-</td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 15%;"><b>Reported By :</b></td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 20%;">-</td>
+            </tr>
+        </table>
+
+        <!-- Detil SR -->
+        <div style="font-weight: bold; font-size: 9pt; margin-top: 8px;">Detil SR</div>
+        
+        <div style="font-size: 9pt; margin-top: 4px;">
+            <div>Gejala :</div>
+            <div style="min-height: 40px; padding-left: 5px;">-</div>
+        </div>
+
+        <div style="font-size: 9pt; margin-top: 4px;">
+            <div>Dampak : -</div>
+        </div>
+
+        <div style="font-size: 9pt; margin-top: 4px;">
+            <div>Resiko : -</div>
+        </div>
+
+        <div style="font-size: 9pt; margin-top: 4px;">
+            <div>Deviasi :</div>
+        </div>
+
+        <hr style="border: none; border-top: 1px solid #000; margin: 8px 0;">
+
+        <div style="font-size: 9pt;">
+            <div>Tindakan :</div>
+            <div style="min-height: 30px; padding-left: 5px;">-</div>
+        </div>
+    </div>
+
+    <!-- Task Section (bordered box) -->
+    <div style="border: 1px solid #000; padding: 8px 10px; margin: 10px 0;">
+        <div style="font-size: 12pt; font-weight: bold; margin-bottom: 8px;">Task : {{ $wo['wonum'] ?? '-' }}</div>
+
+        <!-- 3-column info grid -->
+        <table style="border: none; margin: 0; font-size: 9pt;">
+            <tr>
+                <td style="border: none; padding: 2px 5px; width: 33%;"><b>Site :</b> {{ $wo['siteid'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px; width: 34%;"><b>Sched Start :</b> {{ $wo['schedstart'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px; width: 33%;"><b>Sched Finish :</b> {{ $wo['schedfinish'] ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td style="border: none; padding: 2px 5px;"><b>Status :</b> {{ $wo['status'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Target Start :</b> {{ $wo['schedstart'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Target Finish :</b> {{ $wo['schedfinish'] ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td style="border: none; padding: 2px 5px;"><b>Parent :</b> {{ $wo['parent'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Actual Start :</b> -</td>
+                <td style="border: none; padding: 2px 5px;"><b>Actual Finish :</b></td>
+            </tr>
+            <tr>
+                <td style="border: none; padding: 2px 5px;"><b>Work Type :</b> {{ $wo['worktype'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Report Date :</b> {{ $wo['reportdate'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Reported By :</b> -</td>
+            </tr>
+            <tr>
+                <td style="border: none; padding: 2px 5px;"><b>Assign :</b> -</td>
+                <td style="border: none; padding: 2px 5px;"><b>Failure Class :</b></td>
+                <td style="border: none; padding: 2px 5px;"><b>GL Account :</b> -</td>
+            </tr>
+            <tr>
+                <td style="border: none; padding: 2px 5px;"><b>Priority :</b> {{ $wo['wopriority'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Person Group :</b> -</td>
+                <td style="border: none; padding: 2px 5px;"></td>
+            </tr>
+            <tr>
+                <td colspan="3" style="border: none; padding: 2px 5px;"><b>Asset :</b> {{ $wo['assetnum'] ?? '-' }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" style="border: none; padding: 2px 5px;"><b>Location :</b> {{ $wo['location'] ?? '-' }}</td>
+            </tr>
+        </table>
+
+        <div style="font-size: 11pt; font-weight: bold; margin-top: 10px;">Task : <i>{{ $wo['description'] ?? '-' }}</i></div>
+    </div>
+
+    <div style="text-align: left; margin-top: auto; font-size: 10pt; position: absolute; bottom: 0; left: 0;">Halaman : <span style="margin-left: 40px;">1</span></div>
 </div>
 
 <!-- ===================================================== -->
