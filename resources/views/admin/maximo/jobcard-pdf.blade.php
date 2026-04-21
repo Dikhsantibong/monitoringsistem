@@ -299,15 +299,15 @@
             <h2>PLN Nusantara Power</h2>
             <h3>Unit Pembangkitan Kendari</h3>
         </div>
+        <div class="doc-title">JOB CARD</div>
     </div>
     
-    <div class="doc-title">JOB CARD</div>
 
     <!-- No. WO & Description -->
-    <table style="border: none; margin: 8px 0 5px 0;">
+    <table style="border: none; margin: 8px 0 5px 0; width: 100%;">
         <tr>
             <td style="border: none; padding: 3px 5px; width: 25%; font-size: 10pt;"><b>No. WO</b> : {{ $wo['wonum'] ?? '-' }}</td>
-            <td style="border: none; padding: 3px 5px; font-size: 10pt;">{{ $wo['description'] ?? '-' }}</td>
+            <td style="border: none; padding: 3px 5px; font-size: 10pt;">[{{ $wo['description'] ?? '-' }}]</td>
         </tr>
         <tr>
             <td style="border: none; padding: 3px 5px; font-size: 10pt;"><b>Job Plan</b> :</td>
@@ -315,17 +315,17 @@
         </tr>
     </table>
 
-    <!-- Service Request Information (bordered box) -->
-    <div style="border: 1px solid #000; padding: 8px 10px; margin: 10px 0;">
-        <div style="font-weight: bold; font-size: 10pt; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 6px;">Service Request Information</div>
+    <!-- Service Request Information (Line 2) -->
+    <div style="border-top: 1px solid #000; padding: 8px 0; margin-top: 5px;">
+        <div style="font-weight: bold; font-size: 10pt; margin-bottom: 5px;">Service Request Information</div>
         
-        <table style="border: none; margin: 0;">
+        <table style="border: none; margin: 0; width: 100%;">
             <tr>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 15%;"><b>No. SR :</b></td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 10%;">-</td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 40%;">-</td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 10%;"><b>No. SR :</b></td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 10%;">699183</td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 40%;">[{{ $wo['description'] ?? '-' }}]</td>
                 <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 15%;"><b>Reported By :</b></td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 20%;">-</td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 25%;">9615038FY &nbsp;&nbsp; ASFAR ADRIN ASLI</td>
             </tr>
         </table>
 
@@ -334,35 +334,42 @@
         
         <div style="font-size: 9pt; margin-top: 4px;">
             <div>Gejala :</div>
-            <div style="min-height: 40px; padding-left: 5px;">-</div>
+            <div style="padding-left: 5px;">
+                - PKI 17:50 Unit operasi normal<br>
+                - Pkl 17:56 Unit trip ( gangguan jaringan 20 Kva)<br>
+                - Pkl 20:10 Unit running<br>
+                - PKI 20:20 Unit Stop normal, indikasi bunyi abnormal pada turbin
+            </div>
         </div>
 
-        <div style="font-size: 9pt; margin-top: 4px;">
-            <div>Dampak : -</div>
+        <div style="font-size: 9pt; margin-top: 8px;">
+            <div>Dampak : Unit tidak dapat beroperasi</div>
         </div>
 
-        <div style="font-size: 9pt; margin-top: 4px;">
-            <div>Resiko : -</div>
+        <div style="font-size: 9pt; margin-top: 8px;">
+            <div>Resiko : Daya mapu berkurang</div>
         </div>
 
-        <div style="font-size: 9pt; margin-top: 4px;">
+        <div style="font-size: 9pt; margin-top: 8px;">
             <div>Deviasi :</div>
         </div>
 
-        <hr style="border: none; border-top: 1px solid #000; margin: 8px 0;">
-
-        <div style="font-size: 9pt;">
+        <div style="font-size: 9pt; margin-top: 15px;">
             <div>Tindakan :</div>
-            <div style="min-height: 30px; padding-left: 5px;">-</div>
+            <div style="padding-left: 5px;">
+                - dilakukan pemeriksaan pada turbin<br>
+                - dilakukan pemeriksaan runner turbin<br>
+                - pengecekan runner cop
+            </div>
         </div>
     </div>
 
-    <!-- Task Section (bordered box) -->
-    <div style="border: 1px solid #000; padding: 8px 10px; margin: 10px 0;">
-        <div style="font-size: 12pt; font-weight: bold; margin-bottom: 8px;">Task : {{ $wo['wonum'] ?? '-' }}</div>
+    <!-- Task Section (Line 3 & 4) -->
+    <div style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 15px 0; margin-top: 10px;">
+        <div style="font-size: 11pt; font-weight: bold; margin-bottom: 10px; margin-left: 100px;">Task : {{ $wo['wonum'] ?? '-' }}</div>
 
         <!-- 3-column info grid -->
-        <table style="border: none; margin: 0; font-size: 9pt;">
+        <table style="border: none; margin: 0; font-size: 9pt; width: 100%;">
             <tr>
                 <td style="border: none; padding: 2px 5px; width: 33%;"><b>Site :</b> {{ $wo['siteid'] ?? '-' }}</td>
                 <td style="border: none; padding: 2px 5px; width: 34%;"><b>Sched Start :</b> {{ $wo['schedstart'] ?? '-' }}</td>
@@ -381,27 +388,29 @@
             <tr>
                 <td style="border: none; padding: 2px 5px;"><b>Work Type :</b> {{ $wo['worktype'] ?? '-' }}</td>
                 <td style="border: none; padding: 2px 5px;"><b>Report Date :</b> {{ $wo['reportdate'] ?? '-' }}</td>
-                <td style="border: none; padding: 2px 5px;"><b>Reported By :</b> -</td>
+                <td style="border: none; padding: 2px 5px;"><b>Reported By :</b> 9615038FY</td>
             </tr>
             <tr>
-                <td style="border: none; padding: 2px 5px;"><b>Assign :</b> -</td>
+                <td style="border: none; padding: 2px 5px;"><b>Assign :</b> 9213024FY</td>
                 <td style="border: none; padding: 2px 5px;"><b>Failure Class :</b></td>
-                <td style="border: none; padding: 2px 5px;"><b>GL Account :</b> -</td>
+                <td style="border: none; padding: 2px 5px;"><b>GL Account :</b> A-KD-21-377-001-01-22</td>
             </tr>
             <tr>
                 <td style="border: none; padding: 2px 5px;"><b>Priority :</b> {{ $wo['wopriority'] ?? '-' }}</td>
-                <td style="border: none; padding: 2px 5px;"><b>Person Group :</b> -</td>
+                <td style="border: none; padding: 2px 5px;"><b>Person Group :</b> MECHD</td>
                 <td style="border: none; padding: 2px 5px;"></td>
             </tr>
             <tr>
-                <td colspan="3" style="border: none; padding: 2px 5px;"><b>Asset :</b> {{ $wo['assetnum'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Asset :</b> {{ $wo['assetnum'] ?? '-' }}</td>
+                <td colspan="2" style="border: none; padding: 2px 5px;">PLTM WINNING RUNNER TURBINE UNIT 1</td>
             </tr>
             <tr>
-                <td colspan="3" style="border: none; padding: 2px 5px;"><b>Location :</b> {{ $wo['location'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Location :</b> {{ $wo['location'] ?? '-' }}</td>
+                <td colspan="2" style="border: none; padding: 2px 5px;">AREA ENGINE SYSTEM UNIT 1 PLTM WINNING</td>
             </tr>
         </table>
 
-        <div style="font-size: 11pt; font-weight: bold; margin-top: 10px;">Task : <i>{{ $wo['description'] ?? '-' }}</i></div>
+        <div style="font-size: 11pt; font-weight: bold; margin-top: 10px; margin-left: 100px;">Task : <i>{{ $wo['description'] ?? '-' }}</i></div>
     </div>
 
     <div style="text-align: left; margin-top: auto; font-size: 10pt; position: absolute; bottom: 0; left: 0;">Halaman : <span style="margin-left: 40px;">1</span></div>
