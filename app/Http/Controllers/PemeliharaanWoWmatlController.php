@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use App\Helpers\PemeliharaanLocationHelper;
 
 class PemeliharaanWoWmatlController extends Controller
 {
@@ -20,6 +21,7 @@ class PemeliharaanWoWmatlController extends Controller
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%')
                 ->where('STATUS', 'WMATL');
+            PemeliharaanLocationHelper::applyLocationFilter($query);
 
             if ($search) {
                 $like = "%" . strtoupper($search) . "%";
@@ -61,8 +63,9 @@ class PemeliharaanWoWmatlController extends Controller
                 ->table('WORKORDER')
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%')
-                ->where('WONUM', $id)
-                ->first();
+                ->where('WONUM', $id);
+            PemeliharaanLocationHelper::applyLocationFilter($wo);
+            $wo = $wo->first();
 
             if (!$wo) {
                 return redirect()->route('pemeliharaan.wo-wmatl.index')->with('error', 'Work Order tidak ditemukan di Oracle.');

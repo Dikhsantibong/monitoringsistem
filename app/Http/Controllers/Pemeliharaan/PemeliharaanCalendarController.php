@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Helpers\PemeliharaanLocationHelper;
 
 class PemeliharaanCalendarController extends Controller
 {
@@ -49,6 +50,7 @@ class PemeliharaanCalendarController extends Controller
                 ])
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%'); // Hanya ambil WO yang dimulai dengan "WO", bukan "WT"
+            PemeliharaanLocationHelper::applyLocationFilter($workOrdersQuery);
             
             // Filter Status
             if ($statusFilter) {

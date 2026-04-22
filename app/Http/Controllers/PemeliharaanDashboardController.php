@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use App\Helpers\PemeliharaanLocationHelper;
 
 class PemeliharaanDashboardController extends Controller
 {
@@ -16,41 +17,37 @@ class PemeliharaanDashboardController extends Controller
             $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
             $closedStatuses = ['COMP', 'CLOSE'];
 
-            // Work Order Stats
-            $totalWO = DB::connection('oracle')
+            // Work Order Stats (filtered by user location prefix)
+            $baseWOQuery = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
-                ->count();
+                ->where('WONUM', 'LIKE', 'WO%');
+            PemeliharaanLocationHelper::applyLocationFilter($baseWOQuery);
 
-            $openWO = DB::connection('oracle')
-                ->table('WORKORDER')
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
+            $totalWO = (clone $baseWOQuery)->count();
+
+            $openWO = (clone $baseWOQuery)
                 ->whereIn('STATUS', $openStatuses)
                 ->count();
 
-            $closedWO = DB::connection('oracle')
-                ->table('WORKORDER')
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
+            $closedWO = (clone $baseWOQuery)
                 ->whereIn('STATUS', $closedStatuses)
                 ->count();
 
-            // Service Request Stats
-            $totalSR = DB::connection('oracle')
+            // Service Request Stats (filtered by user location prefix)
+            $baseSRQuery = DB::connection('oracle')
                 ->table('SR')
-                ->where('SITEID', 'KD')
-                ->count();
+                ->where('SITEID', 'KD');
+            PemeliharaanLocationHelper::applyLocationFilter($baseSRQuery);
 
-            $openSR = DB::connection('oracle')
-                ->table('SR')
-                ->where('SITEID', 'KD')
+            $totalSR = (clone $baseSRQuery)->count();
+
+            $openSR = (clone $baseSRQuery)
                 ->where('STATUS', 'QUEUED')
                 ->count();
 
-            // Recent Work Orders
-            $recentWorkOrders = DB::connection('oracle')
+            // Recent Work Orders (filtered by user location prefix)
+            $recentQuery = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select([
                     'WONUM',
@@ -61,7 +58,10 @@ class PemeliharaanDashboardController extends Controller
                     'SCHEDFINISH',
                 ])
                 ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
+                ->where('WONUM', 'LIKE', 'WO%');
+            PemeliharaanLocationHelper::applyLocationFilter($recentQuery);
+
+            $recentWorkOrders = $recentQuery
                 ->orderBy('STATUSDATE', 'desc')
                 ->take(10)
                 ->get();

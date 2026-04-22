@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use Illuminate\Pagination\LengthAwarePaginator;
+use App\Helpers\PemeliharaanLocationHelper;
 
 class JobcardController extends Controller
 {
@@ -53,6 +54,7 @@ class JobcardController extends Controller
                 ])
                 ->whereIn('WONUM', $existingWonums)
                 ->where('STATUS', 'APPR');
+            PemeliharaanLocationHelper::applyLocationFilter($query);
 
             // Search filter
             if ($q !== '') {

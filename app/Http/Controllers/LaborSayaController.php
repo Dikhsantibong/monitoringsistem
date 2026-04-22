@@ -13,6 +13,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\QueryException;
 use App\Models\UnitStatus;
 use Illuminate\Support\Facades\Schema;
+use App\Helpers\PemeliharaanLocationHelper;
 
 class LaborSayaController extends Controller
 {
@@ -69,6 +70,7 @@ class LaborSayaController extends Controller
                 ->table('WORKORDER')
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%');
+            PemeliharaanLocationHelper::applyLocationFilter($baseStatsQuery);
 
             // Card Total WO calculated from data SITE "KD"
             $stats['total'] = (clone $baseStatsQuery)->count();
@@ -122,6 +124,7 @@ class LaborSayaController extends Controller
                 ])
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%');
+            PemeliharaanLocationHelper::applyLocationFilter($workOrdersQuery);
 
             // Search filter
             if ($search !== '') {
