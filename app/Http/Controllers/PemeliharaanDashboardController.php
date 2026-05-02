@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
-use App\Helpers\PemeliharaanLocationHelper;
 
 class PemeliharaanDashboardController extends Controller
 {
@@ -17,12 +16,11 @@ class PemeliharaanDashboardController extends Controller
             $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
             $closedStatuses = ['COMP', 'CLOSE'];
 
-            // Work Order Stats (filtered by user location prefix)
+            // Work Order Stats
             $baseWOQuery = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%');
-            PemeliharaanLocationHelper::applyLocationFilter($baseWOQuery);
 
             $totalWO = (clone $baseWOQuery)->count();
 
@@ -34,11 +32,10 @@ class PemeliharaanDashboardController extends Controller
                 ->whereIn('STATUS', $closedStatuses)
                 ->count();
 
-            // Service Request Stats (filtered by user location prefix)
+            // Service Request Stats
             $baseSRQuery = DB::connection('oracle')
                 ->table('SR')
                 ->where('SITEID', 'KD');
-            PemeliharaanLocationHelper::applyLocationFilter($baseSRQuery);
 
             $totalSR = (clone $baseSRQuery)->count();
 
@@ -46,7 +43,7 @@ class PemeliharaanDashboardController extends Controller
                 ->where('STATUS', 'QUEUED')
                 ->count();
 
-            // Recent Work Orders (filtered by user location prefix)
+            // Recent Work Orders
             $recentQuery = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select([
@@ -59,7 +56,6 @@ class PemeliharaanDashboardController extends Controller
                 ])
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%');
-            PemeliharaanLocationHelper::applyLocationFilter($recentQuery);
 
             $recentWorkOrders = $recentQuery
                 ->orderBy('STATUSDATE', 'desc')

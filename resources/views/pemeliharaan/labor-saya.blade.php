@@ -139,9 +139,8 @@
                 </div>
                 <input type="hidden" name="wo_page" value="1" />
                 <input type="hidden" name="status" id="formStatus" value="{{ $statusFilter }}" />
-                <input type="hidden" name="unit" id="formUnit" value="{{ $unitFilter }}" />
                 <button type="submit" class="bg-[#0A749B] text-white px-6 py-2 rounded text-sm font-semibold hover:bg-[#009BB9] transition-colors">Cari</button>
-                @if(!empty($q) || !empty($statusFilter) || !empty($unitFilter))
+                @if(!empty($q) || !empty($statusFilter))
                     <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-4 py-2 rounded border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 transition-colors">Reset</a>
                 @endif
             </form>
@@ -168,25 +167,9 @@
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">ID</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Deskripsi</th>
-                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                                    <div class="flex items-center justify-between gap-2">
-                                        <span>Unit</span>
-                                        <div class="relative group">
-                                            <i class="fas fa-filter cursor-pointer hover:text-blue-500 text-gray-400"></i>
-                                            <div class="hidden group-hover:block absolute right-0 top-full w-48 pt-2 z-20">
-                                                <div class="bg-white border border-gray-200 rounded shadow-lg overflow-hidden">
-                                                    <select onchange="updateFilter('unit', this.value)" class="w-full p-2 text-xs border-none focus:ring-0">
-                                                        <option value="">Semua Unit</option>
-                                                        @foreach($powerPlants as $plant)
-                                                            <option value="{{ $plant->id }}" {{ ($unitFilter == $plant->id) ? 'selected' : '' }}>{{ $plant->name }}</option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Unit</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
+                                <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Priority</th>
                                 <th class="px-4 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">
                                     <div class="flex items-center justify-between gap-2">
                                         <span>Status</span>
@@ -254,6 +237,9 @@
                                         {{ $wo['worktype'] ?? '-' }}
                                     </span>
                                 </td>
+                                <td class="px-4 py-2 border border-gray-200 text-center font-semibold text-sm text-gray-700">
+                                    {{ $wo['priority'] ?? '-' }}
+                                </td>
                                 <td class="px-4 py-2 border border-gray-200 text-center">
                                     @php
                                         $statusClass = 'bg-gray-100 text-gray-800';
@@ -284,7 +270,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="8" class="text-center py-4">Tidak ada data work order untuk labor Anda.</td>
+                                <td colspan="9" class="text-center py-4">Tidak ada data work order untuk labor Anda.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -307,8 +293,7 @@
                         @if (!$workOrdersPaginator->onFirstPage())
                             <a href="{{ $workOrdersPaginator->appends(array_filter([
                                 'q' => request('q'),
-                                'status' => request('status'),
-                                'unit' => request('unit')
+                                'status' => request('status')
                             ]))->previousPageUrl() }}" 
                                class="px-3 py-1 bg-[#0A749B] text-white rounded">Sebelumnya</a>
                         @endif
@@ -317,8 +302,7 @@
                             @php
                                 $pUrl = $workOrdersPaginator->appends(array_filter([
                                     'q' => request('q'),
-                                    'status' => request('status'),
-                                    'unit' => request('unit')
+                                    'status' => request('status')
                                 ]))->url($page);
                             @endphp
                             @if ($page == $workOrdersPaginator->currentPage())
@@ -333,8 +317,7 @@
                         @if ($workOrdersPaginator->hasMorePages())
                             <a href="{{ $workOrdersPaginator->appends(array_filter([
                                 'q' => request('q'),
-                                'status' => request('status'),
-                                'unit' => request('unit')
+                                'status' => request('status')
                             ]))->nextPageUrl() }}" 
                                class="px-3 py-1 bg-[#0A749B] text-white rounded">Selanjutnya</a>
                         @endif
@@ -366,8 +349,6 @@
     function updateFilter(type, value) {
         if (type === 'status') {
             document.getElementById('formStatus').value = value;
-        } else if (type === 'unit') {
-            document.getElementById('formUnit').value = value;
         }
         document.getElementById('filterForm').submit();
     }

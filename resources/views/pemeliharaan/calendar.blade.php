@@ -87,7 +87,7 @@
             <div class="calendar-sticky-nav">
                 <div class="flex flex-col md:flex-row items-center justify-between gap-2 flex-wrap">
                     <div class="flex gap-2 items-center flex-wrap">
-                        <a href="{{ route('pemeliharaan.calendar', array_merge(['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter, 'unit' => $unitFilter]))) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
+                        <a href="{{ route('pemeliharaan.calendar', array_merge(['month' => $month == 1 ? 12 : $month - 1, 'year' => $month == 1 ? $year - 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">&laquo; Bulan Sebelumnya</a>
                         
                         <!-- Filter Status, Work Type & Unit -->
                         <form method="GET" action="{{ route('pemeliharaan.calendar') }}" id="filterForm" class="flex items-center gap-2">
@@ -108,14 +108,7 @@
                                 @endforeach
                             </select>
                             
-                            <select name="unit" onchange="document.getElementById('filterForm').submit()" class="border rounded px-2 py-1 text-sm w-48 min-w-[12rem]">
-                                <option value="">Semua Unit</option>
-                                @foreach($unitOptions as $unitCode => $unitName)
-                                    <option value="{{ $unitCode }}" @if($unitFilter == $unitCode) selected @endif>{{ $unitName }}</option>
-                                @endforeach
-                            </select>
-                            
-                            @if($statusFilter || $workTypeFilter || $unitFilter)
+                            @if($statusFilter || $workTypeFilter)
                                 <a href="{{ route('pemeliharaan.calendar', ['month' => $month, 'year' => $year]) }}" class="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600">
                                     Reset
                                 </a>
@@ -138,14 +131,11 @@
                             @if($workTypeFilter)
                                 <input type="hidden" name="worktype" value="{{ $workTypeFilter }}">
                             @endif
-                            @if($unitFilter)
-                                <input type="hidden" name="unit" value="{{ $unitFilter }}">
-                            @endif
                         </form>
                     </div>
                     
                     <div class="flex gap-2">
-                        <a href="{{ route('pemeliharaan.calendar', array_merge(['month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter, 'unit' => $unitFilter]))) }}" class="calendar-nav-btn">Bulan Berikutnya &raquo;</a>
+                        <a href="{{ route('pemeliharaan.calendar', array_merge(['month' => $month == 12 ? 1 : $month + 1, 'year' => $month == 12 ? $year + 1 : $year], array_filter(['status' => $statusFilter, 'worktype' => $workTypeFilter]))) }}" class="calendar-nav-btn">Bulan Berikutnya &raquo;</a>
                     </div>
                 </div>
                 </div>
