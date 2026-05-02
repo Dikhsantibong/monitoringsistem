@@ -55,7 +55,7 @@
 
         <main class="px-6 py-4">
             <!-- Summary Stats -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6 mb-6">
                 <div class="bg-white rounded-lg shadow p-6">
                     <div class="flex flex-col">
                         <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">Total Work Order</h3>
@@ -89,6 +89,24 @@
                         <p class="text-2xl font-bold text-gray-800 mt-2">{{ number_format($openSR) }}</p>
                         <div class="mt-4 text-xs font-bold text-red-600">
                             <i class="fas fa-exclamation-triangle mr-1"></i> Menunggu Respon
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 border-b-4 border-red-500">
+                    <div class="flex flex-col">
+                        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">WO Urgent</h3>
+                        <p class="text-2xl font-bold text-gray-800 mt-2">{{ number_format($urgentWO) }}</p>
+                        <div class="mt-4 text-xs font-bold text-red-600">
+                            <i class="fas fa-bolt mr-1"></i> Perlu Tindakan
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow p-6 border-b-4 border-red-700">
+                    <div class="flex flex-col">
+                        <h3 class="text-sm font-medium text-gray-500 uppercase tracking-wider">WO Emergency</h3>
+                        <p class="text-2xl font-bold text-gray-800 mt-2">{{ number_format($emergencyWO) }}</p>
+                        <div class="mt-4 text-xs font-bold text-red-700">
+                            <i class="fas fa-exclamation-circle mr-1"></i> Kritis
                         </div>
                     </div>
                 </div>

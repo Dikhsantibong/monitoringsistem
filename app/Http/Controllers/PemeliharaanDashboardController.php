@@ -32,6 +32,16 @@ class PemeliharaanDashboardController extends Controller
                 ->whereIn('STATUS', $closedStatuses)
                 ->count();
 
+            $urgentWO = (clone $baseWOQuery)
+                ->whereIn('STATUS', $openStatuses)
+                ->where('WOPRIORTEXT', 'URGENT')
+                ->count();
+
+            $emergencyWO = (clone $baseWOQuery)
+                ->whereIn('STATUS', $openStatuses)
+                ->where('WOPRIORTEXT', 'EMERGENCY')
+                ->count();
+
             // Service Request Stats
             $baseSRQuery = DB::connection('oracle')
                 ->table('SR')
@@ -98,6 +108,8 @@ class PemeliharaanDashboardController extends Controller
                 'closedWO',
                 'totalSR',
                 'openSR',
+                'urgentWO',
+                'emergencyWO',
                 'recentWorkOrders',
                 'urgentWorkOrders',
                 'woStatusData'
@@ -111,6 +123,8 @@ class PemeliharaanDashboardController extends Controller
                 'closedWO' => 0,
                 'totalSR' => 0,
                 'openSR' => 0,
+                'urgentWO' => 0,
+                'emergencyWO' => 0,
                 'recentWorkOrders' => collect([]),
                 'urgentWorkOrders' => collect([]),
                 'woStatusData' => ['labels' => [], 'counts' => []],
