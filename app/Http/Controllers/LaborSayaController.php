@@ -112,7 +112,7 @@ class LaborSayaController extends Controller
                     'STATUS',
                     'STATUSDATE',
                     'WORKTYPE',
-                    'WOPRIORITY',
+                    'WOPRIORTEXT',
                     'DESCRIPTION',
                     'ASSETNUM',
                     'LOCATION',
@@ -134,7 +134,7 @@ class LaborSayaController extends Controller
                       ->orWhere('DESCRIPTION', 'LIKE', $like)
                       ->orWhere('STATUS', 'LIKE', $like)
                       ->orWhere('WORKTYPE', 'LIKE', $like)
-                      ->orWhere('WOPRIORITY', 'LIKE', $like)
+                      ->orWhere('WOPRIORTEXT', 'LIKE', $like)
                       ->orWhere('LOCATION', 'LIKE', $like)
                       ->orWhere('ASSETNUM', 'LIKE', $like);
                 });
@@ -200,8 +200,8 @@ class LaborSayaController extends Controller
                         : null,
                     'worktype' => $wo->worktype ?? '-',
                     'type' => $wo->worktype ?? '-',
-                    'wopriority' => $wo->wopriority ?? '-',
-                    'priority' => $wo->wopriority ?? '-',
+                    'wopriority' => $wo->wopriortext ?? '-',
+                    'priority' => $wo->wopriortext ?? '-',
                     'assetnum' => $wo->assetnum ?? '-',
                     'location' => $wo->location ?? '-',
                     'siteid' => $wo->siteid ?? '-',
@@ -269,7 +269,7 @@ class LaborSayaController extends Controller
                     'STATUS',
                     'STATUSDATE',
                     'WORKTYPE',
-                    'WOPRIORITY',
+                    'WOPRIORTEXT',
                     'DESCRIPTION',
                     'ASSETNUM',
                     'LOCATION',
@@ -319,8 +319,8 @@ class LaborSayaController extends Controller
                 'status' => $workOrderRaw->status ?? '-',
                 'worktype' => $workOrderRaw->worktype ?? '-',
                 'type' => $workOrderRaw->worktype ?? '-',
-                'wopriority' => $workOrderRaw->wopriority ?? '-',
-                'priority' => $workOrderRaw->wopriority ?? '-',
+                'wopriority' => $workOrderRaw->wopriortext ?? '-',
+                'priority' => $workOrderRaw->wopriortext ?? '-',
                 'assetnum' => $workOrderRaw->assetnum ?? '-',
                 'location' => $workOrderRaw->location ?? '-',
                 'siteid' => $workOrderRaw->siteid ?? '-',
@@ -596,7 +596,7 @@ class LaborSayaController extends Controller
                     'STATUS',
                     'STATUSDATE',
                     'WORKTYPE',
-                    'WOPRIORITY',
+                    'WOPRIORTEXT',
                     'DESCRIPTION',
                     'ASSETNUM',
                     'LOCATION',
@@ -632,7 +632,7 @@ class LaborSayaController extends Controller
                 'status' => $wo->status ?? '-',
                 'statusdate' => isset($wo->statusdate) && $wo->statusdate ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i') : '-',
                 'worktype' => $wo->worktype ?? '-',
-                'wopriority' => $wo->wopriority ?? '-',
+                'wopriority' => $wo->wopriortext ?? '-',
                 'reportdate' => isset($wo->reportdate) && $wo->reportdate ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i') : '-',
                 'assetnum' => $wo->assetnum ?? '-',
                 'location' => $wo->location ?? '-',
