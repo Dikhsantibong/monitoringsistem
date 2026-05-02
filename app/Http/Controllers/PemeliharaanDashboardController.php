@@ -62,6 +62,26 @@ class PemeliharaanDashboardController extends Controller
                 ->take(10)
                 ->get();
 
+            // Urgent/Emergency Open Work Orders
+            $urgentWorkOrders = DB::connection('oracle')
+                ->table('WORKORDER')
+                ->select([
+                    'WONUM',
+                    'DESCRIPTION',
+                    'STATUS',
+                    'STATUSDATE',
+                    'WORKTYPE',
+                    'WOPRIORTEXT',
+                    'SCHEDFINISH',
+                ])
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->whereIn('STATUS', $openStatuses)
+                ->whereIn('WOPRIORTEXT', ['URGENT', 'EMERGENCY'])
+                ->orderBy('STATUSDATE', 'desc')
+                ->take(10)
+                ->get();
+
             // Format data for chart
             $woStatusData = [
                 'labels' => ['Open', 'Closed', 'Others'],
@@ -79,6 +99,7 @@ class PemeliharaanDashboardController extends Controller
                 'totalSR',
                 'openSR',
                 'recentWorkOrders',
+                'urgentWorkOrders',
                 'woStatusData'
             ));
 
@@ -91,6 +112,7 @@ class PemeliharaanDashboardController extends Controller
                 'totalSR' => 0,
                 'openSR' => 0,
                 'recentWorkOrders' => collect([]),
+                'urgentWorkOrders' => collect([]),
                 'woStatusData' => ['labels' => [], 'counts' => []],
                 'error' => 'Gagal mengambil data dari Oracle'
             ]);

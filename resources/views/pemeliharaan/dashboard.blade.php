@@ -163,6 +163,69 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Urgent Work Orders Table -->
+            <div class="mt-6 bg-white rounded-lg shadow p-6 border-l-4 border-red-500">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Work Order Urgent & Emergency (Open)</h3>
+                    <a href="{{ route('pemeliharaan.labor-saya', ['q' => 'URGENT']) }}" class="text-xs font-bold text-blue-600 hover:underline">LIHAT SEMUA</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="border-b border-gray-100">
+                            <tr class="text-xs font-bold text-gray-400 uppercase">
+                                <th class="py-3 px-2">WONUM</th>
+                                <th class="py-3 px-2">Deskripsi</th>
+                                <th class="py-3 px-2">Status</th>
+                                <th class="py-3 px-2">Priority</th>
+                                <th class="py-3 px-2 text-right">Update</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            @forelse($urgentWorkOrders as $wo)
+                            <tr>
+                                <td class="py-4 px-2">
+                                    <span class="text-sm font-bold text-blue-600 font-mono">{{ $wo->wonum }}</span>
+                                </td>
+                                <td class="py-4 px-2">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm text-gray-800 font-medium truncate max-w-[300px]">{{ $wo->description }}</span>
+                                        <span class="text-[10px] text-gray-400 uppercase font-bold">{{ $wo->worktype }}</span>
+                                    </div>
+                                </td>
+                                <td class="py-4 px-2">
+                                    @php
+                                        $st = strtoupper($wo->status);
+                                        $color = match($st) {
+                                            'COMP', 'CLOSE' => 'bg-green-100 text-green-700',
+                                            'INPRG' => 'bg-blue-100 text-blue-700',
+                                            'WMATL' => 'bg-yellow-100 text-yellow-700',
+                                            'APPR' => 'bg-purple-100 text-purple-700',
+                                            default => 'bg-gray-100 text-gray-700'
+                                        };
+                                    @endphp
+                                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase {{ $color }}">
+                                        {{ $wo->status }}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-2">
+                                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase bg-red-100 text-red-700">
+                                        {{ $wo->wopriortext ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="py-4 px-2 text-right">
+                                    <span class="text-[10px] text-gray-500 font-medium">{{ isset($wo->statusdate) ? \Carbon\Carbon::parse($wo->statusdate)->diffForHumans() : '-' }}</span>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="5" class="py-8 text-center text-gray-400 italic text-sm">Tidak ada work order Urgent / Emergency yang open</td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </main>
     </div>
 </div>
