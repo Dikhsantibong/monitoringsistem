@@ -311,33 +311,9 @@
         </tr>
         <tr>
             <td style="border: none; padding: 3px 5px; font-size: 10pt;"><b>Job Plan</b> :</td>
-            <td style="border: none; padding: 3px 5px; font-size: 10pt;"></td>
+            <td style="border: none; padding: 3px 5px; font-size: 10pt;">{{ $wo['jpnum'] ?? '-' }}</td>
         </tr>
     </table>
-
-    <!-- Service Request Information (Jika Ada) -->
-    @if(isset($sr) && $sr)
-    <div style="border-top: 1px solid #000; padding: 8px 0; margin-top: 5px;">
-        <div style="font-weight: bold; font-size: 10pt; margin-bottom: 5px;">Service Request Information</div>
-        
-        <table style="border: none; margin: 0; width: 100%;">
-            <tr>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 10%;"><b>No. SR :</b></td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 15%;">{{ $sr['ticketid'] ?? '-' }}</td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 40%;">[{{ $sr['description'] ?? '-' }}]</td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 15%;"><b>Reported By :</b></td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 20%;">{{ $sr['reportedby'] ?? '-' }} <br> {{ $sr['reportedby_name'] ?? '' }}</td>
-            </tr>
-        </table>
-
-        <!-- Detil SR -->
-        <div style="font-weight: bold; font-size: 9pt; margin-top: 8px;">Detil SR / Long Description</div>
-        
-        <div style="font-size: 9pt; margin-top: 4px; padding-left: 5px; border-left: 2px solid #eee;">
-            {!! nl2br(e($sr['longdescription'] ?? '-')) !!}
-        </div>
-    </div>
-    @endif
 
     <!-- Task Section (Line 3 & 4) -->
     <div style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 15px 0; margin-top: 10px;">
