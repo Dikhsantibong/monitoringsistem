@@ -315,58 +315,33 @@
         </tr>
     </table>
 
-    <!-- Service Request Information (Line 2) -->
+    <!-- Service Request Information (Jika Ada) -->
+    @if(isset($sr) && $sr)
     <div style="border-top: 1px solid #000; padding: 8px 0; margin-top: 5px;">
         <div style="font-weight: bold; font-size: 10pt; margin-bottom: 5px;">Service Request Information</div>
         
         <table style="border: none; margin: 0; width: 100%;">
             <tr>
                 <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 10%;"><b>No. SR :</b></td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 10%;">699183</td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 40%;">[{{ $wo['description'] ?? '-' }}]</td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 15%;">{{ $sr['ticketid'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 40%;">[{{ $sr['description'] ?? '-' }}]</td>
                 <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 15%;"><b>Reported By :</b></td>
-                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 25%;">9615038FY &nbsp;&nbsp; ASFAR ADRIN ASLI</td>
+                <td style="border: none; padding: 2px 5px; font-size: 9pt; width: 20%;">{{ $sr['reportedby'] ?? '-' }} <br> {{ $sr['reportedby_name'] ?? '' }}</td>
             </tr>
         </table>
 
         <!-- Detil SR -->
-        <div style="font-weight: bold; font-size: 9pt; margin-top: 8px;">Detil SR</div>
+        <div style="font-weight: bold; font-size: 9pt; margin-top: 8px;">Detil SR / Long Description</div>
         
-        <div style="font-size: 9pt; margin-top: 4px;">
-            <div>Gejala :</div>
-            <div style="padding-left: 5px;">
-                - PKI 17:50 Unit operasi normal<br>
-                - Pkl 17:56 Unit trip ( gangguan jaringan 20 Kva)<br>
-                - Pkl 20:10 Unit running<br>
-                - PKI 20:20 Unit Stop normal, indikasi bunyi abnormal pada turbin
-            </div>
-        </div>
-
-        <div style="font-size: 9pt; margin-top: 8px;">
-            <div>Dampak : Unit tidak dapat beroperasi</div>
-        </div>
-
-        <div style="font-size: 9pt; margin-top: 8px;">
-            <div>Resiko : Daya mapu berkurang</div>
-        </div>
-
-        <div style="font-size: 9pt; margin-top: 8px;">
-            <div>Deviasi :</div>
-        </div>
-
-        <div style="font-size: 9pt; margin-top: 15px;">
-            <div>Tindakan :</div>
-            <div style="padding-left: 5px;">
-                - dilakukan pemeriksaan pada turbin<br>
-                - dilakukan pemeriksaan runner turbin<br>
-                - pengecekan runner cop
-            </div>
+        <div style="font-size: 9pt; margin-top: 4px; padding-left: 5px; border-left: 2px solid #eee;">
+            {!! nl2br(e($sr['longdescription'] ?? '-')) !!}
         </div>
     </div>
+    @endif
 
     <!-- Task Section (Line 3 & 4) -->
     <div style="border-top: 1px solid #000; border-bottom: 1px solid #000; padding: 15px 0; margin-top: 10px;">
-        <div style="font-size: 11pt; font-weight: bold; margin-bottom: 10px; margin-left: 100px;">Task : {{ $wo['wonum'] ?? '-' }}</div>
+        <div style="font-size: 11pt; font-weight: bold; margin-bottom: 10px; margin-left: 100px;">Main Work Order : {{ $wo['wonum'] ?? '-' }}</div>
 
         <!-- 3-column info grid -->
         <table style="border: none; margin: 0; font-size: 9pt; width: 100%;">
@@ -377,40 +352,65 @@
             </tr>
             <tr>
                 <td style="border: none; padding: 2px 5px;"><b>Status :</b> {{ $wo['status'] ?? '-' }}</td>
-                <td style="border: none; padding: 2px 5px;"><b>Target Start :</b> {{ $wo['schedstart'] ?? '-' }}</td>
-                <td style="border: none; padding: 2px 5px;"><b>Target Finish :</b> {{ $wo['schedfinish'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Target Start :</b> {{ $wo['targstartdate'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Target Finish :</b> {{ $wo['targcompdate'] ?? '-' }}</td>
             </tr>
             <tr>
                 <td style="border: none; padding: 2px 5px;"><b>Parent :</b> {{ $wo['parent'] ?? '-' }}</td>
-                <td style="border: none; padding: 2px 5px;"><b>Actual Start :</b> -</td>
-                <td style="border: none; padding: 2px 5px;"><b>Actual Finish :</b></td>
+                <td style="border: none; padding: 2px 5px;"><b>Actual Start :</b> {{ $wo['actstart'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Actual Finish :</b> {{ $wo['actfinish'] ?? '-' }}</td>
             </tr>
             <tr>
                 <td style="border: none; padding: 2px 5px;"><b>Work Type :</b> {{ $wo['worktype'] ?? '-' }}</td>
                 <td style="border: none; padding: 2px 5px;"><b>Report Date :</b> {{ $wo['reportdate'] ?? '-' }}</td>
-                <td style="border: none; padding: 2px 5px;"><b>Reported By :</b> 9615038FY</td>
+                <td style="border: none; padding: 2px 5px;"><b>Reported By :</b> {{ $wo['reportedby'] ?? '-' }}</td>
             </tr>
             <tr>
-                <td style="border: none; padding: 2px 5px;"><b>Assign :</b> 9213024FY</td>
-                <td style="border: none; padding: 2px 5px;"><b>Failure Class :</b></td>
-                <td style="border: none; padding: 2px 5px;"><b>GL Account :</b> A-KD-21-377-001-01-22</td>
+                <td style="border: none; padding: 2px 5px;"><b>Assign :</b> {{ $wo['assigned_to'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Failure Class :</b> {{ $wo['failurecode'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>GL Account :</b> {{ $wo['glaccount'] ?? '-' }}</td>
             </tr>
             <tr>
                 <td style="border: none; padding: 2px 5px;"><b>Priority :</b> {{ $wo['wopriority'] ?? '-' }}</td>
-                <td style="border: none; padding: 2px 5px;"><b>Person Group :</b> MECHD</td>
-                <td style="border: none; padding: 2px 5px;"></td>
+                <td style="border: none; padding: 2px 5px;"><b>Person Group :</b> {{ $wo['persongroup'] ?? '-' }}</td>
+                <td style="border: none; padding: 2px 5px;"><b>Lead :</b> {{ $wo['lead'] ?? '-' }}</td>
             </tr>
             <tr>
                 <td style="border: none; padding: 2px 5px;"><b>Asset :</b> {{ $wo['assetnum'] ?? '-' }}</td>
-                <td colspan="2" style="border: none; padding: 2px 5px;">PLTM WINNING RUNNER TURBINE UNIT 1</td>
+                <td colspan="2" style="border: none; padding: 2px 5px;">{{ $wo['asset_description'] ?? '-' }}</td>
             </tr>
             <tr>
                 <td style="border: none; padding: 2px 5px;"><b>Location :</b> {{ $wo['location'] ?? '-' }}</td>
-                <td colspan="2" style="border: none; padding: 2px 5px;">AREA ENGINE SYSTEM UNIT 1 PLTM WINNING</td>
+                <td colspan="2" style="border: none; padding: 2px 5px;">{{ $wo['location_description'] ?? '-' }}</td>
             </tr>
         </table>
 
-        <div style="font-size: 11pt; font-weight: bold; margin-top: 10px; margin-left: 100px;">Task : <i>{{ $wo['description'] ?? '-' }}</i></div>
+        <!-- Child Tasks (Jika Ada) -->
+        @if(isset($tasks) && count($tasks) > 0)
+        <div style="margin-top: 15px;">
+            <div style="font-weight: bold; font-size: 10pt; margin-bottom: 5px;">Work Tasks / Child Orders:</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 8pt;">
+                <thead>
+                    <tr style="background-color: #f2f2f2;">
+                        <th style="border: 1px solid #000; padding: 3px;">WONUM</th>
+                        <th style="border: 1px solid #000; padding: 3px;">Description</th>
+                        <th style="border: 1px solid #000; padding: 3px;">Status</th>
+                        <th style="border: 1px solid #000; padding: 3px;">Person Group</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($tasks as $task)
+                    <tr>
+                        <td style="border: 1px solid #000; padding: 3px; text-align: center;">{{ $task['wonum'] }}</td>
+                        <td style="border: 1px solid #000; padding: 3px;">{{ $task['description'] }}</td>
+                        <td style="border: 1px solid #000; padding: 3px; text-align: center;">{{ $task['status'] }}</td>
+                        <td style="border: 1px solid #000; padding: 3px; text-align: center;">{{ $task['persongroup'] }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
     </div>
 
     <div style="text-align: left; margin-top: auto; font-size: 10pt; position: absolute; bottom: 0; left: 0;">Halaman : <span style="margin-left: 40px;">1</span></div>
