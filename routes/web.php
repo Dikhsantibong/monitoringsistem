@@ -57,7 +57,7 @@ use App\Http\Controllers\Admin\ScoreCardQuarterlyController;
 use App\Http\Controllers\Admin\ScoreCardWeeklyController;
 use App\Http\Controllers\AttendanceQRController;
 use App\Http\Controllers\Admin\MaximoController;
-use App\Http\Controllers\Admin\WorkOrderTableController;
+
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -265,8 +265,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/maximo/jobcard/preview', [MaximoController::class, 'previewJobcard'])->name('maximo.jobcard.preview');
     Route::post('/maximo/jobcard/update', [MaximoController::class, 'updateJobcard'])->name('maximo.jobcard.update');
 
-    // Work Order Table (Data Lengkap - Temporary)
-    Route::get('/workorder-table', [WorkOrderTableController::class, 'index'])->name('workorder-table.index');
+
 
 
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {

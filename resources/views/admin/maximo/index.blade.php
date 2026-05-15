@@ -145,11 +145,12 @@
                 {{-- SEARCH --}}
                 <div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                     <div class="w-full md:w-1/3">
-                        <form method="GET" action="{{ route('admin.maximo.index') }}">
+                        <form method="GET" action="{{ route('admin.maximo.index') }}" id="searchForm">
                             <input type="hidden" name="wo_page" value="{{ request('wo_page', 1) }}">
                             <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
                             <input type="hidden" name="wo_status" value="{{ request('wo_status') }}">
                             <input type="hidden" name="wo_worktype" value="{{ request('wo_worktype') }}">
+                            <input type="hidden" name="tab" id="searchTabInput" value="{{ request('tab', 'wo') }}">
                             <div class="flex">
                                 <input
                                     type="text"
@@ -170,7 +171,7 @@
                 </div>
 
                 {{-- TABS --}}
-                <div x-data="{ tab: 'wo' }">
+                <div x-data="{ tab: '{{ request('tab', 'wo') }}' }" x-init="$watch('tab', val => { document.getElementById('searchTabInput').value = val; })">
                     <div class="border-b mb-4 flex gap-4">
                         <button
                             @click="tab='wo'"
@@ -195,6 +196,7 @@
                             <input type="hidden" name="wo_page" value="1">
                             <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
                             <input type="hidden" name="search" value="{{ request('search') }}">
+                            <input type="hidden" name="tab" value="wo">
                             
                             <div class="overflow-x-auto">
                                 <table class="min-w-full table-fixed divide-y divide-gray-200 border border-gray-200 whitespace-nowrap text-sm">
