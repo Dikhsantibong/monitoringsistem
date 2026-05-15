@@ -1,6 +1,6 @@
 <aside id="mobile-menu"
     class="fixed z-20 transform overflow-hidden transition-transform duration-300 md:relative md:translate-x-0 h-screen w-[280px] bg-transparent shadow-md text-white hidden md:block p-3">
-    <div class="bg-[#0A749B] rounded-2xl h-full px-4 py-6">
+    <div class="bg-[#0A749B] rounded-2xl h-full px-4 py-6 flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-[#e5e5e5]/40 scrollbar-track-[#0A749B]/20">
         <!-- Logo section -->
         <div class="flex items-center justify-between mb-8">
             <img src="{{ asset('logo/navlogo.png') }}" alt="Logo Aplikasi Pemeliharaan" class="w-40">
@@ -11,7 +11,7 @@
             </button>
         </div>
         <!-- Navigation -->
-        <nav class="space-y-2">
+        <nav class="space-y-2 flex-grow">
             <a href="{{ route('pemeliharaan.dashboard') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('pemeliharaan.dashboard') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }}">
                 <i class="fas fa-tools w-6 h-6"></i>
