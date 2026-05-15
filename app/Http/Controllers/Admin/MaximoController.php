@@ -396,19 +396,6 @@ class MaximoController extends Controller
 
             $sr = DB::connection('oracle')
                 ->table('SR')
-                ->select([
-                    'TICKETID',
-                    'DESCRIPTION',
-                    'STATUS',
-                    'STATUSDATE',
-                    'SITEID',
-                    'LOCATION',
-                    'ASSETNUM',
-                    'REPORTEDBY',
-                    'REPORTDATE',
-                    'FAULTPRIORITY',
-                    'FAULTTYPE',
-                ])
                 ->where('SITEID', 'KD')
                 ->where('TICKETID', $ticketid)
                 ->first();
@@ -421,18 +408,42 @@ class MaximoController extends Controller
                 return isset($val) && $val ? Carbon::parse($val)->format('d-m-Y H:i') : '-';
             };
 
-            // Ambil Long Description (Detil SR: Gejala, Dampak, Resiko, Deviasi, Tindakan)
+            // Ambil Long Description — coba beberapa nama tabel
             $longDescription = '-';
-            try {
-                $longDesc = DB::connection('oracle')
-                    ->table('LONGDESCRIPTION')
-                    ->select(['LDTEXT'])
-                    ->where('LDKEY', $ticketid)
-                    ->where('LDOWNERTABLE', 'SR')
-                    ->first();
-                $longDescription = $longDesc->ldtext ?? '-';
-            } catch (\Exception $e) {
-                Log::warning('Failed to fetch LONGDESCRIPTION for SR', ['ticketid' => $ticketid, 'error' => $e->getMessage()]);
+            $ldTables = ['LONGDESCRIPTION', 'LONG_DESCRIPTION', 'TICKETLONGDESC'];
+            foreach ($ldTables as $ldTable) {
+                try {
+                    $longDesc = DB::connection('oracle')
+                        ->table($ldTable)
+                        ->where('LDKEY', $ticketid)
+                        ->where('LDOWNERTABLE', 'SR')
+                        ->first();
+                    if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
+                        $longDescription = $longDesc->ldtext;
+                        break;
+                    }
+                } catch (\Exception $e) {
+                    // tabel tidak ada, coba tabel berikutnya
+                    continue;
+                }
+            }
+
+            // Jika masih belum ketemu, coba via TICKETUID + LDOWNERID
+            if ($longDescription === '-' && isset($sr->ticketuid)) {
+                foreach ($ldTables as $ldTable) {
+                    try {
+                        $longDesc = DB::connection('oracle')
+                            ->table($ldTable)
+                            ->where('LDOWNERID', $sr->ticketuid)
+                            ->first();
+                        if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
+                            $longDescription = $longDesc->ldtext;
+                            break;
+                        }
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
             }
 
             // Ambil nama person untuk Reported By
@@ -446,8 +457,25 @@ class MaximoController extends Controller
                         ->first();
                     $reportedByName = $person->displayname ?? '-';
                 } catch (\Exception $e) {
-                    Log::warning('Failed to fetch PERSON for SR reportedby', ['personid' => $sr->reportedby]);
+                    Log::warning('Failed to fetch PERSON', ['personid' => $sr->reportedby]);
                 }
+            }
+
+            // Ambil nama affected person
+            $affectedPersonName = '-';
+            if (!empty($sr->affectedperson) && $sr->affectedperson !== ($sr->reportedby ?? '')) {
+                try {
+                    $person = DB::connection('oracle')
+                        ->table('PERSON')
+                        ->select(['DISPLAYNAME'])
+                        ->where('PERSONID', $sr->affectedperson)
+                        ->first();
+                    $affectedPersonName = $person->displayname ?? '-';
+                } catch (\Exception $e) {
+                    // skip
+                }
+            } elseif (!empty($sr->affectedperson)) {
+                $affectedPersonName = $reportedByName;
             }
 
             // Ambil Asset Description
@@ -462,7 +490,7 @@ class MaximoController extends Controller
                         ->first();
                     $assetDescription = $asset->description ?? '-';
                 } catch (\Exception $e) {
-                    Log::warning('Failed to fetch ASSET description for SR', ['assetnum' => $sr->assetnum]);
+                    // skip
                 }
             }
 
@@ -478,27 +506,71 @@ class MaximoController extends Controller
                         ->first();
                     $locationDescription = $location->description ?? '-';
                 } catch (\Exception $e) {
-                    Log::warning('Failed to fetch LOCATIONS description for SR', ['location' => $sr->location]);
+                    // skip
                 }
             }
 
             return view('admin.maximo.service-request-detail', [
                 'sr' => [
+                    // Identifikasi
                     'ticketid' => $sr->ticketid ?? '-',
+                    'ticketuid' => $sr->ticketuid ?? '-',
+                    'class' => $sr->class ?? '-',
                     'status' => $sr->status ?? '-',
                     'statusdate' => $fmtDate($sr->statusdate ?? null),
+                    'description' => $sr->description ?? '-',
+                    'longdescription' => $longDescription,
+                    // Priority & Type
+                    'faultpriority' => $sr->faultpriority ?? '-',
+                    'faulttype' => $sr->faulttype ?? '-',
+                    // Asset & Lokasi
+                    'assetnum' => $sr->assetnum ?? '-',
+                    'asset_description' => $assetDescription,
+                    'location' => $sr->location ?? '-',
+                    'location_description' => $locationDescription,
+                    'siteid' => $sr->siteid ?? '-',
+                    'orgid' => $sr->orgid ?? '-',
+                    // People
                     'reportedby' => $sr->reportedby ?? '-',
                     'reportedby_name' => $reportedByName,
                     'reportdate' => $fmtDate($sr->reportdate ?? null),
-                    'siteid' => $sr->siteid ?? '-',
-                    'location' => $sr->location ?? '-',
-                    'location_description' => $locationDescription,
-                    'assetnum' => $sr->assetnum ?? '-',
-                    'asset_description' => $assetDescription,
-                    'description' => $sr->description ?? '-',
-                    'longdescription' => $longDescription,
-                    'faultpriority' => $sr->faultpriority ?? '-',
-                    'faulttype' => $sr->faulttype ?? '-',
+                    'affectedperson' => $sr->affectedperson ?? '-',
+                    'affectedperson_name' => $affectedPersonName,
+                    'affecteddate' => $fmtDate($sr->affecteddate ?? null),
+                    'changeby' => $sr->changeby ?? '-',
+                    'changedate' => $fmtDate($sr->changedate ?? null),
+                    'owner' => $sr->owner ?? '-',
+                    'ownergroup' => $sr->ownergroup ?? '-',
+                    'supervisor' => $sr->supervisor ?? '-',
+                    // Tanggal
+                    'targetstart' => $fmtDate($sr->targetstart ?? null),
+                    'targetfinish' => $fmtDate($sr->targetfinish ?? null),
+                    'actualstart' => $fmtDate($sr->actualstart ?? null),
+                    'actualfinish' => $fmtDate($sr->actualfinish ?? null),
+                    // Kerja
+                    'shift' => $sr->shift ?? '-',
+                    'workgroup' => $sr->workgroup ?? '-',
+                    'oprgroup' => $sr->oprgroup ?? '-',
+                    'glaccount' => $sr->glaccount ?? '-',
+                    // Actual Cost
+                    'actlabcost' => $sr->actlabcost ?? 0,
+                    'actlabhrs' => $sr->actlabhrs ?? 0,
+                    // Flags
+                    'needdt' => $sr->needdt ?? '-',
+                    'needdowntime' => $sr->needdowntime ?? 0,
+                    'needloto' => $sr->needloto ?? 0,
+                    'needecp' => $sr->needecp ?? 0,
+                    'needengaln' => $sr->needengaln ?? 0,
+                    'needsafapp' => $sr->needsafapp ?? 0,
+                    'historyflag' => $sr->historyflag ?? 0,
+                    'hasld' => $sr->hasld ?? 0,
+                    // Codes
+                    'failurecode' => $sr->failurecode ?? '-',
+                    'problemcode' => $sr->problemcode ?? '-',
+                    'origrecordid' => $sr->origrecordid ?? '-',
+                    'origrecordclass' => $sr->origrecordclass ?? '-',
+                    // Solution
+                    'solution' => $sr->solution ?? '-',
                 ],
             ]);
 
