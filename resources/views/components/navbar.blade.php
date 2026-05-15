@@ -2,7 +2,7 @@
  <nav class="fixed w-full top-0 z-50">
     <div class="nav-background ">
         <div class="container mx-auto px-4">
-            <div class="flex justify-between items-center h-16">
+            <div class="flex justify-between items-center h-16 gap-4 lg:gap-8 w-full">
                 <!-- Logo -->
                 <div class="flex items-center">
                     <a href="#" class="flex items-center">
@@ -11,15 +11,15 @@
                 </div>
 
                 <!-- Menu Desktop -->
-                <div class="hidden md:flex items-center ">
-                    <ul class="flex space-x-4">
-                        <li><a href="{{ route('homepage') }}" class="nav-link uppercase">Home</a></li>
-                        <li><a href="{{ route('kinerja.pemeliharaan') }}" class="nav-link uppercase">Kinerja Pemeliharaan</a></li>
-                        <li><a href="{{ route('weekly-meeting.index') }}" class="nav-link uppercase">Weekly Meeting</a></li>
-                        <li><a href="{{ route('peta-kesehatan-unit') }}" class="nav-link uppercase" style="white-space: normal; width: 150px; text-align: center; line-height: 1.1; display: flex; align-items: center; justify-content: center;">EQUIPMENT GANGGUAN BERULANG</a></li>
-                        <li><a href="{{ route('calendar.index') }}" class="nav-link uppercase">Kalender Pemeliharaan</a></li>
-                        <li><a href="{{ route('notulen.form') }}" class="nav-link uppercase">Notulen</a></li>
-                        <li><a href="{{ route('monitoring-mesin') }}" class="nav-link uppercase" style="white-space: normal; width: 150px; text-align: center; line-height: 1.1; display: flex; align-items: center; justify-content: center;">Monitoring Mesin</a></li>
+                <div class="hidden md:flex items-center flex-1 justify-center">
+                    <ul class="flex space-x-2 lg:space-x-4 items-center justify-center w-full">
+                        <li><a href="{{ route('homepage') }}" class="nav-link uppercase {{ request()->routeIs('homepage') ? 'active' : '' }}">Home</a></li>
+                        <li><a href="{{ route('kinerja.pemeliharaan') }}" class="nav-link uppercase {{ request()->routeIs('kinerja.pemeliharaan') ? 'active' : '' }}">Kinerja Pemeliharaan</a></li>
+                        <li><a href="{{ route('weekly-meeting.index') }}" class="nav-link uppercase {{ request()->routeIs('weekly-meeting.*') ? 'active' : '' }}">Weekly Meeting</a></li>
+                        <li><a href="{{ route('peta-kesehatan-unit') }}" class="nav-link uppercase {{ request()->routeIs('peta-kesehatan-unit') ? 'active' : '' }}" style="white-space: normal; width: 150px; text-align: center; line-height: 1.1; display: flex; align-items: center; justify-content: center;">EQUIPMENT GANGGUAN BERULANG</a></li>
+                        <li><a href="{{ route('calendar.index') }}" class="nav-link uppercase {{ request()->routeIs('calendar.*') ? 'active' : '' }}">Kalender Pemeliharaan</a></li>
+                        <li><a href="{{ route('notulen.form') }}" class="nav-link uppercase {{ request()->routeIs('notulen.*') ? 'active' : '' }}">Notulen</a></li>
+                        <li><a href="{{ route('monitoring-mesin') }}" class="nav-link uppercase {{ request()->routeIs('monitoring-mesin') ? 'active' : '' }}" style="white-space: normal; width: 150px; text-align: center; line-height: 1.1; display: flex; align-items: center; justify-content: center;">Monitoring Mesin</a></li>
                         <!-- Dropdown Menu Lainnya -->
                         {{-- <li class="relative group">
                             <button class="nav-link flex items-center focus:outline-none" id="menu-lainnya-btn">
