@@ -114,8 +114,7 @@ class WorkOrderTableController extends Controller
                 ->table('WORKORDER')
                 ->select($columns)
                 ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
-                ->where('STATUS', 'APPR');
+                ->where('WONUM', 'LIKE', 'WO%');
 
             // Search across multiple relevant columns
             if ($search) {
