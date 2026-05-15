@@ -1046,4 +1046,99 @@ class MaximoController extends Controller
             return response()->json(['success' => false, 'message' => 'Gagal update jobcard: ' . $e->getMessage()]);
         }
     }
+
+    /**
+     * TEMPORARY DEBUG: Cari data SR lengkap untuk identifikasi kolom
+     * Hapus method ini setelah selesai debugging
+     */
+    public function debugSR(string $ticketid)
+    {
+        $ticketid = trim($ticketid);
+        $results = [];
+
+        try {
+            // 1. Ambil SEMUA kolom dari tabel SR
+            $sr = DB::connection('oracle')
+                ->table('SR')
+                ->where('TICKETID', $ticketid)
+                ->where('SITEID', 'KD')
+                ->first();
+
+            $results['SR_TABLE'] = $sr ? (array) $sr : 'NOT FOUND';
+
+            // 2. Cek LONGDESCRIPTION dengan berbagai kombinasi
+            $longDescs = DB::connection('oracle')
+                ->table('LONGDESCRIPTION')
+                ->where('LDKEY', $ticketid)
+                ->get();
+
+            $results['LONGDESCRIPTION_ALL'] = $longDescs->map(function ($row) {
+                return (array) $row;
+            })->toArray();
+
+            // 3. Coba cari juga dengan LDOWNERID (kadang pakai ID bukan key)
+            if ($sr) {
+                $srArray = (array) $sr;
+                // Cari kolom yang mungkin berisi ID unik
+                $possibleIds = [];
+                foreach ($srArray as $col => $val) {
+                    $colUp = strtoupper($col);
+                    if (str_contains($colUp, 'ID') && $val !== null) {
+                        $possibleIds[$col] = $val;
+                    }
+                }
+                $results['SR_ID_COLUMNS'] = $possibleIds;
+
+                // Cari longdesc dengan LDOWNERID jika ada TICKETUID atau ID
+                foreach ($possibleIds as $col => $val) {
+                    try {
+                        $ld = DB::connection('oracle')
+                            ->table('LONGDESCRIPTION')
+                            ->where('LDOWNERID', $val)
+                            ->get();
+                        if ($ld->count() > 0) {
+                            $results["LONGDESC_BY_{$col}"] = $ld->map(function ($row) {
+                                return (array) $row;
+                            })->toArray();
+                        }
+                    } catch (\Exception $e) {
+                        // skip
+                    }
+                }
+            }
+
+            // 4. Cari teks "Gejala" di LONGDESCRIPTION (broad search)
+            try {
+                $gejalSearch = DB::connection('oracle')
+                    ->table('LONGDESCRIPTION')
+                    ->where('LDOWNERTABLE', 'SR')
+                    ->where('LDTEXT', 'LIKE', '%Gejala%')
+                    ->limit(5)
+                    ->get();
+
+                $results['LONGDESC_SEARCH_GEJALA'] = $gejalSearch->map(function ($row) {
+                    return (array) $row;
+                })->toArray();
+            } catch (\Exception $e) {
+                $results['LONGDESC_SEARCH_GEJALA_ERROR'] = $e->getMessage();
+            }
+
+            // 5. Cek tabel TICKET juga (beberapa versi Maximo pakai tabel TICKET)
+            try {
+                $ticket = DB::connection('oracle')
+                    ->table('TICKET')
+                    ->where('TICKETID', $ticketid)
+                    ->where('SITEID', 'KD')
+                    ->first();
+                $results['TICKET_TABLE'] = $ticket ? (array) $ticket : 'NOT FOUND or TABLE NOT EXISTS';
+            } catch (\Exception $e) {
+                $results['TICKET_TABLE'] = 'TABLE ERROR: ' . $e->getMessage();
+            }
+
+        } catch (\Exception $e) {
+            $results['ERROR'] = $e->getMessage();
+        }
+
+        return response()->json($results, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+    }
 }
