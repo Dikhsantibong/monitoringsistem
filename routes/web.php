@@ -57,6 +57,7 @@ use App\Http\Controllers\Admin\ScoreCardQuarterlyController;
 use App\Http\Controllers\Admin\ScoreCardWeeklyController;
 use App\Http\Controllers\AttendanceQRController;
 use App\Http\Controllers\Admin\MaximoController;
+use App\Http\Controllers\Admin\WorkOrderTableController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
@@ -256,7 +257,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // Maximo Akses Route
-    Route::get('/maximo/workorder-table', [WorkOrderTableController::class, 'index'])->name('maximo.workorder-table.index');
     Route::get('/maximo', [MaximoController::class, 'index'])->name('maximo.index');
     Route::get('/maximo/workorder/{wonum}', [MaximoController::class, 'showWorkOrder'])->name('maximo.workorder.show');
     Route::get('/maximo/service-request/{ticketid}', [MaximoController::class, 'showServiceRequest'])->name('maximo.service-request.show');
@@ -265,6 +265,9 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/maximo/jobcard/preview', [MaximoController::class, 'previewJobcard'])->name('maximo.jobcard.preview');
     Route::post('/maximo/jobcard/update', [MaximoController::class, 'updateJobcard'])->name('maximo.jobcard.update');
 
+    // Work Order Table (Data Lengkap - Temporary)
+    Route::get('/workorder-table', [WorkOrderTableController::class, 'index'])->name('workorder-table.index');
+
 
     Route::prefix('daftar-hadir')->name('daftar_hadir.')->group(function () {
         Route::get('/', [DaftarHadirController::class, 'index'])->name('index');
@@ -272,7 +275,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/admin/daftar-hadir/store-token', [DaftarHadirController::class, 'storeToken'])->name('admin.daftar_hadir.store_token');
         Route::get('/print', [AttendanceController::class, 'printView'])
             ->name('admin.daftar_hadir.print');
-    }); 
+    });
 
     Route::prefix('meetings')->group(function () {
         Route::get('/', [AdminMeetingController::class, 'index'])->name('meetings');
