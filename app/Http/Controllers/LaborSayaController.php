@@ -259,100 +259,148 @@ class LaborSayaController extends Controller
 
     public function edit($id)
     {
-        // Ambil data dari Maximo berdasarkan WONUM
         try {
-            $workOrderRaw = DB::connection('oracle')
+            $wonum = trim($id);
+            if ($wonum === '') {
+                return redirect()->route('pemeliharaan.labor-saya')->with('error', 'WONUM tidak valid.');
+            }
+
+            $woData = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select([
-                    'WONUM',
-                    'PARENT',
-                    'STATUS',
-                    'STATUSDATE',
-                    'WORKTYPE',
-                    'WOPRIORTEXT',
-                    'DESCRIPTION',
-                    'ASSETNUM',
-                    'LOCATION',
-                    'SITEID',
-                    'DOWNTIME',
-                    'SCHEDSTART',
-                    'SCHEDFINISH',
-                    'REPORTDATE',
+                    'WONUM', 'PARENT', 'STATUS', 'STATUSDATE', 'WORKTYPE', 'DESCRIPTION',
+                    'ASSETNUM', 'LOCATION', 'JPNUM', 'FAILDATE', 'CHANGEBY', 'CHANGEDATE',
+                    'ESTDUR', 'ESTLABHRS', 'ESTMATCOST', 'ESTLABCOST', 'ESTTOOLCOST',
+                    'PMNUM', 'ACTLABHRS', 'ACTMATCOST', 'ACTLABCOST', 'ACTTOOLCOST',
+                    'HASCHILDREN', 'OUTLABCOST', 'OUTMATCOST', 'OUTTOOLCOST', 'HISTORYFLAG',
+                    'CONTRACT', 'WOPRIORITY', 'TARGCOMPDATE', 'TARGSTARTDATE',
+                    'WOEQ1', 'WOEQ2', 'WOEQ3', 'WOEQ4', 'WOEQ5', 'WOEQ6',
+                    'REPORTEDBY', 'REPORTDATE', 'PROBLEMCODE', 'DOWNTIME',
+                    'ACTSTART', 'ACTFINISH', 'SCHEDSTART', 'SCHEDFINISH',
+                    'REMDUR', 'CREWID', 'SUPERVISOR', 'FAILURECODE',
+                    'ESTSERVCOST', 'ACTSERVCOST', 'ORGID', 'SITEID',
+                    'WOCLASS', 'OWNER', 'OWNERGROUP', 'PERSONGROUP', 'LEAD',
+                    'ORIGRECORDID', 'ORIGRECORDCLASS', 'GLACCOUNT',
+                    'ANGGARAN', 'WONUMPLN',
+                    'REMARKDESCC', 'REMARKDESCP', 'REMARKDESCPLN', 'REMARKDESCR',
                 ])
                 ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
-                ->where('WONUM', $id)
-                ->first();
+                ->where('WONUM', $wonum);
 
-            if (!$workOrderRaw) {
-                return redirect()->route('pemeliharaan.labor-saya')
-                    ->with('error', 'Work Order tidak ditemukan di Maximo.');
+            // Filter lokasi
+            PemeliharaanLocationHelper::applyLocationFilter($woData);
+            $woRaw = $woData->first();
+
+            if (!$woRaw) {
+                return redirect()->route('pemeliharaan.labor-saya')->with('error', 'Work Order tidak ditemukan atau Anda tidak memiliki akses.');
             }
 
             // Normalize result to lowercase property names
-            $workOrderRaw = (object) array_change_key_case((array) $workOrderRaw, CASE_LOWER);
+            $woRaw = (object) array_change_key_case((array) $woRaw, CASE_LOWER);
 
-            // Cek apakah jobcard sudah di-generate (ada di storage)
-            $wonum = trim($workOrderRaw->wonum ?? '');
+            // Cek jobcard
             $jobcardExists = false;
             $jobcardPath = null;
             $jobcardUrl = null;
+            $filename = 'JOBCARD_' . $wonum . '.pdf';
+            $filePath = 'jobcards/' . $filename;
             
-            if ($wonum && $wonum !== '' && $wonum !== '-') {
-                $directory = 'jobcards';
-                $filename = 'JOBCARD_' . $wonum . '.pdf';
-                $filePath = $directory . '/' . $filename;
-                
-                if (Storage::disk('public')->exists($filePath)) {
-                    $jobcardExists = true;
-                    $jobcardPath = $filePath;
-                    $jobcardUrl = asset('storage/' . $filePath);
-                }
+            if (Storage::disk('public')->exists($filePath)) {
+                $jobcardExists = true;
+                $jobcardPath = $filePath;
+                $jobcardUrl = asset('storage/' . $filePath);
             }
 
-            // Format data untuk view
+            // Helper untuk format tanggal
+            $fmtDate = function ($val) {
+                return isset($val) && $val ? Carbon::parse($val)->format('d-m-Y H:i') : '-';
+            };
+
+            // Format data untuk view (Mirip standar detail)
             $workOrder = (object) [
-                'id' => $workOrderRaw->wonum ?? '-',
-                'wonum' => $workOrderRaw->wonum ?? '-',
-                'parent' => $workOrderRaw->parent ?? '-',
-                'description' => $workOrderRaw->description ?? '-',
-                'status' => $workOrderRaw->status ?? '-',
-                'worktype' => $workOrderRaw->worktype ?? '-',
-                'type' => $workOrderRaw->worktype ?? '-',
-                'wopriority' => $workOrderRaw->wopriortext ?? '-',
-                'priority' => $workOrderRaw->wopriortext ?? '-',
-                'assetnum' => $workOrderRaw->assetnum ?? '-',
-                'location' => $workOrderRaw->location ?? '-',
-                'siteid' => $workOrderRaw->siteid ?? '-',
-                'downtime' => $workOrderRaw->downtime ?? '-',
-                'schedstart' => isset($workOrderRaw->schedstart) && $workOrderRaw->schedstart
-                    ? Carbon::parse($workOrderRaw->schedstart)->format('Y-m-d H:i:s')
-                    : null,
-                'schedule_start' => isset($workOrderRaw->schedstart) && $workOrderRaw->schedstart
-                    ? Carbon::parse($workOrderRaw->schedstart)->format('Y-m-d H:i:s')
-                    : null,
-                'schedfinish' => isset($workOrderRaw->schedfinish) && $workOrderRaw->schedfinish
-                    ? Carbon::parse($workOrderRaw->schedfinish)->format('Y-m-d H:i:s')
-                    : null,
-                'schedule_finish' => isset($workOrderRaw->schedfinish) && $workOrderRaw->schedfinish
-                    ? Carbon::parse($workOrderRaw->schedfinish)->format('Y-m-d H:i:s')
-                    : null,
-                'reportdate' => isset($workOrderRaw->reportdate) && $workOrderRaw->reportdate
-                    ? Carbon::parse($workOrderRaw->reportdate)->format('Y-m-d H:i:s')
-                    : null,
-                'kendala' => null,
-                'tindak_lanjut' => null,
-                'labor' => null,
-                'labors' => [],
-                'document_path' => $jobcardPath, // Gunakan path jobcard jika ada
-                'power_plant_id' => null,
-                'power_plant_name' => $workOrderRaw->location ?? ($workOrderRaw->siteid ?? 'KD'),
-                'materials' => [],
-                // Tambahkan info jobcard
+                // Identifikasi
+                'wonum' => $woRaw->wonum ?? '-',
+                'parent' => $woRaw->parent ?? '-',
+                'status' => $woRaw->status ?? '-',
+                'statusdate' => $fmtDate($woRaw->statusdate ?? null),
+                'worktype' => $woRaw->worktype ?? '-',
+                'wopriority' => $woRaw->wopriority ?? '-',
+                'woclass' => $woRaw->woclass ?? '-',
+                'description' => $woRaw->description ?? '-',
+                // Asset & Lokasi
+                'assetnum' => $woRaw->assetnum ?? '-',
+                'location' => $woRaw->location ?? '-',
+                'siteid' => $woRaw->siteid ?? '-',
+                'orgid' => $woRaw->orgid ?? '-',
+                'downtime' => $woRaw->downtime ?? '-',
+                // People
+                'reportedby' => $woRaw->reportedby ?? '-',
+                'supervisor' => $woRaw->supervisor ?? '-',
+                'crewid' => $woRaw->crewid ?? '-',
+                'lead' => $woRaw->lead ?? '-',
+                'owner' => $woRaw->owner ?? '-',
+                'ownergroup' => $woRaw->ownergroup ?? '-',
+                'persongroup' => $woRaw->persongroup ?? '-',
+                'changeby' => $woRaw->changeby ?? '-',
+                // Tanggal
+                'reportdate' => $fmtDate($woRaw->reportdate ?? null),
+                'schedstart' => $fmtDate($woRaw->schedstart ?? null),
+                'schedfinish' => $fmtDate($woRaw->schedfinish ?? null),
+                'actstart' => $fmtDate($woRaw->actstart ?? null),
+                'actfinish' => $fmtDate($woRaw->actfinish ?? null),
+                'targstartdate' => $fmtDate($woRaw->targstartdate ?? null),
+                'targcompdate' => $fmtDate($woRaw->targcompdate ?? null),
+                'changedate' => $fmtDate($woRaw->changedate ?? null),
+                'faildate' => $fmtDate($woRaw->faildate ?? null),
+                // Estimasi
+                'estdur' => $woRaw->estdur ?? 0,
+                'estlabhrs' => $woRaw->estlabhrs ?? 0,
+                'estmatcost' => $woRaw->estmatcost ?? 0,
+                'estlabcost' => $woRaw->estlabcost ?? 0,
+                'esttoolcost' => $woRaw->esttoolcost ?? 0,
+                'estservcost' => $woRaw->estservcost ?? 0,
+                // Aktual
+                'actlabhrs' => $woRaw->actlabhrs ?? 0,
+                'actmatcost' => $woRaw->actmatcost ?? 0,
+                'actlabcost' => $woRaw->actlabcost ?? 0,
+                'acttoolcost' => $woRaw->acttoolcost ?? 0,
+                'actservcost' => $woRaw->actservcost ?? 0,
+                // Outside Cost
+                'outlabcost' => $woRaw->outlabcost ?? 0,
+                'outmatcost' => $woRaw->outmatcost ?? 0,
+                'outtoolcost' => $woRaw->outtoolcost ?? 0,
+                // Codes
+                'jpnum' => $woRaw->jpnum ?? '-',
+                'pmnum' => $woRaw->pmnum ?? '-',
+                'failurecode' => $woRaw->failurecode ?? '-',
+                'problemcode' => $woRaw->problemcode ?? '-',
+                'glaccount' => $woRaw->glaccount ?? '-',
+                'contract' => $woRaw->contract ?? '-',
+                // Flags
+                'haschildren' => $woRaw->haschildren ?? 0,
+                'historyflag' => $woRaw->historyflag ?? 0,
+                'remdur' => $woRaw->remdur ?? 0,
+                // Origin
+                'origrecordid' => $woRaw->origrecordid ?? '-',
+                'origrecordclass' => $woRaw->origrecordclass ?? '-',
+                // Custom / WOEQ
+                'woeq1' => $woRaw->woeq1 ?? '-',
+                'woeq2' => $woRaw->woeq2 ?? '-',
+                'woeq3' => $woRaw->woeq3 ?? '-',
+                'woeq4' => $woRaw->woRaw->woeq4 ?? '-',
+                'woeq5' => $woRaw->woeq5 ?? 0,
+                'woeq6' => $fmtDate($woRaw->woeq6 ?? null),
+                // PLN Custom
+                'anggaran' => $woRaw->anggaran ?? '-',
+                'wonumpln' => $woRaw->wonumpln ?? '-',
+                'remarkdescc' => $woRaw->remarkdescc ?? '-',
+                'remarkdescp' => $woRaw->remarkdescp ?? '-',
+                'remarkdescpln' => $woRaw->remarkdescpln ?? '-',
+                'remarkdescr' => $woRaw->remarkdescr ?? '-',
+                // Legacy / Jobcard Fields
                 'jobcard_exists' => $jobcardExists,
                 'jobcard_path' => $jobcardPath,
                 'jobcard_url' => $jobcardUrl,
-                // Status Unit dari MySQL (Resilient to failure)
                 'status_unit' => (function() use ($wonum) {
                     try {
                         return UnitStatus::where('wonum', $wonum)->value('status_unit') ?? '-';
