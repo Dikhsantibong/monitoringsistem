@@ -32,9 +32,7 @@
                     <h1 class="text-xl font-semibold text-gray-800">Work Order Detail</h1>
                 </div>
                 <div class="flex items-center gap-x-4 relative">
-                    <a href="{{ route('admin.maximo.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm rounded-lg hover:bg-gray-700 transition-colors">
-                        <i class="fas fa-arrow-left mr-2"></i> Kembali
-                    </a>
+
                     <!-- User Dropdown -->
                     <div class="relative">
                         <button id="dropdownToggle" class="flex items-center" onclick="toggleDropdown()">
@@ -58,6 +56,14 @@
         </header>
 
         <main class="px-6 mt-4 pb-8">
+            <div class="mb-4">
+                <a href="{{ route('admin.maximo.index') }}" class="group inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#009BB9] transition-colors">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 mr-3 group-hover:bg-[#009BB9] group-hover:text-white transition-all">
+                        <i class="fas fa-arrow-left text-xs"></i>
+                    </div>
+                    Kembali ke Daftar Work Order
+                </a>
+            </div>
             {{-- WO Header Card --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mb-5">
                 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
