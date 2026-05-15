@@ -272,7 +272,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
         Route::post('/admin/daftar-hadir/store-token', [DaftarHadirController::class, 'storeToken'])->name('admin.daftar_hadir.store_token');
         Route::get('/print', [AttendanceController::class, 'printView'])
             ->name('admin.daftar_hadir.print');
-    });
+    }); 
 
     Route::prefix('meetings')->group(function () {
         Route::get('/', [AdminMeetingController::class, 'index'])->name('meetings');
