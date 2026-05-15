@@ -132,17 +132,30 @@
                 </div>
             </div>
 
-            <form id="filterForm" method="GET" action="{{ route('pemeliharaan.labor-saya') }}" class="mb-4 flex items-center gap-2">
-                <div class="relative flex-1">
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
-                    <input type="text" name="q" value="{{ $q ?? '' }}" placeholder="Cari WO/Backlog (id, deskripsi, status, type, priority...)" class="w-full pl-10 border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none" />
+            <form id="filterForm" method="GET" action="{{ route('pemeliharaan.labor-saya') }}" class="mb-6 flex flex-col md:flex-row items-center gap-3">
+                <div class="relative flex-1 w-full group">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400 group-focus-within:text-[#009BB9] transition-colors"></i>
+                    </div>
+                    <input type="text" name="q" value="{{ $q ?? '' }}" 
+                        placeholder="Cari Work Order (ID, deskripsi, status, unit...)" 
+                        class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#009BB9]/20 focus:border-[#009BB9] transition-all" />
                 </div>
-                <input type="hidden" name="wo_page" value="1" />
-                <input type="hidden" name="status" id="formStatus" value="{{ $statusFilter }}" />
-                <button type="submit" class="bg-[#0A749B] text-white px-6 py-2 rounded text-sm font-semibold hover:bg-[#009BB9] transition-colors">Cari</button>
-                @if(!empty($q) || !empty($statusFilter))
-                    <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-4 py-2 rounded border border-gray-300 text-gray-600 text-sm hover:bg-gray-50 transition-colors">Reset</a>
-                @endif
+                
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <input type="hidden" name="wo_page" value="1" />
+                    <input type="hidden" name="status" id="formStatus" value="{{ $statusFilter }}" />
+                    
+                    <button type="submit" class="flex-1 md:flex-none bg-[#009BB9] text-white px-8 py-2.5 rounded-xl text-sm font-bold hover:bg-[#007b94] transition-all shadow-sm transform hover:-translate-y-0.5 active:scale-95">
+                        <i class="fas fa-filter mr-2"></i> Filter
+                    </button>
+
+                    @if(!empty($q) || !empty($statusFilter))
+                        <a href="{{ route('pemeliharaan.labor-saya') }}" class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center">
+                            <i class="fas fa-redo"></i>
+                        </a>
+                    @endif
+                </div>
             </form>
 
             <div class="mb-4 border-b border-gray-200">
