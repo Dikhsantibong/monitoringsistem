@@ -56,12 +56,9 @@
         </header>
 
         <main class="px-6 mt-4 pb-8">
-            <div class="mb-4">
-                <a href="{{ route('admin.maximo.index') }}" class="group inline-flex items-center text-sm font-medium text-gray-500 hover:text-[#009BB9] transition-colors">
-                    <div class="flex items-center justify-center w-8 h-8 rounded-full bg-white shadow-sm border border-gray-100 mr-3 group-hover:bg-[#009BB9] group-hover:text-white transition-all">
-                        <i class="fas fa-arrow-left text-xs"></i>
-                    </div>
-                    Kembali ke Daftar Work Order
+            <div class="flex justify-end mb-4">
+                <a href="{{ route('admin.maximo.index') }}" class="inline-flex items-center px-6 py-2.5 bg-[#009BB9] text-white text-sm font-bold rounded-xl shadow-md hover:bg-[#007b94] hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+                    <i class="fas fa-arrow-left mr-2"></i> Kembali ke Daftar Work Order
                 </a>
             </div>
             {{-- WO Header Card --}}
