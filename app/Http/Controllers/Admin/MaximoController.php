@@ -1066,73 +1066,142 @@ class MaximoController extends Controller
 
             $results['SR_TABLE'] = $sr ? (array) $sr : 'NOT FOUND';
 
-            // 2. Cek LONGDESCRIPTION dengan berbagai kombinasi
+            // 2. Scan SEMUA kolom SR yang berisi teks "Gejala"
+            if ($sr) {
+                $srArray = (array) $sr;
+                $columnsWithGejala = [];
+                foreach ($srArray as $col => $val) {
+                    if (is_string($val) && stripos($val, 'Gejala') !== false) {
+                        $columnsWithGejala[$col] = $val;
+                    }
+                }
+                $results['SR_COLUMNS_WITH_GEJALA'] = !empty($columnsWithGejala)
+                    ? $columnsWithGejala
+                    : 'NOT FOUND in any SR column';
+
+                // Juga cari kolom yang berisi teks panjang (> 50 karakter)
+                $longTextColumns = [];
+                foreach ($srArray as $col => $val) {
+                    if (is_string($val) && strlen($val) > 50) {
+                        $longTextColumns[$col] = $val;
+                    }
+                }
+                $results['SR_LONG_TEXT_COLUMNS'] = !empty($longTextColumns)
+                    ? $longTextColumns
+                    : 'No long text columns found';
+            }
+
+            // 3. Cek LONGDESCRIPTION — tanpa filter LDOWNERTABLE
             $longDescs = DB::connection('oracle')
                 ->table('LONGDESCRIPTION')
                 ->where('LDKEY', $ticketid)
                 ->get();
+            $results['LONGDESC_BY_LDKEY'] = $longDescs->count() > 0
+                ? $longDescs->map(fn($r) => (array) $r)->toArray()
+                : 'EMPTY';
 
-            $results['LONGDESCRIPTION_ALL'] = $longDescs->map(function ($row) {
-                return (array) $row;
-            })->toArray();
-
-            // 3. Coba cari juga dengan LDOWNERID (kadang pakai ID bukan key)
+            // 4. Cek LONGDESCRIPTION via LDOWNERID (pakai semua ID dari SR)
             if ($sr) {
                 $srArray = (array) $sr;
-                // Cari kolom yang mungkin berisi ID unik
-                $possibleIds = [];
                 foreach ($srArray as $col => $val) {
-                    $colUp = strtoupper($col);
-                    if (str_contains($colUp, 'ID') && $val !== null) {
-                        $possibleIds[$col] = $val;
-                    }
-                }
-                $results['SR_ID_COLUMNS'] = $possibleIds;
-
-                // Cari longdesc dengan LDOWNERID jika ada TICKETUID atau ID
-                foreach ($possibleIds as $col => $val) {
-                    try {
-                        $ld = DB::connection('oracle')
-                            ->table('LONGDESCRIPTION')
-                            ->where('LDOWNERID', $val)
-                            ->get();
-                        if ($ld->count() > 0) {
-                            $results["LONGDESC_BY_{$col}"] = $ld->map(function ($row) {
-                                return (array) $row;
-                            })->toArray();
+                    if ($val !== null && is_numeric($val) && $val > 0) {
+                        try {
+                            $ld = DB::connection('oracle')
+                                ->table('LONGDESCRIPTION')
+                                ->where('LDOWNERID', $val)
+                                ->limit(3)
+                                ->get();
+                            if ($ld->count() > 0) {
+                                $results["LONGDESC_VIA_{$col}={$val}"] = $ld->map(fn($r) => (array) $r)->toArray();
+                            }
+                        } catch (\Exception $e) {
+                            // skip
                         }
-                    } catch (\Exception $e) {
-                        // skip
                     }
                 }
             }
 
-            // 4. Cari teks "Gejala" di LONGDESCRIPTION (broad search)
+            // 5. Cari "Gejala" di LONGDESCRIPTION — tanpa filter apapun
             try {
-                $gejalSearch = DB::connection('oracle')
+                $gejalaAll = DB::connection('oracle')
                     ->table('LONGDESCRIPTION')
-                    ->where('LDOWNERTABLE', 'SR')
                     ->where('LDTEXT', 'LIKE', '%Gejala%')
                     ->limit(5)
                     ->get();
-
-                $results['LONGDESC_SEARCH_GEJALA'] = $gejalSearch->map(function ($row) {
-                    return (array) $row;
-                })->toArray();
+                $results['LONGDESC_GLOBAL_GEJALA'] = $gejalaAll->count() > 0
+                    ? $gejalaAll->map(fn($r) => (array) $r)->toArray()
+                    : 'NOT FOUND';
             } catch (\Exception $e) {
-                $results['LONGDESC_SEARCH_GEJALA_ERROR'] = $e->getMessage();
+                $results['LONGDESC_GLOBAL_GEJALA_ERROR'] = $e->getMessage();
             }
 
-            // 5. Cek tabel TICKET juga (beberapa versi Maximo pakai tabel TICKET)
+            // 6. Cek tabel TICKET
             try {
                 $ticket = DB::connection('oracle')
                     ->table('TICKET')
                     ->where('TICKETID', $ticketid)
-                    ->where('SITEID', 'KD')
                     ->first();
-                $results['TICKET_TABLE'] = $ticket ? (array) $ticket : 'NOT FOUND or TABLE NOT EXISTS';
+                if ($ticket) {
+                    $ticketArr = (array) $ticket;
+                    $results['TICKET_TABLE'] = $ticketArr;
+                    // Cari "Gejala" di kolom TICKET
+                    $ticketGejala = [];
+                    foreach ($ticketArr as $col => $val) {
+                        if (is_string($val) && stripos($val, 'Gejala') !== false) {
+                            $ticketGejala[$col] = $val;
+                        }
+                    }
+                    $results['TICKET_COLUMNS_WITH_GEJALA'] = !empty($ticketGejala) ? $ticketGejala : 'NOT FOUND';
+                } else {
+                    $results['TICKET_TABLE'] = 'NOT FOUND';
+                }
             } catch (\Exception $e) {
-                $results['TICKET_TABLE'] = 'TABLE ERROR: ' . $e->getMessage();
+                $results['TICKET_TABLE'] = 'ERROR: ' . $e->getMessage();
+            }
+
+            // 7. Cari di tabel DESCRIPTION_SR (beberapa konfigurasi Maximo)
+            $descTables = ['SR_DESCRIPTION', 'TKDESCRIPTION', 'TKTDESCRIPTION'];
+            foreach ($descTables as $tbl) {
+                try {
+                    $desc = DB::connection('oracle')
+                        ->table($tbl)
+                        ->where('TICKETID', $ticketid)
+                        ->get();
+                    if ($desc->count() > 0) {
+                        $results["{$tbl}"] = $desc->map(fn($r) => (array) $r)->toArray();
+                    } else {
+                        $results["{$tbl}"] = 'EMPTY';
+                    }
+                } catch (\Exception $e) {
+                    $results["{$tbl}"] = 'TABLE NOT EXISTS';
+                }
+            }
+
+            // 8. Cek LONGDESCRIPTION structure (describe kolom)
+            try {
+                $ldCols = DB::connection('oracle')
+                    ->select("SELECT COLUMN_NAME, DATA_TYPE FROM ALL_TAB_COLUMNS WHERE TABLE_NAME = 'LONGDESCRIPTION' AND OWNER = 'MAXIMO' ORDER BY COLUMN_ID");
+                $results['LONGDESCRIPTION_COLUMNS'] = collect($ldCols)->map(fn($r) => (array) $r)->toArray();
+            } catch (\Exception $e) {
+                $results['LONGDESCRIPTION_COLUMNS'] = 'ERROR: ' . $e->getMessage();
+            }
+
+            // 9. Cari "Gejala" langsung di SR table via SQL
+            try {
+                $srGejala = DB::connection('oracle')
+                    ->select("SELECT TICKETID, DESCRIPTION FROM MAXIMO.SR WHERE DESCRIPTION LIKE '%Gejala%' AND SITEID = 'KD' AND ROWNUM <= 3");
+                $results['SR_DESC_SEARCH_GEJALA'] = collect($srGejala)->map(fn($r) => (array) $r)->toArray();
+            } catch (\Exception $e) {
+                $results['SR_DESC_SEARCH_GEJALA'] = 'ERROR: ' . $e->getMessage();
+            }
+
+            // 10. List semua tabel yang berisi kolom LDTEXT atau DESCRIPTION_LONGDESCRIPTION
+            try {
+                $relatedTables = DB::connection('oracle')
+                    ->select("SELECT DISTINCT TABLE_NAME FROM ALL_TAB_COLUMNS WHERE COLUMN_NAME = 'LDTEXT' AND OWNER = 'MAXIMO'");
+                $results['TABLES_WITH_LDTEXT'] = collect($relatedTables)->map(fn($r) => (array) $r)->toArray();
+            } catch (\Exception $e) {
+                $results['TABLES_WITH_LDTEXT'] = 'ERROR: ' . $e->getMessage();
             }
 
         } catch (\Exception $e) {
