@@ -164,6 +164,12 @@
                                 >
                                     Cari
                                 </button>
+                                <a
+                                    href="{{ route('admin.maximo.workorder-table.index') }}"
+                                    class="ml-2 px-4 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 transition-colors flex items-center"
+                                >
+                                    <i class="fas fa-table mr-2"></i> Lihat Tabel Lengkap
+                                </a>
                             </div>
                         </form>
                     </div>

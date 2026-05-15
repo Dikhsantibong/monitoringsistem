@@ -256,6 +256,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     });
 
     // Maximo Akses Route
+    Route::get('/maximo/workorder-table', [WorkOrderTableController::class, 'index'])->name('maximo.workorder-table.index');
     Route::get('/maximo', [MaximoController::class, 'index'])->name('maximo.index');
     Route::get('/maximo/workorder/{wonum}', [MaximoController::class, 'showWorkOrder'])->name('maximo.workorder.show');
     Route::get('/maximo/service-request/{ticketid}', [MaximoController::class, 'showServiceRequest'])->name('maximo.service-request.show');
