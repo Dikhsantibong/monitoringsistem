@@ -39,8 +39,7 @@ class MaximoController extends Controller
             try {
                 $baseStatsQuery = DB::connection('oracle')
                     ->table('WORKORDER')
-                    ->where('SITEID', 'KD')
-                    ->where('WONUM', 'LIKE', 'WO%');
+                    ->where('SITEID', 'KD');
 
                 $stats['total'] = (clone $baseStatsQuery)->count();
                 
