@@ -64,5 +64,43 @@
             </a>
             
         </nav>
+
+        <!-- Bottom Section: Logout -->
+        <div class="mt-4 pt-4 border-t border-white/10 flex-shrink-0">
+            <form method="POST" action="{{ route('logout') }}" id="logout-form">
+                @csrf
+                <button type="button" 
+                    onclick="confirmLogout()"
+                    class="flex items-center w-full px-3 py-2.5 rounded-lg text-white bg-red-400 hover:bg-red-700 transition-colors duration-200 text-sm font-bold">
+                    <i class="fas fa-sign-out-alt w-6 h-6"></i>
+                    <span class="ml-3">Logout</span>
+                </button>
+            </form>
+        </div>
     </div>
 </aside>
+
+<script>
+function confirmLogout() {
+    if (typeof Swal !== 'undefined') {
+        Swal.fire({
+            title: 'Konfirmasi Logout',
+            text: "Apakah anda yakin untuk logout?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Logout',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('logout-form').submit();
+            }
+        });
+    } else {
+        if (confirm('Apakah anda yakin untuk logout?')) {
+            document.getElementById('logout-form').submit();
+        }
+    }
+}
+</script>
