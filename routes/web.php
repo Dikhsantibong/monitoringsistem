@@ -265,8 +265,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/maximo/jobcard/preview', [MaximoController::class, 'previewJobcard'])->name('maximo.jobcard.preview');
     Route::post('/maximo/jobcard/update', [MaximoController::class, 'updateJobcard'])->name('maximo.jobcard.update');
 
-    // TEMPORARY DEBUG - hapus setelah selesai
-    Route::get('/maximo/debug-sr/{ticketid}', [MaximoController::class, 'debugSR'])->name('maximo.debug-sr');
 
 
 
