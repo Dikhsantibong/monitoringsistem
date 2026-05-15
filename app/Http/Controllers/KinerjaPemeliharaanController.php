@@ -681,7 +681,7 @@ class KinerjaPemeliharaanController extends Controller
     // I6.8 - Schedule Compliance (Non Tactical)
     private function calculateScheduleCompliance($startDate, $endDate)
     {
-        // Non Tactical: C, EM, EJ, NM, SF
+        // Non Tactical: CR, EM, EJ, NM, SF
         $nonTacticalTypes = ['CM', 'EM', 'EJ', 'NM', 'SF'];
         
         $woBase = DB::connection('oracle')->table('WORKORDER')

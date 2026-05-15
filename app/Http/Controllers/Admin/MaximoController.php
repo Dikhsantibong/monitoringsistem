@@ -39,7 +39,8 @@ class MaximoController extends Controller
             try {
                 $baseStatsQuery = DB::connection('oracle')
                     ->table('WORKORDER')
-                    ->where('SITEID', 'KD');
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%');
 
                 $stats['total'] = (clone $baseStatsQuery)->count();
                 
@@ -87,7 +88,8 @@ class MaximoController extends Controller
                     'SCHEDFINISH',
                     'REPORTDATE',
                 ])
-                ->where('SITEID', 'KD');
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%');
 
             if ($search) {
                 $workOrdersQuery->where(function ($q) use ($search) {
