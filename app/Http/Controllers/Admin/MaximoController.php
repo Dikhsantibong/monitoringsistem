@@ -406,6 +406,8 @@ class MaximoController extends Controller
                     'ASSETNUM',
                     'REPORTEDBY',
                     'REPORTDATE',
+                    'FAULTPRIORITY',
+                    'FAULTTYPE',
                 ])
                 ->where('SITEID', 'KD')
                 ->where('TICKETID', $ticketid)
@@ -415,17 +417,88 @@ class MaximoController extends Controller
                 return redirect()->route('admin.maximo.index')->with('error', 'Service Request tidak ditemukan.');
             }
 
+            $fmtDate = function ($val) {
+                return isset($val) && $val ? Carbon::parse($val)->format('d-m-Y H:i') : '-';
+            };
+
+            // Ambil Long Description (Detil SR: Gejala, Dampak, Resiko, Deviasi, Tindakan)
+            $longDescription = '-';
+            try {
+                $longDesc = DB::connection('oracle')
+                    ->table('LONGDESCRIPTION')
+                    ->select(['LDTEXT'])
+                    ->where('LDKEY', $ticketid)
+                    ->where('LDOWNERTABLE', 'SR')
+                    ->first();
+                $longDescription = $longDesc->ldtext ?? '-';
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch LONGDESCRIPTION for SR', ['ticketid' => $ticketid, 'error' => $e->getMessage()]);
+            }
+
+            // Ambil nama person untuk Reported By
+            $reportedByName = '-';
+            if (!empty($sr->reportedby)) {
+                try {
+                    $person = DB::connection('oracle')
+                        ->table('PERSON')
+                        ->select(['DISPLAYNAME'])
+                        ->where('PERSONID', $sr->reportedby)
+                        ->first();
+                    $reportedByName = $person->displayname ?? '-';
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch PERSON for SR reportedby', ['personid' => $sr->reportedby]);
+                }
+            }
+
+            // Ambil Asset Description
+            $assetDescription = '-';
+            if (!empty($sr->assetnum)) {
+                try {
+                    $asset = DB::connection('oracle')
+                        ->table('ASSET')
+                        ->select(['DESCRIPTION'])
+                        ->where('ASSETNUM', $sr->assetnum)
+                        ->where('SITEID', 'KD')
+                        ->first();
+                    $assetDescription = $asset->description ?? '-';
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch ASSET description for SR', ['assetnum' => $sr->assetnum]);
+                }
+            }
+
+            // Ambil Location Description
+            $locationDescription = '-';
+            if (!empty($sr->location)) {
+                try {
+                    $location = DB::connection('oracle')
+                        ->table('LOCATIONS')
+                        ->select(['DESCRIPTION'])
+                        ->where('LOCATION', $sr->location)
+                        ->where('SITEID', 'KD')
+                        ->first();
+                    $locationDescription = $location->description ?? '-';
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch LOCATIONS description for SR', ['location' => $sr->location]);
+                }
+            }
+
             return view('admin.maximo.service-request-detail', [
                 'sr' => [
                     'ticketid' => $sr->ticketid ?? '-',
                     'status' => $sr->status ?? '-',
-                    'statusdate' => isset($sr->statusdate) && $sr->statusdate ? Carbon::parse($sr->statusdate)->format('d-m-Y H:i') : '-',
+                    'statusdate' => $fmtDate($sr->statusdate ?? null),
                     'reportedby' => $sr->reportedby ?? '-',
-                    'reportdate' => isset($sr->reportdate) && $sr->reportdate ? Carbon::parse($sr->reportdate)->format('d-m-Y H:i') : '-',
+                    'reportedby_name' => $reportedByName,
+                    'reportdate' => $fmtDate($sr->reportdate ?? null),
                     'siteid' => $sr->siteid ?? '-',
                     'location' => $sr->location ?? '-',
+                    'location_description' => $locationDescription,
                     'assetnum' => $sr->assetnum ?? '-',
+                    'asset_description' => $assetDescription,
                     'description' => $sr->description ?? '-',
+                    'longdescription' => $longDescription,
+                    'faultpriority' => $sr->faultpriority ?? '-',
+                    'faulttype' => $sr->faulttype ?? '-',
                 ],
             ]);
 
