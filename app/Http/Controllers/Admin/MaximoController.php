@@ -255,20 +255,21 @@ class MaximoController extends Controller
             $wo = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select([
-                    'WONUM',
-                    'PARENT',
-                    'STATUS',
-                    'STATUSDATE',
-                    'WORKTYPE',
-                    'WOPRIORITY',
-                    'DESCRIPTION',
-                    'ASSETNUM',
-                    'LOCATION',
-                    'SITEID',
-                    'DOWNTIME',
-                    'SCHEDSTART',
-                    'SCHEDFINISH',
-                    'REPORTDATE',
+                    'WONUM', 'PARENT', 'STATUS', 'STATUSDATE', 'WORKTYPE', 'DESCRIPTION',
+                    'ASSETNUM', 'LOCATION', 'JPNUM', 'FAILDATE', 'CHANGEBY', 'CHANGEDATE',
+                    'ESTDUR', 'ESTLABHRS', 'ESTMATCOST', 'ESTLABCOST', 'ESTTOOLCOST',
+                    'PMNUM', 'ACTLABHRS', 'ACTMATCOST', 'ACTLABCOST', 'ACTTOOLCOST',
+                    'HASCHILDREN', 'OUTLABCOST', 'OUTMATCOST', 'OUTTOOLCOST', 'HISTORYFLAG',
+                    'CONTRACT', 'WOPRIORITY', 'TARGCOMPDATE', 'TARGSTARTDATE',
+                    'WOEQ1', 'WOEQ2', 'WOEQ3', 'WOEQ4', 'WOEQ5', 'WOEQ6',
+                    'REPORTEDBY', 'REPORTDATE', 'PROBLEMCODE', 'DOWNTIME',
+                    'ACTSTART', 'ACTFINISH', 'SCHEDSTART', 'SCHEDFINISH',
+                    'REMDUR', 'CREWID', 'SUPERVISOR', 'FAILURECODE',
+                    'ESTSERVCOST', 'ACTSERVCOST', 'ORGID', 'SITEID',
+                    'WOCLASS', 'OWNER', 'OWNERGROUP', 'PERSONGROUP', 'LEAD',
+                    'ORIGRECORDID', 'ORIGRECORDCLASS', 'GLACCOUNT',
+                    'ANGGARAN', 'WONUMPLN',
+                    'REMARKDESCC', 'REMARKDESCP', 'REMARKDESCPLN', 'REMARKDESCR',
                 ])
                 ->where('SITEID', 'KD')
                 ->where('WONUM', $wonum)
@@ -278,22 +279,92 @@ class MaximoController extends Controller
                 return redirect()->route('admin.maximo.index')->with('error', 'Work Order tidak ditemukan.');
             }
 
+            // Helper untuk format tanggal
+            $fmtDate = function ($val) {
+                return isset($val) && $val ? Carbon::parse($val)->format('d-m-Y H:i') : '-';
+            };
+
             return view('admin.maximo.workorder-detail', [
                 'wo' => [
+                    // Identifikasi
                     'wonum' => $wo->wonum ?? '-',
                     'parent' => $wo->parent ?? '-',
                     'status' => $wo->status ?? '-',
-                    'statusdate' => isset($wo->statusdate) && $wo->statusdate ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i') : '-',
+                    'statusdate' => $fmtDate($wo->statusdate ?? null),
                     'worktype' => $wo->worktype ?? '-',
                     'wopriority' => $wo->wopriority ?? '-',
-                    'reportdate' => isset($wo->reportdate) && $wo->reportdate ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i') : '-',
+                    'woclass' => $wo->woclass ?? '-',
+                    'description' => $wo->description ?? '-',
+                    // Asset & Lokasi
                     'assetnum' => $wo->assetnum ?? '-',
                     'location' => $wo->location ?? '-',
                     'siteid' => $wo->siteid ?? '-',
+                    'orgid' => $wo->orgid ?? '-',
                     'downtime' => $wo->downtime ?? '-',
-                    'schedstart' => isset($wo->schedstart) && $wo->schedstart ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i') : '-',
-                    'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i') : '-',
-                    'description' => $wo->description ?? '-',
+                    // People
+                    'reportedby' => $wo->reportedby ?? '-',
+                    'supervisor' => $wo->supervisor ?? '-',
+                    'crewid' => $wo->crewid ?? '-',
+                    'lead' => $wo->lead ?? '-',
+                    'owner' => $wo->owner ?? '-',
+                    'ownergroup' => $wo->ownergroup ?? '-',
+                    'persongroup' => $wo->persongroup ?? '-',
+                    'changeby' => $wo->changeby ?? '-',
+                    // Tanggal
+                    'reportdate' => $fmtDate($wo->reportdate ?? null),
+                    'schedstart' => $fmtDate($wo->schedstart ?? null),
+                    'schedfinish' => $fmtDate($wo->schedfinish ?? null),
+                    'actstart' => $fmtDate($wo->actstart ?? null),
+                    'actfinish' => $fmtDate($wo->actfinish ?? null),
+                    'targstartdate' => $fmtDate($wo->targstartdate ?? null),
+                    'targcompdate' => $fmtDate($wo->targcompdate ?? null),
+                    'changedate' => $fmtDate($wo->changedate ?? null),
+                    'faildate' => $fmtDate($wo->faildate ?? null),
+                    // Estimasi
+                    'estdur' => $wo->estdur ?? 0,
+                    'estlabhrs' => $wo->estlabhrs ?? 0,
+                    'estmatcost' => $wo->estmatcost ?? 0,
+                    'estlabcost' => $wo->estlabcost ?? 0,
+                    'esttoolcost' => $wo->esttoolcost ?? 0,
+                    'estservcost' => $wo->estservcost ?? 0,
+                    // Aktual
+                    'actlabhrs' => $wo->actlabhrs ?? 0,
+                    'actmatcost' => $wo->actmatcost ?? 0,
+                    'actlabcost' => $wo->actlabcost ?? 0,
+                    'acttoolcost' => $wo->acttoolcost ?? 0,
+                    'actservcost' => $wo->actservcost ?? 0,
+                    // Outside Cost
+                    'outlabcost' => $wo->outlabcost ?? 0,
+                    'outmatcost' => $wo->outmatcost ?? 0,
+                    'outtoolcost' => $wo->outtoolcost ?? 0,
+                    // Codes
+                    'jpnum' => $wo->jpnum ?? '-',
+                    'pmnum' => $wo->pmnum ?? '-',
+                    'failurecode' => $wo->failurecode ?? '-',
+                    'problemcode' => $wo->problemcode ?? '-',
+                    'glaccount' => $wo->glaccount ?? '-',
+                    'contract' => $wo->contract ?? '-',
+                    // Flags
+                    'haschildren' => $wo->haschildren ?? 0,
+                    'historyflag' => $wo->historyflag ?? 0,
+                    'remdur' => $wo->remdur ?? 0,
+                    // Origin
+                    'origrecordid' => $wo->origrecordid ?? '-',
+                    'origrecordclass' => $wo->origrecordclass ?? '-',
+                    // Custom / WOEQ
+                    'woeq1' => $wo->woeq1 ?? '-',
+                    'woeq2' => $wo->woeq2 ?? '-',
+                    'woeq3' => $wo->woeq3 ?? '-',
+                    'woeq4' => $wo->woeq4 ?? '-',
+                    'woeq5' => $wo->woeq5 ?? 0,
+                    'woeq6' => $fmtDate($wo->woeq6 ?? null),
+                    // PLN Custom
+                    'anggaran' => $wo->anggaran ?? '-',
+                    'wonumpln' => $wo->wonumpln ?? '-',
+                    'remarkdescc' => $wo->remarkdescc ?? '-',
+                    'remarkdescp' => $wo->remarkdescp ?? '-',
+                    'remarkdescpln' => $wo->remarkdescpln ?? '-',
+                    'remarkdescr' => $wo->remarkdescr ?? '-',
                 ],
             ]);
 

@@ -113,8 +113,7 @@ class WorkOrderTableController extends Controller
             $query = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select($columns)
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%');
+                ->where('SITEID', 'KD');
 
             // Search across multiple relevant columns
             if ($search) {
