@@ -252,33 +252,19 @@ class MaximoController extends Controller
                 return redirect()->route('admin.maximo.index')->with('error', 'WONUM tidak valid.');
             }
 
-            $wo = DB::connection('oracle')
+            $woRaw = DB::connection('oracle')
                 ->table('WORKORDER')
-                ->select([
-                    'WONUM', 'PARENT', 'STATUS', 'STATUSDATE', 'WORKTYPE', 'DESCRIPTION',
-                    'ASSETNUM', 'LOCATION', 'JPNUM', 'FAILDATE', 'CHANGEBY', 'CHANGEDATE',
-                    'ESTDUR', 'ESTLABHRS', 'ESTMATCOST', 'ESTLABCOST', 'ESTTOOLCOST',
-                    'PMNUM', 'ACTLABHRS', 'ACTMATCOST', 'ACTLABCOST', 'ACTTOOLCOST',
-                    'HASCHILDREN', 'OUTLABCOST', 'OUTMATCOST', 'OUTTOOLCOST', 'HISTORYFLAG',
-                    'CONTRACT', 'WOPRIORITY', 'TARGCOMPDATE', 'TARGSTARTDATE',
-                    'WOEQ1', 'WOEQ2', 'WOEQ3', 'WOEQ4', 'WOEQ5', 'WOEQ6',
-                    'REPORTEDBY', 'REPORTDATE', 'PROBLEMCODE', 'DOWNTIME',
-                    'ACTSTART', 'ACTFINISH', 'SCHEDSTART', 'SCHEDFINISH',
-                    'REMDUR', 'CREWID', 'SUPERVISOR', 'FAILURECODE',
-                    'ESTSERVCOST', 'ACTSERVCOST', 'ORGID', 'SITEID',
-                    'WOCLASS', 'OWNER', 'OWNERGROUP', 'PERSONGROUP', 'LEAD',
-                    'ORIGRECORDID', 'ORIGRECORDCLASS', 'GLACCOUNT',
-                    'ANGGARAN', 'WONUMPLN',
-                    'REMARKDESCC', 'REMARKDESCP', 'REMARKDESCPLN', 'REMARKDESCR',
-                ])
                 ->where('SITEID', 'KD')
                 ->where('WONUM', $wonum)
                 ->first();
 
-            if (!$wo) {
+            if (!$woRaw) {
                 return redirect()->route('admin.maximo.index')->with('error', 'Work Order tidak ditemukan.');
             }
 
+            // Normalize result to lowercase property names
+            $woRawLower = array_change_key_case((array) $woRaw, CASE_LOWER);
+            
             // Helper untuk format tanggal
             $fmtDate = function ($val) {
                 return isset($val) && $val ? Carbon::parse($val)->format('d-m-Y H:i') : '-';
@@ -287,85 +273,86 @@ class MaximoController extends Controller
             return view('admin.maximo.workorder-detail', [
                 'wo' => [
                     // Identifikasi
-                    'wonum' => $wo->wonum ?? '-',
-                    'parent' => $wo->parent ?? '-',
-                    'status' => $wo->status ?? '-',
-                    'statusdate' => $fmtDate($wo->statusdate ?? null),
-                    'worktype' => $wo->worktype ?? '-',
-                    'wopriority' => $wo->wopriority ?? '-',
-                    'woclass' => $wo->woclass ?? '-',
-                    'description' => $wo->description ?? '-',
+                    'wonum' => $woRawLower['wonum'] ?? '-',
+                    'parent' => $woRawLower['parent'] ?? '-',
+                    'status' => $woRawLower['status'] ?? '-',
+                    'statusdate' => $fmtDate($woRawLower['statusdate'] ?? null),
+                    'worktype' => $woRawLower['worktype'] ?? '-',
+                    'wopriority' => $woRawLower['wopriority'] ?? '-',
+                    'woclass' => $woRawLower['woclass'] ?? '-',
+                    'description' => $woRawLower['description'] ?? '-',
                     // Asset & Lokasi
-                    'assetnum' => $wo->assetnum ?? '-',
-                    'location' => $wo->location ?? '-',
-                    'siteid' => $wo->siteid ?? '-',
-                    'orgid' => $wo->orgid ?? '-',
-                    'downtime' => $wo->downtime ?? '-',
+                    'assetnum' => $woRawLower['assetnum'] ?? '-',
+                    'location' => $woRawLower['location'] ?? '-',
+                    'siteid' => $woRawLower['siteid'] ?? '-',
+                    'orgid' => $woRawLower['orgid'] ?? '-',
+                    'downtime' => $woRawLower['downtime'] ?? '-',
                     // People
-                    'reportedby' => $wo->reportedby ?? '-',
-                    'supervisor' => $wo->supervisor ?? '-',
-                    'crewid' => $wo->crewid ?? '-',
-                    'lead' => $wo->lead ?? '-',
-                    'owner' => $wo->owner ?? '-',
-                    'ownergroup' => $wo->ownergroup ?? '-',
-                    'persongroup' => $wo->persongroup ?? '-',
-                    'changeby' => $wo->changeby ?? '-',
+                    'reportedby' => $woRawLower['reportedby'] ?? '-',
+                    'supervisor' => $woRawLower['supervisor'] ?? '-',
+                    'crewid' => $woRawLower['crewid'] ?? '-',
+                    'lead' => $woRawLower['lead'] ?? '-',
+                    'owner' => $woRawLower['owner'] ?? '-',
+                    'ownergroup' => $woRawLower['ownergroup'] ?? '-',
+                    'persongroup' => $woRawLower['persongroup'] ?? '-',
+                    'changeby' => $woRawLower['changeby'] ?? '-',
                     // Tanggal
-                    'reportdate' => $fmtDate($wo->reportdate ?? null),
-                    'schedstart' => $fmtDate($wo->schedstart ?? null),
-                    'schedfinish' => $fmtDate($wo->schedfinish ?? null),
-                    'actstart' => $fmtDate($wo->actstart ?? null),
-                    'actfinish' => $fmtDate($wo->actfinish ?? null),
-                    'targstartdate' => $fmtDate($wo->targstartdate ?? null),
-                    'targcompdate' => $fmtDate($wo->targcompdate ?? null),
-                    'changedate' => $fmtDate($wo->changedate ?? null),
-                    'faildate' => $fmtDate($wo->faildate ?? null),
+                    'reportdate' => $fmtDate($woRawLower['reportdate'] ?? null),
+                    'schedstart' => $fmtDate($woRawLower['schedstart'] ?? null),
+                    'schedfinish' => $fmtDate($woRawLower['schedfinish'] ?? null),
+                    'actstart' => $fmtDate($woRawLower['actstart'] ?? null),
+                    'actfinish' => $fmtDate($woRawLower['actfinish'] ?? null),
+                    'targstartdate' => $fmtDate($woRawLower['targstartdate'] ?? null),
+                    'targcompdate' => $fmtDate($woRawLower['targcompdate'] ?? null),
+                    'changedate' => $fmtDate($woRawLower['changedate'] ?? null),
+                    'faildate' => $fmtDate($woRawLower['faildate'] ?? null),
                     // Estimasi
-                    'estdur' => $wo->estdur ?? 0,
-                    'estlabhrs' => $wo->estlabhrs ?? 0,
-                    'estmatcost' => $wo->estmatcost ?? 0,
-                    'estlabcost' => $wo->estlabcost ?? 0,
-                    'esttoolcost' => $wo->esttoolcost ?? 0,
-                    'estservcost' => $wo->estservcost ?? 0,
+                    'estdur' => $woRawLower['estdur'] ?? 0,
+                    'estlabhrs' => $woRawLower['estlabhrs'] ?? 0,
+                    'estmatcost' => $woRawLower['estmatcost'] ?? 0,
+                    'estlabcost' => $woRawLower['estlabcost'] ?? 0,
+                    'esttoolcost' => $woRawLower['esttoolcost'] ?? 0,
+                    'estservcost' => $woRawLower['estservcost'] ?? 0,
                     // Aktual
-                    'actlabhrs' => $wo->actlabhrs ?? 0,
-                    'actmatcost' => $wo->actmatcost ?? 0,
-                    'actlabcost' => $wo->actlabcost ?? 0,
-                    'acttoolcost' => $wo->acttoolcost ?? 0,
-                    'actservcost' => $wo->actservcost ?? 0,
+                    'actlabhrs' => $woRawLower['actlabhrs'] ?? 0,
+                    'actmatcost' => $woRawLower['actmatcost'] ?? 0,
+                    'actlabcost' => $woRawLower['actlabcost'] ?? 0,
+                    'acttoolcost' => $woRawLower['acttoolcost'] ?? 0,
+                    'actservcost' => $woRawLower['actservcost'] ?? 0,
                     // Outside Cost
-                    'outlabcost' => $wo->outlabcost ?? 0,
-                    'outmatcost' => $wo->outmatcost ?? 0,
-                    'outtoolcost' => $wo->outtoolcost ?? 0,
+                    'outlabcost' => $woRawLower['outlabcost'] ?? 0,
+                    'outmatcost' => $woRawLower['outmatcost'] ?? 0,
+                    'outtoolcost' => $woRawLower['outtoolcost'] ?? 0,
                     // Codes
-                    'jpnum' => $wo->jpnum ?? '-',
-                    'pmnum' => $wo->pmnum ?? '-',
-                    'failurecode' => $wo->failurecode ?? '-',
-                    'problemcode' => $wo->problemcode ?? '-',
-                    'glaccount' => $wo->glaccount ?? '-',
-                    'contract' => $wo->contract ?? '-',
+                    'jpnum' => $woRawLower['jpnum'] ?? '-',
+                    'pmnum' => $woRawLower['pmnum'] ?? '-',
+                    'failurecode' => $woRawLower['failurecode'] ?? '-',
+                    'problemcode' => $woRawLower['problemcode'] ?? '-',
+                    'glaccount' => $woRawLower['glaccount'] ?? '-',
+                    'contract' => $woRawLower['contract'] ?? '-',
                     // Flags
-                    'haschildren' => $wo->haschildren ?? 0,
-                    'historyflag' => $wo->historyflag ?? 0,
-                    'remdur' => $wo->remdur ?? 0,
+                    'haschildren' => $woRawLower['haschildren'] ?? 0,
+                    'historyflag' => $woRawLower['historyflag'] ?? 0,
+                    'remdur' => $woRawLower['remdur'] ?? 0,
                     // Origin
-                    'origrecordid' => $wo->origrecordid ?? '-',
-                    'origrecordclass' => $wo->origrecordclass ?? '-',
+                    'origrecordid' => $woRawLower['origrecordid'] ?? '-',
+                    'origrecordclass' => $woRawLower['origrecordclass'] ?? '-',
                     // Custom / WOEQ
-                    'woeq1' => $wo->woeq1 ?? '-',
-                    'woeq2' => $wo->woeq2 ?? '-',
-                    'woeq3' => $wo->woeq3 ?? '-',
-                    'woeq4' => $wo->woeq4 ?? '-',
-                    'woeq5' => $wo->woeq5 ?? 0,
-                    'woeq6' => $fmtDate($wo->woeq6 ?? null),
+                    'woeq1' => $woRawLower['woeq1'] ?? '-',
+                    'woeq2' => $woRawLower['woeq2'] ?? '-',
+                    'woeq3' => $woRawLower['woeq3'] ?? '-',
+                    'woeq4' => $woRawLower['woeq4'] ?? '-',
+                    'woeq5' => $woRawLower['woeq5'] ?? 0,
+                    'woeq6' => $fmtDate($woRawLower['woeq6'] ?? null),
                     // PLN Custom
-                    'anggaran' => $wo->anggaran ?? '-',
-                    'wonumpln' => $wo->wonumpln ?? '-',
-                    'remarkdescc' => $wo->remarkdescc ?? '-',
-                    'remarkdescp' => $wo->remarkdescp ?? '-',
-                    'remarkdescpln' => $wo->remarkdescpln ?? '-',
-                    'remarkdescr' => $wo->remarkdescr ?? '-',
+                    'anggaran' => $woRawLower['anggaran'] ?? '-',
+                    'wonumpln' => $woRawLower['wonumpln'] ?? '-',
+                    'remarkdescc' => $woRawLower['remarkdescc'] ?? '-',
+                    'remarkdescp' => $woRawLower['remarkdescp'] ?? '-',
+                    'remarkdescpln' => $woRawLower['remarkdescpln'] ?? '-',
+                    'remarkdescr' => $woRawLower['remarkdescr'] ?? '-',
                 ],
+                'rawData' => (array) $woRaw
             ]);
 
         } catch (QueryException $e) {
