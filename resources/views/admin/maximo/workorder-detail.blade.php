@@ -319,31 +319,6 @@
                 </div>
             </div>
 
-            {{-- All Raw Data Section --}}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mt-5">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <i class="fas fa-database text-gray-500"></i> All Database Columns (Raw Data)
-                </h3>
-                <div class="overflow-x-auto max-h-[500px] overflow-y-auto rounded border border-gray-200">
-                    <table class="min-w-full text-sm">
-                        <thead class="bg-gray-100 sticky top-0 z-10">
-                            <tr>
-                                <th class="px-4 py-2 text-left text-gray-600 font-semibold border-b border-r border-gray-200 w-1/3">Column Name</th>
-                                <th class="px-4 py-2 text-left text-gray-600 font-semibold border-b border-gray-200">Value</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            @foreach($rawData as $key => $value)
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-4 py-2 font-medium text-gray-700 bg-gray-50/50 border-r border-gray-200">{{ strtoupper($key) }}</td>
-                                <td class="px-4 py-2 text-gray-800 break-words whitespace-pre-wrap">{{ is_null($value) ? 'NULL' : $value }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
         </main>
     </div>
 </div>
