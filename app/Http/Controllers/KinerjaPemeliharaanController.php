@@ -340,7 +340,7 @@ class KinerjaPemeliharaanController extends Controller
         }
         
         // Monthly Trend Detailed (Create vs Complete)
-        $monthlyTrendDetailed = $this->getMonthlyTrendDetailed($startDate, $endDate); 
+        $monthlyTrendDetailed = $this->getMonthlyTrendDetailed($woQuery, $closedStatuses, $startDate, $endDate); 
 
         // Status Breakdown (Respect date range)
         $statusBreakdown = $this->getStatusBreakdown($woQuery, $startDate, $endDate);
@@ -358,36 +358,54 @@ class KinerjaPemeliharaanController extends Controller
         );
     }
 
-    private function getMonthlyTrendDetailed($startDate, $endDate)
+    private function getMonthlyTrendDetailed($woQuery, $closedStatuses, $startDate, $endDate)
     {
-        $wos = DB::connection('oracle')->table('WORKORDER')
-            ->select([
-                'WONUM',
-                'DESCRIPTION',
-                'STATUS',
-                'WORKTYPE',
-                'REPORTDATE',
-                'SCHEDSTART',
-                'SCHEDFINISH'
-            ])
-            ->where('SITEID', 'KD')
-            ->where('ISTASK', '0')
-            ->where('STATUS', '<>', 'CAN')
-            ->whereNull('ACTFINISH')
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
-            ->orderBy('REPORTDATE', 'asc')
-            ->get();
+        $months = [];
+        $periodIterator = $startDate->copy()->startOfMonth();
+        $endPeriod = $endDate->copy()->endOfMonth();
+        
+        // Protect against too long periods, limit to 18 months for this detailed table
+        $monthsDiff = $periodIterator->diffInMonths($endPeriod);
+        if ($monthsDiff > 18) {
+            $periodIterator = $endPeriod->copy()->subMonths(18)->startOfMonth();
+        }
+
+        while ($periodIterator <= $endPeriod) {
+            $months[] = $periodIterator->copy();
+            $periodIterator->addMonth();
+        }
 
         $trendData = [];
-        foreach ($wos as $wo) {
+        foreach ($months as $month) {
+            $monthStart = $month->copy()->startOfMonth();
+            $monthEnd = $month->copy()->endOfMonth();
+            $monthKey = $month->format('Ym'); // e.g. 202501
+            
+            // Base filter from the user's SQL logic
+            $baseMonthlyQuery = (clone $woQuery)
+                ->where('ISTASK', '0')
+                ->where('STATUS', '<>', 'CAN')
+                ->whereBetween('REPORTDATE', [$monthStart, $monthEnd]);
+            
+            // WO Terbit (Created)
+            $created = (clone $baseMonthlyQuery)->count();
+
+            // WO Complete (actfinish is NOT NULL)
+            $completed = (clone $baseMonthlyQuery)
+                ->whereNotNull('ACTFINISH')
+                ->count();
+            
+            // WO Open (actfinish IS NULL)
+            $open = (clone $baseMonthlyQuery)
+                ->whereNull('ACTFINISH')
+                ->count();
+            
             $trendData[] = [
-                'wonum' => $wo->wonum ?? '-',
-                'description' => $wo->description ?? '-',
-                'terbit' => $wo->reportdate ? Carbon::parse($wo->reportdate)->format('Y-m-d') : '-',
-                'status' => $wo->status ?? '-',
-                'worktype' => $wo->worktype ?? '-',
-                'schedstart' => $wo->schedstart ? Carbon::parse($wo->schedstart)->format('Y-m-d') : '-',
-                'schedfinish' => $wo->schedfinish ? Carbon::parse($wo->schedfinish)->format('Y-m-d') : '-'
+                'month_name' => $month->format('M'),
+                'period' => $monthKey,
+                'created' => $created,
+                'completed_in_month' => $completed, 
+                'open_end_of_month' => $open
             ];
         }
         

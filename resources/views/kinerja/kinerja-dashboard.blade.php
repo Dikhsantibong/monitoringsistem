@@ -288,33 +288,29 @@
         <!-- WO Terbit & Complete Table -->
         <div class="table-card">
             <div class="chart-header">
-                <div class="chart-title">WO Terbit & Complete (Open)</div>
+                <div class="chart-title">WO Terbit & Complete</div>
             </div>
-            <div class="table-wrapper" style="max-height: 400px; overflow-y: auto;">
-                <table class="data-table text-left text-xs">
-                    <thead style="position: sticky; top: 0; z-index: 10;">
+            <div class="table-wrapper">
+                <table class="data-table text-center">
+                    <thead>
                         <tr>
-                            <th class="bg-gray-100 border-b px-3 py-2 whitespace-nowrap">WONUM</th>
-                            <th class="bg-gray-100 border-b px-3 py-2">DESCRIPTION</th>
-                            <th class="bg-gray-100 border-b px-3 py-2 whitespace-nowrap">TERBIT</th>
-                            <th class="bg-gray-100 border-b px-3 py-2 whitespace-nowrap">STATUS</th>
-                            <th class="bg-gray-100 border-b px-3 py-2 whitespace-nowrap">WORKTYPE</th>
-                            <th class="bg-gray-100 border-b px-3 py-2 whitespace-nowrap">SCHEDSTART</th>
-                            <th class="bg-gray-100 border-b px-3 py-2 whitespace-nowrap">SCHEDFINISH</th>
+                            <th rowspan="2" class="text-center bg-gray-100">BULAN</th>
+                            <th rowspan="2" class="text-center bg-gray-100">TERBIT</th>
+                            <th colspan="12" class="text-center bg-gray-100">COMPLETE (Closed in Month)</th>
+                            <th rowspan="2" class="text-center bg-gray-100">OPEN (End of Month)</th>
+                        </tr>
+                        <tr>
+                            <!-- 12 Months placeholder headers, or simplify to create vs complete vs open -->
+                            <th colspan="12" class="text-center text-xs text-gray-500">Total Completed</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach($monthlyTrendDetailed as $row)
-                        <tr class="hover:bg-gray-50">
-                            <td class="border-b border-gray-200 px-3 py-2 font-semibold text-blue-600 whitespace-nowrap">{{ $row['wonum'] }}</td>
-                            <td class="border-b border-gray-200 px-3 py-2">{{ $row['description'] }}</td>
-                            <td class="border-b border-gray-200 px-3 py-2 whitespace-nowrap">{{ $row['terbit'] }}</td>
-                            <td class="border-b border-gray-200 px-3 py-2 whitespace-nowrap">
-                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded font-semibold">{{ $row['status'] }}</span>
-                            </td>
-                            <td class="border-b border-gray-200 px-3 py-2 whitespace-nowrap">{{ $row['worktype'] }}</td>
-                            <td class="border-b border-gray-200 px-3 py-2 whitespace-nowrap">{{ $row['schedstart'] }}</td>
-                            <td class="border-b border-gray-200 px-3 py-2 whitespace-nowrap">{{ $row['schedfinish'] }}</td>
+                        <tr>
+                            <td class="font-semibold">{{ $row['period'] }}</td>
+                            <td>{{ $row['created'] }}</td>
+                            <td colspan="12" class="bg-gray-50">{{ $row['completed_in_month'] }}</td>
+                            <td class="text-blue-600 font-bold hover:underline cursor-pointer">{{ $row['open_end_of_month'] }}</td>
                         </tr>
                         @endforeach
                     </tbody>
