@@ -149,32 +149,32 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
       <table style="width:100%; font-size:9.5px; margin-bottom:5px; border-collapse:collapse;">
         <tr>
-          <td style="width:33%; padding:1px 0;"><b>Site :</b> {{ $wo['siteid'] ?? '-' }}</td>
+          <td style="width:33%; padding:1px 0;"><b>Site :</b> {{ $task['siteid'] ?? '-' }}</td>
           <td style="width:33%; padding:1px 0;"><b>Sched Start :</b> {{ $task['schedstart'] ?? '-' }}</td>
           <td style="width:34%; padding:1px 0;"><b>Sched Finish :</b> {{ $task['schedfinish'] ?? '-' }}</td>
         </tr>
         <tr>
           <td style="padding:1px 0;"><b>Status :</b> {{ $task['status'] ?? '-' }}</td>
-          <td style="padding:1px 0;"><b>Target Start :</b> {{ $wo['targstartdate'] ?? '-' }}</td>
-          <td style="padding:1px 0;"><b>Target Finish :</b> {{ $wo['targcompdate'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>Target Start :</b> {{ $task['targstartdate'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>Target Finish :</b> {{ $task['targcompdate'] ?? '-' }}</td>
         </tr>
         <tr>
-          <td style="padding:1px 0;"><b>Parent :</b> {{ $wo['wonum'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>Parent :</b> {{ $task['parent'] ?? '-' }}</td>
           <td style="padding:1px 0;"><b>Actual Start :</b> {{ $task['actstart'] ?? '-' }}</td>
           <td style="padding:1px 0;"><b>Actual Finish :</b> {{ $task['actfinish'] ?? '-' }}</td>
         </tr>
         <tr>
-          <td style="padding:1px 0;"><b>Work Type :</b> {{ $wo['worktype'] ?? '-' }}</td>
-          <td style="padding:1px 0;"><b>Report Date :</b> {{ $wo['reportdate'] ?? '-' }}</td>
-          <td style="padding:1px 0;"><b>Reported By :</b> {{ $wo['reportedby'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>Work Type :</b> {{ $task['worktype'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>Report Date :</b> {{ $task['reportdate'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>Reported By :</b> {{ $task['reportedby'] ?? '-' }}</td>
         </tr>
         <tr>
-          <td style="padding:1px 0;"><b>Assign :</b> {{ $wo['assigned_to'] ?? '-' }}</td>
-          <td style="padding:1px 0;"><b>Failure Class :</b> {{ $wo['failurecode'] ?? '-' }}</td>
-          <td style="padding:1px 0;"><b>GL Account :</b> {{ $wo['glaccount'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>Assign :</b> {{ $task['assigned_to'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>Failure Class :</b> {{ $task['failurecode'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>GL Account :</b> {{ $task['glaccount'] ?? '-' }}</td>
         </tr>
         <tr>
-          <td style="padding:1px 0;"><b>Priority :</b> {{ $wo['wopriority'] ?? '-' }}</td>
+          <td style="padding:1px 0;"><b>Priority :</b> {{ $task['wopriority'] ?? '-' }}</td>
           <td colspan="2" style="padding:1px 0;"><b>Person Group :</b> {{ $task['persongroup'] ?? '-' }}</td>
         </tr>
       </table>
@@ -182,11 +182,11 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <table style="width:100%; font-size:9.5px; margin-bottom:5px; border-collapse:collapse;">
         <tr>
           <td style="width:65px; font-weight:bold; padding:1px 0;">Asset :</td>
-          <td style="padding:1px 0;">{{ $wo['assetnum'] ?? '-' }} &nbsp;&nbsp; {{ $wo['asset_description'] ?? '-' }}</td>
+          <td style="padding:1px 0;">{{ $task['assetnum'] ?? '-' }} &nbsp;&nbsp; {{ $task['asset_description'] ?? '-' }}</td>
         </tr>
         <tr>
           <td style="width:65px; font-weight:bold; padding:1px 0;">Location :</td>
-          <td style="padding:1px 0;">{{ $wo['location'] ?? '-' }} &nbsp;&nbsp; {{ $wo['location_description'] ?? '-' }}</td>
+          <td style="padding:1px 0;">{{ $task['location'] ?? '-' }} &nbsp;&nbsp; {{ $task['location_description'] ?? '-' }}</td>
         </tr>
       </table>
 

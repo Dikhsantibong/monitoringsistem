@@ -39,8 +39,7 @@ class MaximoController extends Controller
             try {
                 $baseStatsQuery = DB::connection('oracle')
                     ->table('WORKORDER')
-                    ->where('SITEID', 'KD')
-                    ->where('WONUM', 'LIKE', 'WO%');
+                    ->where('SITEID', 'KD');
 
                 $stats['total'] = (clone $baseStatsQuery)->count();
                 
@@ -88,8 +87,7 @@ class MaximoController extends Controller
                     'SCHEDFINISH',
                     'REPORTDATE',
                 ])
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%');
+                ->where('SITEID', 'KD');
 
             if ($search) {
                 $workOrdersQuery->where(function ($q) use ($search) {
@@ -730,7 +728,6 @@ class MaximoController extends Controller
                     'ANGGARAN',
                 ])
                 ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
                 ->where('WONUM', $wonum)
                 ->first();
 
@@ -974,6 +971,17 @@ class MaximoController extends Controller
                         'ACTFINISH',
                         'PERSONGROUP',
                         'REPORTEDBY',
+                        'SITEID',
+                        'TARGSTARTDATE',
+                        'TARGCOMPDATE',
+                        'PARENT',
+                        'WORKTYPE',
+                        'REPORTDATE',
+                        'FAILURECODE',
+                        'GLACCOUNT',
+                        'WOPRIORITY',
+                        'ASSETNUM',
+                        'LOCATION'
                     ])
                     ->where('PARENT', $wonum)
                     ->where('SITEID', 'KD')
@@ -981,6 +989,46 @@ class MaximoController extends Controller
                     ->get();
 
                 foreach ($childWOs as $child) {
+                    // Cek assignment task
+                    $taskAssign = '-';
+                    try {
+                        $ta = DB::connection('oracle')
+                            ->table('ASSIGNMENT')
+                            ->select(['LABORCODE'])
+                            ->where('WONUM', $child->wonum)
+                            ->where('SITEID', 'KD')
+                            ->first();
+                        if ($ta && !empty($ta->laborcode)) {
+                            $taskAssign = $ta->laborcode;
+                        }
+                    } catch (\Exception $e) {}
+
+                    // Cek Asset & Location Description untuk task
+                    $taskAssetDesc = '-';
+                    $taskLocDesc = '-';
+                    if (!empty($child->assetnum)) {
+                        try {
+                            $ast = DB::connection('oracle')
+                                ->table('ASSET')
+                                ->select(['DESCRIPTION'])
+                                ->where('ASSETNUM', $child->assetnum)
+                                ->where('SITEID', 'KD')
+                                ->first();
+                            $taskAssetDesc = $ast->description ?? '-';
+                        } catch (\Exception $e) {}
+                    }
+                    if (!empty($child->location)) {
+                        try {
+                            $loc = DB::connection('oracle')
+                                ->table('LOCATIONS')
+                                ->select(['DESCRIPTION'])
+                                ->where('LOCATION', $child->location)
+                                ->where('SITEID', 'KD')
+                                ->first();
+                            $taskLocDesc = $loc->description ?? '-';
+                        } catch (\Exception $e) {}
+                    }
+
                     $tasks[] = [
                         'wonum' => $child->wonum ?? '-',
                         'description' => $child->description ?? '-',
@@ -990,6 +1038,21 @@ class MaximoController extends Controller
                         'actstart' => isset($child->actstart) && $child->actstart ? Carbon::parse($child->actstart)->format('d-m-Y H:i') : '-',
                         'actfinish' => isset($child->actfinish) && $child->actfinish ? Carbon::parse($child->actfinish)->format('d-m-Y H:i') : '-',
                         'persongroup' => $child->persongroup ?? '-',
+                        'siteid' => $child->siteid ?? '-',
+                        'targstartdate' => isset($child->targstartdate) && $child->targstartdate ? Carbon::parse($child->targstartdate)->format('d-m-Y H:i') : '-',
+                        'targcompdate' => isset($child->targcompdate) && $child->targcompdate ? Carbon::parse($child->targcompdate)->format('d-m-Y H:i') : '-',
+                        'parent' => $child->parent ?? '-',
+                        'worktype' => $child->worktype ?? '-',
+                        'reportdate' => isset($child->reportdate) && $child->reportdate ? Carbon::parse($child->reportdate)->format('d-m-Y H:i') : '-',
+                        'reportedby' => $child->reportedby ?? '-',
+                        'failurecode' => $child->failurecode ?? '-',
+                        'glaccount' => $child->glaccount ?? '-',
+                        'wopriority' => $child->wopriority ?? '-',
+                        'assetnum' => $child->assetnum ?? '-',
+                        'asset_description' => $taskAssetDesc,
+                        'location' => $child->location ?? '-',
+                        'location_description' => $taskLocDesc,
+                        'assigned_to' => $taskAssign,
                     ];
                 }
             } catch (\Exception $e) {
