@@ -814,6 +814,7 @@ class MaximoController extends Controller
                         ->table('SR')
                         ->select([
                             'TICKETID',
+                            'TICKETUID',
                             'DESCRIPTION',
                             'STATUS',
                             'REPORTEDBY',
@@ -843,16 +844,48 @@ class MaximoController extends Controller
 
                         // Ambil long description SR (detail: gejala, dampak, resiko, tindakan)
                         $srLongDesc = '-';
-                        try {
-                            $longDesc = DB::connection('oracle')
-                                ->table('LONGDESCRIPTION')
-                                ->select(['LDTEXT'])
-                                ->where('LDKEY', $srTicketId)
-                                ->where('LDOWNERTABLE', 'SR')
-                                ->first();
-                            $srLongDesc = $longDesc->ldtext ?? '-';
-                        } catch (\Exception $e) {
-                            Log::warning('Failed to fetch LONGDESCRIPTION for SR', ['ticketid' => $srTicketId]);
+                        $ldTables = ['LONGDESCRIPTION', 'LONG_DESCRIPTION', 'TICKETLONGDESC'];
+                        
+                        // Coba berdasarkan LDKEY = TICKETID
+                        foreach ($ldTables as $ldTable) {
+                            try {
+                                $longDesc = DB::connection('oracle')
+                                    ->table($ldTable)
+                                    ->select(['LDTEXT'])
+                                    ->where('LDKEY', $srTicketId)
+                                    ->where('LDOWNERTABLE', 'SR')
+                                    ->first();
+                                if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
+                                    $srLongDesc = $longDesc->ldtext;
+                                    break;
+                                }
+                            } catch (\Exception $e) {
+                                continue;
+                            }
+                        }
+
+                        // Jika masih belum ketemu, coba via TICKETUID
+                        if ($srLongDesc === '-' && isset($sr->ticketuid)) {
+                            foreach ($ldTables as $ldTable) {
+                                try {
+                                    // Kadang LDKEY mengacu ke TICKETUID untuk TICKET (termasuk SR)
+                                    $longDesc = DB::connection('oracle')
+                                        ->table($ldTable)
+                                        ->select(['LDTEXT'])
+                                        ->where(function($q) use ($sr) {
+                                            $q->where('LDKEY', $sr->ticketuid)
+                                              ->orWhere('LDOWNERID', $sr->ticketuid);
+                                        })
+                                        ->where('LDOWNERTABLE', 'SR')
+                                        ->first();
+                                    if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
+                                        $srLongDesc = $longDesc->ldtext;
+                                        break;
+                                    }
+                                } catch (\Exception $e) {
+                                    continue;
+                                }
+                            }
                         }
 
                         $srData = [
