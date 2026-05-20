@@ -340,7 +340,7 @@ class KinerjaPemeliharaanController extends Controller
         }
         
         // Monthly Trend Detailed (Create vs Complete)
-        $monthlyTrendDetailed = $this->getMonthlyTrendDetailed($woQuery, $closedStatuses, $startDate, $endDate); 
+        $monthlyTrendDetailed = $this->getMonthlyTrendDetailed($startDate, $endDate); 
 
         // Status Breakdown (Respect date range)
         $statusBreakdown = $this->getStatusBreakdown($woQuery, $startDate, $endDate);
@@ -358,60 +358,36 @@ class KinerjaPemeliharaanController extends Controller
         );
     }
 
-    private function getMonthlyTrendDetailed($woQuery, $closedStatuses, $startDate, $endDate)
+    private function getMonthlyTrendDetailed($startDate, $endDate)
     {
-        $months = [];
-        $periodIterator = $startDate->copy()->startOfMonth();
-        $endPeriod = $endDate->copy()->endOfMonth();
-        
-        // Protect against too long periods, limit to 18 months for this detailed table
-        $monthsDiff = $periodIterator->diffInMonths($endPeriod);
-        if ($monthsDiff > 18) {
-            $periodIterator = $endPeriod->copy()->subMonths(18)->startOfMonth();
-        }
-
-        while ($periodIterator <= $endPeriod) {
-            $months[] = $periodIterator->copy();
-            $periodIterator->addMonth();
-        }
+        $wos = DB::connection('oracle')->table('WORKORDER')
+            ->select([
+                'WONUM',
+                'DESCRIPTION',
+                'STATUS',
+                'WORKTYPE',
+                'REPORTDATE',
+                'SCHEDSTART',
+                'SCHEDFINISH'
+            ])
+            ->where('SITEID', 'KD')
+            ->where('ISTASK', '0')
+            ->where('STATUS', '<>', 'CAN')
+            ->whereNull('ACTFINISH')
+            ->whereBetween('REPORTDATE', [$startDate, $endDate])
+            ->orderBy('REPORTDATE', 'asc')
+            ->get();
 
         $trendData = [];
-        foreach ($months as $month) {
-            $monthStart = $month->copy()->startOfMonth();
-            $monthEnd = $month->copy()->endOfMonth();
-            $monthKey = $month->format('Ym'); // e.g. 202501
-            
-            // WO Terbit (Created)
-            $created = (clone $woQuery)
-                ->whereBetween('REPORTDATE', [$monthStart, $monthEnd])
-                ->count();
-
-            // WO Complete (Closed)
-            $completed = (clone $woQuery)
-                ->whereIn('STATUS', $closedStatuses)
-                ->whereBetween('REPORTDATE', [$monthStart, $monthEnd])
-                ->count();
-            
-            // Open (Accumulated until end of this month - simplified)
-            // Real logic would be: Created before end of month AND (Not Closed OR Closed after end of month)
-            $open = (clone $woQuery)
-                ->where('REPORTDATE', '<=', $monthEnd)
-                ->where(function($q) use ($monthEnd, $closedStatuses, $monthStart) {
-                    $q->whereNotIn('STATUS', $closedStatuses)
-                      ->orWhere('REPORTDATE', '>', $monthStart); // Simplified for trend
-                })
-                ->count();
-
-            // Breakdown Completion by month relative to creation (simplified for now as just total completed in that month)
-            // A clearer matrix like the image requires tracking "When was a WO created in Month X completed?" 
-            // For now, we return simpler "Created vs Completed in Month" stats.
-            
+        foreach ($wos as $wo) {
             $trendData[] = [
-                'month_name' => $month->format('M'), // Jan
-                'period' => $monthKey,
-                'created' => $created,
-                'completed_in_month' => $completed, // This is total completed in this month, regardless of creation
-                'open_end_of_month' => $open
+                'wonum' => $wo->wonum ?? '-',
+                'description' => $wo->description ?? '-',
+                'terbit' => $wo->reportdate ? Carbon::parse($wo->reportdate)->format('Y-m-d') : '-',
+                'status' => $wo->status ?? '-',
+                'worktype' => $wo->worktype ?? '-',
+                'schedstart' => $wo->schedstart ? Carbon::parse($wo->schedstart)->format('Y-m-d') : '-',
+                'schedfinish' => $wo->schedfinish ? Carbon::parse($wo->schedfinish)->format('Y-m-d') : '-'
             ];
         }
         
