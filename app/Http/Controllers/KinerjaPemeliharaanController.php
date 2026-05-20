@@ -648,25 +648,29 @@ class KinerjaPemeliharaanController extends Controller
     {
         $backlogHrs = 0;
         try {
-            $result = DB::connection('oracle')->select("
-                SELECT Round(sum(a.laborhrs*a.quantity),2) AS total_plan_mh
-                FROM workorder wo
-                INNER JOIN workorder wotask 
-                    ON wo.wonum = wotask.wogroup 
-                    AND wo.orgid = wotask.orgid 
-                    AND wo.siteid = wotask.siteid
-                LEFT JOIN wplabor a 
-                    ON a.wonum = wotask.wonum 
-                    AND a.orgid = wotask.orgid 
-                    AND a.siteid = wotask.siteid
-                WHERE wo.istask = '0'
-                AND wo.status not in ('COMP','CLOSE','CAN','WJOBCARD','PTWR')
-                AND (wo.worktype NOT in ('OH','ADM') or wo.worktype IS NULL)
-                AND wo.siteid = 'KD'
-                AND wo.reportdate BETWEEN ? AND ?
-            ", [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
-            
-            $backlogHrs = $result[0]->total_plan_mh ?? 0;
+            $backlogQuery = DB::connection('oracle')->table('WORKORDER as wo')
+                ->join('WORKORDER as wotask', function($join) {
+                    $join->on('wo.WONUM', '=', 'wotask.WOGROUP')
+                         ->on('wo.ORGID', '=', 'wotask.ORGID')
+                         ->on('wo.SITEID', '=', 'wotask.SITEID');
+                })
+                ->leftJoin('WPLABOR as a', function($join) {
+                    $join->on('a.WONUM', '=', 'wotask.WONUM')
+                         ->on('a.ORGID', '=', 'wotask.ORGID')
+                         ->on('a.SITEID', '=', 'wotask.SITEID');
+                })
+                ->where('wo.ISTASK', '0')
+                ->whereNotIn('wo.STATUS', ['COMP', 'CLOSE', 'CAN', 'WJOBCARD', 'PTWR'])
+                ->where(function($query) {
+                    $query->whereNotIn('wo.WORKTYPE', ['OH', 'ADM'])
+                          ->orWhereNull('wo.WORKTYPE');
+                })
+                ->where('wo.SITEID', 'KD')
+                ->whereBetween('wo.REPORTDATE', [$startDate, $endDate])
+                ->select(DB::raw('ROUND(SUM(a.LABORHRS * a.QUANTITY), 2) as total_plan_mh'))
+                ->first();
+                
+            $backlogHrs = $backlogQuery->total_plan_mh ?? 0;
         } catch (\Exception $e) {
             // Fallback if WPLABOR is not accessible
             $backlogHrs = DB::connection('oracle')->table('WORKORDER')
