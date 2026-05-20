@@ -6,14 +6,24 @@
 <title>Job Card - {{ $wo['wonum'] ?? '-' }} - PLN Nusantara Power</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-@page { margin: 10mm 15mm; size: A4; }
-body { font-family: Arial, sans-serif; font-size:11px; color:#000; background:#fff; }
+@page { 
+    margin: 0; 
+    size: A4; 
+}
+body { 
+    font-family: Arial, sans-serif; 
+    font-size:11px; 
+    color:#000; 
+    background:#fff; 
+}
 .page { 
-    width:100%; 
-    height: 277mm; 
+    width: 180mm; /* 210mm - 15mm(left) - 15mm(right) */
+    min-height: 277mm; /* 297mm - 10mm(top) - 10mm(bottom) */
+    margin: 10mm 15mm; /* top/bottom 10mm, left/right 15mm */
     position: relative; 
     page-break-after: always; 
 }
+
 
 /* HEADER */
 .hdr-table { width:100%; border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:8px; }
