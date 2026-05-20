@@ -91,7 +91,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <table style="border-collapse:collapse;">
           <tr>
             <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 42px; height: auto;"></td>
-            <td class="logo-txt">PLN<br>Nusantara Power</td>
+            <!-- <td class="logo-txt">PLN<br>Nusantara Power</td> -->
           </tr>
         </table>
       </td>
