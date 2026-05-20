@@ -90,7 +90,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <td style="width:30%; vertical-align:middle;">
         <table style="border-collapse:collapse;">
           <tr>
-            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 42px; height: auto;"></td>
+            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 55px; height: auto;"></td>
             <!-- <td class="logo-txt">PLN<br>Nusantara Power</td> -->
           </tr>
         </table>
@@ -205,7 +205,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <td style="width:30%; vertical-align:middle;">
         <table style="border-collapse:collapse;">
           <tr>
-            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 42px; height: auto;"></td>
+            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 55px; height: auto;"></td>
             <td class="logo-txt">PLN<br>Nusantara Power</td>
           </tr>
         </table>
@@ -287,7 +287,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <td style="width:30%; vertical-align:middle;">
         <table style="border-collapse:collapse;">
           <tr>
-            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 42px; height: auto;"></td>
+            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 55px; height: auto;"></td>
             <td class="logo-txt">PLN<br>Nusantara Power</td>
           </tr>
         </table>
@@ -366,7 +366,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <td style="width:30%; vertical-align:middle;">
         <table style="border-collapse:collapse;">
           <tr>
-            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 42px; height: auto;"></td>
+            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 55px; height: auto;"></td>
             <td class="logo-txt">PLN<br>Nusantara Power</td>
           </tr>
         </table>
@@ -471,7 +471,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <td style="width:30%; vertical-align:middle;">
         <table style="border-collapse:collapse;">
           <tr>
-            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 42px; height: auto;"></td>
+            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 55px; height: auto;"></td>
             <td class="logo-txt">PLN<br>Nusantara Power</td>
           </tr>
         </table>
@@ -540,7 +540,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <td style="width:30%; vertical-align:middle;">
         <table style="border-collapse:collapse;">
           <tr>
-            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 42px; height: auto;"></td>
+            <td><img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width: 55px; height: auto;"></td>
             <td class="logo-txt">PLN<br>Nusantara Power</td>
           </tr>
         </table>
