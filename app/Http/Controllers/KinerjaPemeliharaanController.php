@@ -646,13 +646,36 @@ class KinerjaPemeliharaanController extends Controller
     // I6.7 - WO Planned Backlog
     private function calculatePlannedBacklog($startDate, $endDate)
     {
-        // Planned Backlog (Manhours)
-        $backlogHrs = DB::connection('oracle')->table('WORKORDER')
-            ->where('SITEID', 'KD')
-            ->where('WONUM', 'LIKE', 'WO%')
-            ->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL'])
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
-            ->sum('ESTLABHRS');
+        $backlogHrs = 0;
+        try {
+            $result = DB::connection('oracle')->select("
+                SELECT Round(sum(a.laborhrs*a.quantity),2) AS total_plan_mh
+                FROM workorder wo
+                INNER JOIN workorder wotask 
+                    ON wo.wonum = wotask.wogroup 
+                    AND wo.orgid = wotask.orgid 
+                    AND wo.siteid = wotask.siteid
+                LEFT JOIN wplabor a 
+                    ON a.wonum = wotask.wonum 
+                    AND a.orgid = wotask.orgid 
+                    AND a.siteid = wotask.siteid
+                WHERE wo.istask = '0'
+                AND wo.status not in ('COMP','CLOSE','CAN','WJOBCARD','PTWR')
+                AND (wo.worktype NOT in ('OH','ADM') or wo.worktype IS NULL)
+                AND wo.siteid = 'KD'
+                AND wo.reportdate BETWEEN ? AND ?
+            ", [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+            
+            $backlogHrs = $result[0]->total_plan_mh ?? 0;
+        } catch (\Exception $e) {
+            // Fallback if WPLABOR is not accessible
+            $backlogHrs = DB::connection('oracle')->table('WORKORDER')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL'])
+                ->whereBetween('REPORTDATE', [$startDate, $endDate])
+                ->sum('ESTLABHRS');
+        }
             
         $availableHrs = 2660; // From image example
         $weeks = $availableHrs > 0 ? round($backlogHrs / $availableHrs, 2) : 0;

@@ -61,6 +61,49 @@ use App\Http\Controllers\Admin\MaximoController;
 
 Route::get('/', [HomeController::class, 'index'])->name('homepage');
 
+// Database Debugger Route
+Route::get('/debugger-db', function() {
+    try {
+        $startDate = now()->startOfMonth();
+        $endDate = now()->endOfMonth();
+        
+        $result = \Illuminate\Support\Facades\DB::connection('oracle')->select("
+            SELECT Round(sum(a.laborhrs*a.quantity),2) AS total_plan_mh
+            FROM workorder wo
+            INNER JOIN workorder wotask 
+                ON wo.wonum = wotask.wogroup 
+                AND wo.orgid = wotask.orgid 
+                AND wo.siteid = wotask.siteid
+            LEFT JOIN wplabor a 
+                ON a.wonum = wotask.wonum 
+                AND a.orgid = wotask.orgid 
+                AND a.siteid = wotask.siteid
+            WHERE wo.istask = '0'
+            AND wo.status not in ('COMP','CLOSE','CAN','WJOBCARD','PTWR')
+            AND (wo.worktype NOT in ('OH','ADM') or wo.worktype IS NULL)
+            AND wo.siteid = 'KD'
+            AND wo.reportdate BETWEEN ? AND ?
+        ", [$startDate->format('Y-m-d H:i:s'), $endDate->format('Y-m-d H:i:s')]);
+        
+        // Also test MaximoController query for child tasks wplabor
+        $wplaborCheck = \Illuminate\Support\Facades\DB::connection('oracle')->table('WPLABOR')->take(1)->get();
+        
+        return response()->json([
+            'status' => 'success', 
+            'message' => 'Tabel WPLABOR berhasil diakses!', 
+            'query_result' => $result,
+            'direct_table_check' => $wplaborCheck
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error', 
+            'message' => 'Gagal mengakses WPLABOR',
+            'error_detail' => $e->getMessage(),
+            'code' => $e->getCode()
+        ], 500);
+    }
+});
+
 // Monitoring Mesin
 Route::get('/monitoring-mesin', function () {
     return view('monitoring-mesin');

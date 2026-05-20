@@ -958,6 +958,8 @@ class MaximoController extends Controller
             // 7. Ambil child tasks (child WO dimana PARENT = WONUM)
             // =====================================================
             $tasks = [];
+            $allWOs = [$wonum]; // Menyimpan parent dan semua child wonum untuk WPLABOR
+            
             try {
                 $childWOs = DB::connection('oracle')
                     ->table('WORKORDER')
@@ -989,6 +991,8 @@ class MaximoController extends Controller
                     ->get();
 
                 foreach ($childWOs as $child) {
+                    $allWOs[] = $child->wonum;
+                    
                     // Cek assignment task
                     $taskAssign = '-';
                     try {
@@ -1060,7 +1064,30 @@ class MaximoController extends Controller
             }
 
             // =====================================================
-            // 8. Format data lengkap untuk PDF
+            // 8. Ambil Planned Labor (WPLABOR)
+            // =====================================================
+            $wplabors = [];
+            try {
+                $labors = DB::connection('oracle')->table('WPLABOR')
+                    ->whereIn('WONUM', $allWOs)
+                    ->where('SITEID', 'KD')
+                    ->get();
+                foreach($labors as $l) {
+                    $wplabors[] = [
+                        'wonum' => $l->wonum ?? '-',
+                        'craft' => $l->craft ?? '-',
+                        'skilllevel' => $l->skilllevel ?? '-',
+                        'labor' => $l->laborcode ?? '-',
+                        'quantity' => $l->quantity ?? '-',
+                        'laborhrs' => $l->laborhrs ?? '-',
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch WPLABOR', ['error' => $e->getMessage()]);
+            }
+
+            // =====================================================
+            // 9. Format data lengkap untuk PDF
             // =====================================================
             $woData = [
                 'wonum' => $wo->wonum ?? '-',
@@ -1101,6 +1128,7 @@ class MaximoController extends Controller
                 'wo' => $woData,
                 'sr' => $srData,
                 'tasks' => $tasks,
+                'wplabors' => $wplabors,
             ]);
 
             // Simpan PDF ke storage public dengan nama deterministik (tanpa DB tambahan)

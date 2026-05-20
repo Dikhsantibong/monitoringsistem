@@ -247,9 +247,18 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <th>Task ID</th><th>Craft</th><th>Skill Level</th><th>Labor</th>
       <th>Planned Quantity</th><th>Planned Hours</th><th>Actual Quantity</th><th>Actual Hours</th>
     </tr>
-    @if(isset($tasks) && count($tasks) > 0)
-      @foreach($tasks as $task)
-      <tr><td>{{ $task['wonum'] }}</td><td>MECH1</td><td>JUNIOR</td><td></td><td>4</td><td>5</td><td></td><td></td></tr>
+    @if(isset($wplabors) && count($wplabors) > 0)
+      @foreach($wplabors as $wpl)
+      <tr>
+        <td>{{ $wpl['wonum'] }}</td>
+        <td>{{ $wpl['craft'] }}</td>
+        <td>{{ $wpl['skilllevel'] }}</td>
+        <td>{{ $wpl['labor'] }}</td>
+        <td>{{ $wpl['quantity'] }}</td>
+        <td>{{ $wpl['laborhrs'] }}</td>
+        <td></td>
+        <td></td>
+      </tr>
       @endforeach
     @else
       <tr><td>{{ $wo['wonum'] }}</td><td>MECH1</td><td>JUNIOR</td><td></td><td>4</td><td>5</td><td></td><td></td></tr>
