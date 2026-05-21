@@ -193,7 +193,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       
       @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
       <div class="task-ld" style="margin-top: 8px; font-size: 9.5px; padding-left: 15px;">
-        {!! $task['longdescription'] !!}
+        {!! nl2br(e($task['longdescription'])) !!}
       </div>
       @endif
     </div>
@@ -437,14 +437,14 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     <tr>
       <td style="text-align:center;">1</td>
       <td style="font-size:8.5px; line-height:1.6;">
-        <strong>PERSIAPAN KERJA :</strong><br>
-        1. Mobilisasi Tools<br>2. Mobilisasi Material<br>3. Pembuatan PTW<br>4. menggunakan APD standart<br>5. Pastikan peralatan terisolasi sebelum pekerjaan<br><br>
-        <strong>PELAKSANAAN KERJA :</strong><br>
-        1. Lakukan Pembongkaran<br>2. Dilakukan pengecekan<br>3. Lakukan penggantian material ( jika di perlukan )<br>4. Test Operasi (jika ditemukan ketidak sesuaian maka lakukan pekerjaan ulang)<br><br>
-        <strong>REALISASI PEKERJAAN :</strong><br>1.<br>2.<br>3.<br>4.<br><br>
-        <strong>PASCA PELAKSANAAN KERJA:</strong><br>
-        1. Demobilisasi Tools dan sisa material<br>2. Pembersihan area kerja<br>3. Release Job Card<br>4. Buat laporan pekerjaan<br>5. Kembalikan job card ke Rendalhar Lengkap dengan isian realisasi man power, material dan failure reporting<br><br>
-        <strong>POST MAINTENANCE TEST</strong>
+        @if(isset($tasks) && count($tasks) > 0)
+          @foreach($tasks as $task)
+            @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
+              <strong>Task : {{ $task['description'] ?? '-' }}</strong><br>
+              {!! nl2br(e($task['longdescription'])) !!}<br><br>
+            @endif
+          @endforeach
+        @endif
       </td>
       <td style="text-align:center; font-weight:bold; font-size:9px;">1<br>GENERAL</td>
       <td style="font-size:8.5px; line-height:1.9;">
