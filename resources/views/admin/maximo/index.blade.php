@@ -149,6 +149,7 @@
                             <input type="hidden" name="wo_page" value="{{ request('wo_page', 1) }}">
                             <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
                             <input type="hidden" name="wo_status" value="{{ request('wo_status') }}">
+                            <input type="hidden" name="status_unit" value="{{ request('status_unit') }}">
                             <input type="hidden" name="wo_worktype" value="{{ request('wo_worktype') }}">
                             <input type="hidden" name="tab" id="searchTabInput" value="{{ request('tab', 'wo') }}">
                             <div class="flex">
@@ -197,8 +198,9 @@
                             <input type="hidden" name="sr_page" value="{{ request('sr_page', 1) }}">
                             <input type="hidden" name="search" value="{{ request('search') }}">
                             <input type="hidden" name="tab" value="wo">
+                        </form>
                             
-                            <div class="overflow-x-auto">
+                        <div class="overflow-x-auto">
                                 <table class="min-w-full table-fixed divide-y divide-gray-200 border border-gray-200 whitespace-nowrap text-sm">
                                     <thead class="bg-gray-100">
                                         <tr>
@@ -212,7 +214,7 @@
                                                 <div class="flex items-center justify-between">
                                                     <span>Status Maximo</span>
                                                     <div class="relative ml-2">
-                                                        <select name="wo_status" onchange="document.getElementById('woFilterForm').submit()" 
+                                                        <select name="wo_status" form="woFilterForm" onchange="document.getElementById('woFilterForm').submit()" 
                                                                 class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-800 focus:outline-none">
                                                             <option value="" {{ !request('wo_status') ? 'selected' : '' }}>Semua</option>
                                                             <option value="WAPPR" {{ request('wo_status') == 'WAPPR' ? 'selected' : '' }}>WAPPR</option>
@@ -229,7 +231,7 @@
                                                 <div class="flex items-center justify-between">
                                                     <span>Status Unit</span>
                                                     <div class="relative ml-2">
-                                                        <select name="status_unit" onchange="document.getElementById('woFilterForm').submit()" 
+                                                        <select name="status_unit" form="woFilterForm" onchange="document.getElementById('woFilterForm').submit()" 
                                                                 class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-800 focus:outline-none">
                                                             <option value="" {{ !request('status_unit') ? 'selected' : '' }}>Semua</option>
                                                             <option value="WAPPR" {{ request('status_unit') == 'WAPPR' ? 'selected' : '' }}>WAPPR</option>
@@ -248,7 +250,7 @@
                                                 <div class="flex items-center justify-between">
                                                     <span>Work Type</span>
                                                     <div class="relative ml-2">
-                                                        <select name="wo_worktype" onchange="document.getElementById('woFilterForm').submit()" 
+                                                        <select name="wo_worktype" form="woFilterForm" onchange="document.getElementById('woFilterForm').submit()" 
                                                                 class="border border-gray-300 rounded px-2 py-1 text-xs bg-white text-gray-800 focus:outline-none">
                                                             <option value="" {{ !request('wo_worktype') ? 'selected' : '' }}>Semua</option>
                                                             <option value="CH" {{ request('wo_worktype') == 'CH' ? 'selected' : '' }}>CH</option>
@@ -366,7 +368,6 @@
                                 </tbody>
                             </table>
                         </div>
-                        </form>
 
                         {{-- Pagination Work Order --}}
                         @if($workOrdersPaginator && $workOrdersPaginator->hasPages())
