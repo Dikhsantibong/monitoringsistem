@@ -635,7 +635,9 @@ class LaborSayaController extends Controller
                     ->with('error', 'WONUM tidak valid.');
             }
 
-            // Ambil data Work Order dari Maximo
+            // =====================================================
+            // 1. Ambil data Work Order LENGKAP dari Maximo
+            // =====================================================
             $wo = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select([
@@ -644,7 +646,7 @@ class LaborSayaController extends Controller
                     'STATUS',
                     'STATUSDATE',
                     'WORKTYPE',
-                    'WOPRIORTEXT',
+                    'WOPRIORITY',
                     'DESCRIPTION',
                     'ASSETNUM',
                     'LOCATION',
@@ -653,9 +655,21 @@ class LaborSayaController extends Controller
                     'SCHEDSTART',
                     'SCHEDFINISH',
                     'REPORTDATE',
+                    'REPORTEDBY',
+                    'ACTSTART',
+                    'ACTFINISH',
+                    'GLACCOUNT',
+                    'FAILURECODE',
+                    'JPNUM',
+                    'PERSONGROUP',
+                    'TARGSTARTDATE',
+                    'TARGCOMPDATE',
+                    'LEAD',
+                    'ORIGRECORDID',
+                    'ORIGRECORDCLASS',
+                    'ANGGARAN',
                 ])
                 ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
                 ->where('WONUM', $wonum)
                 ->first();
 
@@ -664,23 +678,383 @@ class LaborSayaController extends Controller
                     ->with('error', 'Work Order tidak ditemukan.');
             }
 
-            // Normalize result to lowercase property names
-            $wo = (object) array_change_key_case((array) $wo, CASE_LOWER);
-
             // Cek apakah status adalah APPR
             if (strtoupper($wo->status ?? '') !== 'APPR') {
                 return redirect()->route('pemeliharaan.labor-saya.edit', ['id' => $wonum])
                     ->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
             }
 
-            // Format data untuk PDF
+            // =====================================================
+            // 2. Ambil Asset Description dari tabel ASSET
+            // =====================================================
+            $assetDescription = '-';
+            if (!empty($wo->assetnum)) {
+                try {
+                    $asset = DB::connection('oracle')
+                        ->table('ASSET')
+                        ->select(['DESCRIPTION'])
+                        ->where('ASSETNUM', $wo->assetnum)
+                        ->where('SITEID', 'KD')
+                        ->first();
+                    $assetDescription = $asset->description ?? '-';
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch ASSET description', ['assetnum' => $wo->assetnum, 'error' => $e->getMessage()]);
+                }
+            }
+
+            // =====================================================
+            // 3. Ambil Location Description dari tabel LOCATIONS
+            // =====================================================
+            $locationDescription = '-';
+            if (!empty($wo->location)) {
+                try {
+                    $location = DB::connection('oracle')
+                        ->table('LOCATIONS')
+                        ->select(['DESCRIPTION'])
+                        ->where('LOCATION', $wo->location)
+                        ->where('SITEID', 'KD')
+                        ->first();
+                    $locationDescription = $location->description ?? '-';
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch LOCATIONS description', ['location' => $wo->location, 'error' => $e->getMessage()]);
+                }
+            }
+
+            // =====================================================
+            // 4. Cari linked Service Request
+            // =====================================================
+            $srData = null;
+            $srTicketId = null;
+
+            if (!empty($wo->origrecordid) && strtoupper($wo->origrecordclass ?? '') === 'SR') {
+                $srTicketId = $wo->origrecordid;
+            }
+
+            if (!$srTicketId) {
+                try {
+                    $related = DB::connection('oracle')
+                        ->table('RELATEDRECORD')
+                        ->select(['RELATEDRECKEY'])
+                        ->where('RECORDKEY', $wonum)
+                        ->where('RELATEDRECCLASS', 'SR')
+                        ->first();
+                    if ($related) {
+                        $srTicketId = $related->relatedreckey;
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch RELATEDRECORD for SR', ['wonum' => $wonum, 'error' => $e->getMessage()]);
+                }
+            }
+
+            if ($srTicketId) {
+                try {
+                    $sr = DB::connection('oracle')
+                        ->table('SR')
+                        ->select([
+                            'TICKETID',
+                            'TICKETUID',
+                            'DESCRIPTION',
+                            'STATUS',
+                            'REPORTEDBY',
+                            'REPORTDATE',
+                            'LOCATION',
+                            'ASSETNUM',
+                        ])
+                        ->where('TICKETID', $srTicketId)
+                        ->where('SITEID', 'KD')
+                        ->first();
+
+                    if ($sr) {
+                        $srReportedByName = '-';
+                        if (!empty($sr->reportedby)) {
+                            try {
+                                $srPerson = DB::connection('oracle')
+                                    ->table('PERSON')
+                                    ->select(['DISPLAYNAME'])
+                                    ->where('PERSONID', $sr->reportedby)
+                                    ->first();
+                                $srReportedByName = $srPerson->displayname ?? '-';
+                            } catch (\Exception $e) {
+                                Log::warning('Failed to fetch PERSON for SR reportedby', ['personid' => $sr->reportedby]);
+                            }
+                        }
+
+                        $srLongDesc = '-';
+                        $ldTables = ['LONGDESCRIPTION', 'LONG_DESCRIPTION', 'TICKETLONGDESC'];
+
+                        foreach ($ldTables as $ldTable) {
+                            try {
+                                $longDesc = DB::connection('oracle')
+                                    ->table($ldTable)
+                                    ->select(['LDTEXT'])
+                                    ->where('LDKEY', $srTicketId)
+                                    ->where('LDOWNERTABLE', 'SR')
+                                    ->first();
+                                if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
+                                    $srLongDesc = $longDesc->ldtext;
+                                    break;
+                                }
+                            } catch (\Exception $e) {
+                                continue;
+                            }
+                        }
+
+                        if ($srLongDesc === '-' && isset($sr->ticketuid)) {
+                            foreach ($ldTables as $ldTable) {
+                                try {
+                                    $longDesc = DB::connection('oracle')
+                                        ->table($ldTable)
+                                        ->select(['LDTEXT'])
+                                        ->where(function($q) use ($sr) {
+                                            $q->where('LDKEY', $sr->ticketuid)
+                                              ->orWhere('LDOWNERID', $sr->ticketuid);
+                                        })
+                                        ->where('LDOWNERTABLE', 'SR')
+                                        ->first();
+                                    if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
+                                        $srLongDesc = $longDesc->ldtext;
+                                        break;
+                                    }
+                                } catch (\Exception $e) {
+                                    continue;
+                                }
+                            }
+                        }
+
+                        $srData = [
+                            'ticketid' => $sr->ticketid ?? '-',
+                            'description' => $sr->description ?? '-',
+                            'status' => $sr->status ?? '-',
+                            'reportedby' => $sr->reportedby ?? '-',
+                            'reportedby_name' => $srReportedByName,
+                            'reportdate' => isset($sr->reportdate) && $sr->reportdate ? Carbon::parse($sr->reportdate)->format('d-m-Y H:i') : '-',
+                            'longdescription' => $srLongDesc,
+                        ];
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch SR data', ['ticketid' => $srTicketId, 'error' => $e->getMessage()]);
+                }
+            }
+
+            // =====================================================
+            // 5. Ambil nama person untuk WO Reported By
+            // =====================================================
+            $woReportedByName = '-';
+            if (!empty($wo->reportedby)) {
+                try {
+                    $woPerson = DB::connection('oracle')
+                        ->table('PERSON')
+                        ->select(['DISPLAYNAME'])
+                        ->where('PERSONID', $wo->reportedby)
+                        ->first();
+                    $woReportedByName = $woPerson->displayname ?? '-';
+                } catch (\Exception $e) {
+                    Log::warning('Failed to fetch PERSON for WO reportedby', ['personid' => $wo->reportedby]);
+                }
+            }
+
+            // =====================================================
+            // 6. Ambil data Assignment (assigned labor)
+            // =====================================================
+            $assignedTo = '-';
+            $assignedToName = '-';
+            try {
+                $assignment = DB::connection('oracle')
+                    ->table('ASSIGNMENT')
+                    ->select(['LABORCODE'])
+                    ->where('WONUM', $wonum)
+                    ->where('SITEID', 'KD')
+                    ->first();
+                if ($assignment && !empty($assignment->laborcode)) {
+                    $assignedTo = $assignment->laborcode;
+                    try {
+                        $laborPerson = DB::connection('oracle')
+                            ->table('LABOR')
+                            ->select(['PERSONID'])
+                            ->where('LABORCODE', $assignment->laborcode)
+                            ->first();
+                        if ($laborPerson && !empty($laborPerson->personid)) {
+                            $assignPerson = DB::connection('oracle')
+                                ->table('PERSON')
+                                ->select(['DISPLAYNAME'])
+                                ->where('PERSONID', $laborPerson->personid)
+                                ->first();
+                            $assignedToName = $assignPerson->displayname ?? '-';
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to fetch assigned person name', ['laborcode' => $assignment->laborcode]);
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch ASSIGNMENT', ['wonum' => $wonum, 'error' => $e->getMessage()]);
+            }
+
+            // =====================================================
+            // 7. Ambil child tasks (child WO dimana PARENT = WONUM)
+            // =====================================================
+            $tasks = [];
+            $allWOs = [$wonum];
+
+            try {
+                $childWOs = DB::connection('oracle')
+                    ->table('WORKORDER')
+                    ->select([
+                        'WONUM',
+                        'DESCRIPTION',
+                        'STATUS',
+                        'SCHEDSTART',
+                        'SCHEDFINISH',
+                        'ACTSTART',
+                        'ACTFINISH',
+                        'PERSONGROUP',
+                        'REPORTEDBY',
+                        'SITEID',
+                        'TARGSTARTDATE',
+                        'TARGCOMPDATE',
+                        'PARENT',
+                        'WORKTYPE',
+                        'REPORTDATE',
+                        'FAILURECODE',
+                        'GLACCOUNT',
+                        'WOPRIORITY',
+                        'ASSETNUM',
+                        'LOCATION',
+                        'WORKORDERID'
+                    ])
+                    ->where('PARENT', $wonum)
+                    ->where('SITEID', 'KD')
+                    ->orderBy('WONUM')
+                    ->get();
+
+                foreach ($childWOs as $child) {
+                    $allWOs[] = $child->wonum;
+
+                    // Cek assignment task
+                    $taskAssign = '-';
+                    try {
+                        $ta = DB::connection('oracle')
+                            ->table('ASSIGNMENT')
+                            ->select(['LABORCODE'])
+                            ->where('WONUM', $child->wonum)
+                            ->where('SITEID', 'KD')
+                            ->first();
+                        if ($ta && !empty($ta->laborcode)) {
+                            $taskAssign = $ta->laborcode;
+                        }
+                    } catch (\Exception $e) {}
+
+                    // Cek Asset & Location Description untuk task
+                    $taskAssetDesc = '-';
+                    $taskLocDesc = '-';
+                    if (!empty($child->assetnum)) {
+                        try {
+                            $ast = DB::connection('oracle')
+                                ->table('ASSET')
+                                ->select(['DESCRIPTION'])
+                                ->where('ASSETNUM', $child->assetnum)
+                                ->where('SITEID', 'KD')
+                                ->first();
+                            $taskAssetDesc = $ast->description ?? '-';
+                        } catch (\Exception $e) {}
+                    }
+                    if (!empty($child->location)) {
+                        try {
+                            $loc = DB::connection('oracle')
+                                ->table('LOCATIONS')
+                                ->select(['DESCRIPTION'])
+                                ->where('LOCATION', $child->location)
+                                ->where('SITEID', 'KD')
+                                ->first();
+                            $taskLocDesc = $loc->description ?? '-';
+                        } catch (\Exception $e) {}
+                    }
+
+                    // Cek Long Description untuk task WT
+                    $taskLongDesc = '-';
+                    if (!empty($child->workorderid)) {
+                        $ldTables = ['LONGDESCRIPTION', 'LONG_DESCRIPTION'];
+                        foreach ($ldTables as $ldTable) {
+                            try {
+                                $longDesc = DB::connection('oracle')
+                                    ->table($ldTable)
+                                    ->select(['LDTEXT'])
+                                    ->where('LDKEY', $child->workorderid)
+                                    ->where('LDOWNERTABLE', 'WORKORDER')
+                                    ->first();
+                                if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
+                                    $taskLongDesc = $longDesc->ldtext;
+                                    break;
+                                }
+                            } catch (\Exception $e) {
+                                continue;
+                            }
+                        }
+                    }
+
+                    $tasks[] = [
+                        'wonum' => $child->wonum ?? '-',
+                        'description' => $child->description ?? '-',
+                        'status' => $child->status ?? '-',
+                        'schedstart' => isset($child->schedstart) && $child->schedstart ? Carbon::parse($child->schedstart)->format('d-m-Y H:i') : '-',
+                        'schedfinish' => isset($child->schedfinish) && $child->schedfinish ? Carbon::parse($child->schedfinish)->format('d-m-Y H:i') : '-',
+                        'actstart' => isset($child->actstart) && $child->actstart ? Carbon::parse($child->actstart)->format('d-m-Y H:i') : '-',
+                        'actfinish' => isset($child->actfinish) && $child->actfinish ? Carbon::parse($child->actfinish)->format('d-m-Y H:i') : '-',
+                        'persongroup' => $child->persongroup ?? '-',
+                        'siteid' => $child->siteid ?? '-',
+                        'targstartdate' => isset($child->targstartdate) && $child->targstartdate ? Carbon::parse($child->targstartdate)->format('d-m-Y H:i') : '-',
+                        'targcompdate' => isset($child->targcompdate) && $child->targcompdate ? Carbon::parse($child->targcompdate)->format('d-m-Y H:i') : '-',
+                        'parent' => $child->parent ?? '-',
+                        'worktype' => $child->worktype ?? '-',
+                        'reportdate' => isset($child->reportdate) && $child->reportdate ? Carbon::parse($child->reportdate)->format('d-m-Y H:i') : '-',
+                        'reportedby' => $child->reportedby ?? '-',
+                        'failurecode' => $child->failurecode ?? '-',
+                        'glaccount' => $child->glaccount ?? '-',
+                        'wopriority' => $child->wopriority ?? '-',
+                        'assetnum' => $child->assetnum ?? '-',
+                        'asset_description' => $taskAssetDesc,
+                        'location' => $child->location ?? '-',
+                        'location_description' => $taskLocDesc,
+                        'assigned_to' => $taskAssign,
+                        'longdescription' => $taskLongDesc,
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch child tasks', ['parent' => $wonum, 'error' => $e->getMessage()]);
+            }
+
+            // =====================================================
+            // 8. Ambil Planned Labor (WPLABOR)
+            // =====================================================
+            $wplabors = [];
+            try {
+                $labors = DB::connection('oracle')->table('WPLABOR')
+                    ->whereIn('WONUM', $allWOs)
+                    ->where('SITEID', 'KD')
+                    ->get();
+                foreach($labors as $l) {
+                    $wplabors[] = [
+                        'wonum' => $l->wonum ?? '-',
+                        'craft' => $l->craft ?? '-',
+                        'skilllevel' => $l->skilllevel ?? '-',
+                        'labor' => $l->laborcode ?? '-',
+                        'quantity' => $l->quantity ?? '-',
+                        'laborhrs' => $l->laborhrs ?? '-',
+                    ];
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to fetch WPLABOR', ['error' => $e->getMessage()]);
+            }
+
+            // =====================================================
+            // 9. Format data lengkap untuk PDF
+            // =====================================================
             $woData = [
                 'wonum' => $wo->wonum ?? '-',
                 'parent' => $wo->parent ?? '-',
                 'status' => $wo->status ?? '-',
                 'statusdate' => isset($wo->statusdate) && $wo->statusdate ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i') : '-',
                 'worktype' => $wo->worktype ?? '-',
-                'wopriority' => $wo->wopriortext ?? '-',
+                'wopriority' => $wo->wopriority ?? '-',
                 'reportdate' => isset($wo->reportdate) && $wo->reportdate ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i') : '-',
                 'assetnum' => $wo->assetnum ?? '-',
                 'location' => $wo->location ?? '-',
@@ -689,10 +1063,31 @@ class LaborSayaController extends Controller
                 'schedstart' => isset($wo->schedstart) && $wo->schedstart ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i') : '-',
                 'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i') : '-',
                 'description' => $wo->description ?? '-',
+                'reportedby' => $wo->reportedby ?? '-',
+                'reportedby_name' => $woReportedByName,
+                'actstart' => isset($wo->actstart) && $wo->actstart ? Carbon::parse($wo->actstart)->format('d-m-Y H:i') : '-',
+                'actfinish' => isset($wo->actfinish) && $wo->actfinish ? Carbon::parse($wo->actfinish)->format('d-m-Y H:i') : '-',
+                'glaccount' => $wo->glaccount ?? '-',
+                'failurecode' => $wo->failurecode ?? '-',
+                'jpnum' => $wo->jpnum ?? '-',
+                'persongroup' => $wo->persongroup ?? '-',
+                'targstartdate' => isset($wo->targstartdate) && $wo->targstartdate ? Carbon::parse($wo->targstartdate)->format('d-m-Y H:i') : '-',
+                'targcompdate' => isset($wo->targcompdate) && $wo->targcompdate ? Carbon::parse($wo->targcompdate)->format('d-m-Y H:i') : '-',
+                'lead' => $wo->lead ?? '-',
+                'asset_description' => $assetDescription,
+                'location_description' => $locationDescription,
+                'assigned_to' => $assignedTo,
+                'assigned_to_name' => $assignedToName,
+                'anggaran' => $wo->anggaran ?? '-',
             ];
 
-            // Generate PDF
-            $pdf = Pdf::loadView('admin.maximo.jobcard-pdf', ['wo' => $woData]);
+            // Generate PDF dengan data lengkap
+            $pdf = Pdf::loadView('admin.maximo.jobcard-pdf', [
+                'wo' => $woData,
+                'sr' => $srData,
+                'tasks' => $tasks,
+                'wplabors' => $wplabors,
+            ]);
 
             // Simpan PDF ke storage public dengan nama deterministik
             $directory = 'jobcards';
