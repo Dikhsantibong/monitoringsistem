@@ -190,9 +190,40 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       </table>
 
       <div class="task-nm">Task : {{ $task['description'] ?? '-' }}</div>
+      
+      @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
+      <div class="task-ld" style="margin-top: 8px; font-size: 9.5px; padding-left: 15px;">
+        {!! $task['longdescription'] !!}
+      </div>
+      @endif
     </div>
     @endforeach
   @endif
+
+  <!-- Planned & Actual Labor (Moved to Page 1) -->
+  <table class="blue-table" style="margin-top:15px;">
+    <tr><th colspan="8">Planned &amp; Actual Labor</th></tr>
+    <tr style="background:#4472C4; color:#fff;">
+      <th>Task ID</th><th>Craft</th><th>Skill Level</th><th>Labor</th>
+      <th>Planned Quantity</th><th>Planned Hours</th><th>Actual Quantity</th><th>Actual Hours</th>
+    </tr>
+    @if(isset($wplabors) && count($wplabors) > 0)
+      @foreach($wplabors as $wpl)
+      <tr>
+        <td>{{ $wpl['wonum'] }}</td>
+        <td>{{ $wpl['craft'] }}</td>
+        <td>{{ $wpl['skilllevel'] }}</td>
+        <td>{{ $wpl['labor'] }}</td>
+        <td>{{ $wpl['quantity'] }}</td>
+        <td>{{ $wpl['laborhrs'] }}</td>
+        <td></td>
+        <td></td>
+      </tr>
+      @endforeach
+    @else
+      <tr><td>{{ $wo['wonum'] }}</td><td>MECH1</td><td>JUNIOR</td><td></td><td>4</td><td>5</td><td></td><td></td></tr>
+    @endif
+  </table>
 
   <div style="position:absolute; bottom:0; left:0; font-size:10px;">Halaman : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1</div>
 </div>
@@ -218,12 +249,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     </tr>
   </table>
 
-  <div class="step-t">PERSIAPAN KERJA :</div>
-  <ol><li>Mobilisasi Tools</li><li>Mobilisasi Material</li><li>Pembuatan PTW</li><li>menggunakan APD standart</li><li>Pastikan peralatan terisolasi sebelum pekerjaan</li></ol>
-
-  <div class="step-t">PELAKSANAAN KERJA :</div>
-  <ol><li>Lakukan Pembongkaran</li><li>Dilakukan pengecekan</li><li>Lakukan penggantian material ( jika di perlukan )</li><li>Test Operasi (jika ditemukan ketidak sesuaian maka lakukan pekerjaan ulang)</li></ol>
-
+  <!-- REALISASI PEKERJAAN Blank Lines (Optional, keeping as manual fill area if needed) -->
   <div class="step-t" style="margin-top:8px;">&nbsp;REALISASI PEKERJAAN :</div>
   <table style="width:100%; font-size:10px; margin-top:4px; margin-bottom:12px;">
     <tr><td style="width:20px; vertical-align:bottom;">1.</td><td style="border-bottom:1px dotted #888;"></td></tr>
@@ -233,36 +259,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     <tr><td style="vertical-align:bottom;">3.</td><td style="border-bottom:1px dotted #888;"></td></tr>
     <tr><td colspan="2" style="height:12px;"></td></tr>
     <tr><td style="vertical-align:bottom;">4.</td><td style="border-bottom:1px dotted #888;"></td></tr>
-  </table>
-
-  <div class="step-t">PASCA PELAKSANAAN KERJA:</div>
-  <ol><li>Demobilisasi Tools dan sisa material</li><li>Pembersihan area kerja</li><li>Release Job Card</li><li>Buat laporan pekerjaan</li><li>Kembalikan job card ke Rendalhar Lengkap dengan isian realisasi man power, material dan failure reporting</li></ol>
-
-  <div class="step-t" style="margin-top:6px;">POST MAINTENANCE TEST</div>
-
-  <!-- Planned & Actual Labor -->
-  <table class="blue-table" style="margin-top:8px;">
-    <tr><th colspan="8">Planned &amp; Actual Labor</th></tr>
-    <tr style="background:#4472C4; color:#fff;">
-      <th>Task ID</th><th>Craft</th><th>Skill Level</th><th>Labor</th>
-      <th>Planned Quantity</th><th>Planned Hours</th><th>Actual Quantity</th><th>Actual Hours</th>
-    </tr>
-    @if(isset($wplabors) && count($wplabors) > 0)
-      @foreach($wplabors as $wpl)
-      <tr>
-        <td>{{ $wpl['wonum'] }}</td>
-        <td>{{ $wpl['craft'] }}</td>
-        <td>{{ $wpl['skilllevel'] }}</td>
-        <td>{{ $wpl['labor'] }}</td>
-        <td>{{ $wpl['quantity'] }}</td>
-        <td>{{ $wpl['laborhrs'] }}</td>
-        <td></td>
-        <td></td>
-      </tr>
-      @endforeach
-    @else
-      <tr><td>{{ $wo['wonum'] }}</td><td>MECH1</td><td>JUNIOR</td><td></td><td>4</td><td>5</td><td></td><td></td></tr>
-    @endif
   </table>
 
   <!-- Precaution & Hazard -->

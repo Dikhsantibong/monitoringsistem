@@ -984,7 +984,8 @@ class MaximoController extends Controller
                         'GLACCOUNT',
                         'WOPRIORITY',
                         'ASSETNUM',
-                        'LOCATION'
+                        'LOCATION',
+                        'WORKORDERID'
                     ])
                     ->where('PARENT', $wonum)
                     ->where('SITEID', 'KD')
@@ -1034,6 +1035,28 @@ class MaximoController extends Controller
                         } catch (\Exception $e) {}
                     }
 
+                    // Cek Long Description untuk task WT
+                    $taskLongDesc = '-';
+                    if (!empty($child->workorderid)) {
+                        $ldTables = ['LONGDESCRIPTION', 'LONG_DESCRIPTION'];
+                        foreach ($ldTables as $ldTable) {
+                            try {
+                                $longDesc = DB::connection('oracle')
+                                    ->table($ldTable)
+                                    ->select(['LDTEXT'])
+                                    ->where('LDKEY', $child->workorderid)
+                                    ->where('LDOWNERTABLE', 'WORKORDER')
+                                    ->first();
+                                if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
+                                    $taskLongDesc = $longDesc->ldtext;
+                                    break;
+                                }
+                            } catch (\Exception $e) {
+                                continue;
+                            }
+                        }
+                    }
+
                     $tasks[] = [
                         'wonum' => $child->wonum ?? '-',
                         'description' => $child->description ?? '-',
@@ -1058,6 +1081,7 @@ class MaximoController extends Controller
                         'location' => $child->location ?? '-',
                         'location_description' => $taskLocDesc,
                         'assigned_to' => $taskAssign,
+                        'longdescription' => $taskLongDesc,
                     ];
                 }
             } catch (\Exception $e) {
