@@ -268,18 +268,22 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   </table>
 
   <!-- Precaution & Hazard -->
+  @if(isset($hazards) && count($hazards) > 0)
   <table class="blue-table">
     <tr><th colspan="3">Precaution &amp; Hazard</th></tr>
     <tr style="background:#4472C4; color:#fff;"><th style="width:30px;">No.</th><th>Hazard</th><th>Precaution</th></tr>
-    <tr><td>1</td><td>GENERAL</td><td>Safety Gloves</td></tr>
-    <tr><td>2</td><td>GENERAL</td><td>Safety helmet</td></tr>
-    <tr><td>3</td><td>GENERAL</td><td>PPE - Safety Earplug</td></tr>
-    <tr><td>4</td><td>GENERAL</td><td>PPE - Safety Gloves</td></tr>
-    <tr><td>5</td><td>GENERAL</td><td>PPE - Safety Google</td></tr>
-    <tr><td>6</td><td>GENERAL</td><td>PPE - Safety Helmet</td></tr>
-    <tr><td>7</td><td>GENERAL</td><td>PPE - Masker</td></tr>
-    <tr><td>8</td><td>GENERAL</td><td>PPE - Safety Shoes</td></tr>
+    @php $rowNum = 1; @endphp
+    @foreach($hazards as $hz)
+      @if(count($hz['precautions']) > 0)
+        @foreach($hz['precautions'] as $prec)
+          <tr><td style="text-align:center;">{{ $rowNum++ }}</td><td>{{ $hz['description'] }}</td><td>{{ $prec }}</td></tr>
+        @endforeach
+      @else
+        <tr><td style="text-align:center;">{{ $rowNum++ }}</td><td>{{ $hz['description'] }}</td><td>-</td></tr>
+      @endif
+    @endforeach
   </table>
+  @endif
 
   <hr class="hr1" style="margin-top:10px;">
   <div style="font-weight:bold; font-style:italic; font-size:10px; margin-top:5px;"><em>Isolasi dan Perhatian Keselamatan Kerja</em></div>
@@ -479,7 +483,8 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         @endforeach
       </td>
       @else
-      <td colspan="2" style="text-align:center; padding:10px; font-style:italic; color:#666;">
+      <td style="text-align:center; padding:10px; color:#666;">-</td>
+      <td style="text-align:center; padding:10px; font-style:italic; color:#666;">
         Tidak ada data Precaution & Hazard
       </td>
       @endif
