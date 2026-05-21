@@ -443,33 +443,46 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     <tr>
       <td style="text-align:center;">1</td>
       <td style="font-size:8.5px; line-height:1.6;">
-        @php $hasTaskDesc = false; @endphp
         @if(isset($tasks) && count($tasks) > 0)
           @foreach($tasks as $task)
+            <strong>Task : {{ $task['description'] ?? '-' }}</strong><br>
             @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
-              @php $hasTaskDesc = true; @endphp
-              <strong>Task : {{ $task['description'] ?? '-' }}</strong><br>
               {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription'])))) !!}<br><br>
+            @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
+              {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription'])))) !!}<br><br>
             @endif
           @endforeach
-        @endif
-        
-        @if(!$hasTaskDesc && isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
+        @else
           <strong>Task : {{ $wo['description'] ?? '-' }}</strong><br>
-          {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription'])))) !!}<br><br>
+          @if(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
+            {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription'])))) !!}<br><br>
+          @endif
         @endif
       </td>
-      <td style="text-align:center; font-weight:bold; font-size:9px;">1<br>GENERAL</td>
-      <td style="font-size:8.5px; line-height:1.9;">
-        1 &nbsp;<strong>APDGLVS: Safety Gloves</strong><br>
-        2 &nbsp;<strong>APDHLMT: Safety helmet</strong><br>
-        3 &nbsp;<strong>EARPLUG: PPE - Safety Earplug</strong><br>
-        4 &nbsp;<strong>GLOVES: PPE - Safety Gloves</strong><br>
-        5 &nbsp;<strong>GOOGLE: PPE - Safety Google</strong><br>
-        6 &nbsp;<strong>HELMET: PPE - Safety Helmet</strong><br>
-        7 &nbsp;<strong>MASKER: PPE - Masker</strong><br>
-        8 &nbsp;<strong>SHOES: PPE - Safety Shoes</strong>
+      @if(isset($hazards) && count($hazards) > 0)
+      <td style="text-align:center; font-weight:bold; font-size:9px;">
+        @foreach($hazards as $idx => $hz)
+          {{ $idx + 1 }}<br>{{ $hz['description'] }}<br><br>
+        @endforeach
       </td>
+      <td style="font-size:8.5px; line-height:1.9;">
+        @foreach($hazards as $idx => $hz)
+          <strong>Risiko {{ $idx + 1 }}:</strong><br>
+          @if(isset($hz['precautions']) && count($hz['precautions']) > 0)
+            @foreach($hz['precautions'] as $pidx => $prec)
+              {{ $pidx + 1 }} &nbsp;<strong>{{ $prec }}</strong><br>
+            @endforeach
+          @else
+            -<br>
+          @endif
+          <br>
+        @endforeach
+      </td>
+      @else
+      <td colspan="2" style="text-align:center; padding:10px; font-style:italic; color:#666;">
+        Tidak ada data Precaution & Hazard
+      </td>
+      @endif
       <td></td>
     </tr>
     <tr><td style="height:18px;"></td><td></td><td></td><td></td><td></td></tr>
