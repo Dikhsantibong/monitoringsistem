@@ -737,8 +737,11 @@ class MaximoController extends Controller
                 return redirect()->route('admin.maximo.index', $returnQuery)->with('error', 'Work Order tidak ditemukan.');
             }
 
+            // Normalisasi keys ke lowercase untuk Oracle compatibility
+            $woArr = array_change_key_case((array) $wo, CASE_LOWER);
+
             // Cek apakah status adalah APPR
-            if (strtoupper($wo->status ?? '') !== 'APPR') {
+            if (strtoupper($woArr['status'] ?? '') !== 'APPR') {
                 return redirect()->route('admin.maximo.index', $returnQuery)->with('error', 'Jobcard hanya dapat di-generate untuk Work Order dengan status APPR.');
             }
 
@@ -746,17 +749,17 @@ class MaximoController extends Controller
             // 2. Ambil Asset Description dari tabel ASSET
             // =====================================================
             $assetDescription = '-';
-            if (!empty($wo->assetnum)) {
+            if (!empty($woArr['assetnum'])) {
                 try {
                     $asset = DB::connection('oracle')
                         ->table('ASSET')
                         ->select(['DESCRIPTION'])
-                        ->where('ASSETNUM', $wo->assetnum)
+                        ->where('ASSETNUM', $woArr['assetnum'])
                         ->where('SITEID', 'KD')
                         ->first();
                     $assetDescription = $asset->description ?? '-';
                 } catch (\Exception $e) {
-                    Log::warning('Failed to fetch ASSET description', ['assetnum' => $wo->assetnum, 'error' => $e->getMessage()]);
+                    Log::warning('Failed to fetch ASSET description', ['assetnum' => $woArr['assetnum'], 'error' => $e->getMessage()]);
                 }
             }
 
@@ -764,17 +767,17 @@ class MaximoController extends Controller
             // 3. Ambil Location Description dari tabel LOCATIONS
             // =====================================================
             $locationDescription = '-';
-            if (!empty($wo->location)) {
+            if (!empty($woArr['location'])) {
                 try {
                     $location = DB::connection('oracle')
                         ->table('LOCATIONS')
                         ->select(['DESCRIPTION'])
-                        ->where('LOCATION', $wo->location)
+                        ->where('LOCATION', $woArr['location'])
                         ->where('SITEID', 'KD')
                         ->first();
                     $locationDescription = $location->description ?? '-';
                 } catch (\Exception $e) {
-                    Log::warning('Failed to fetch LOCATIONS description', ['location' => $wo->location, 'error' => $e->getMessage()]);
+                    Log::warning('Failed to fetch LOCATIONS description', ['location' => $woArr['location'], 'error' => $e->getMessage()]);
                 }
             }
 
@@ -785,8 +788,8 @@ class MaximoController extends Controller
             $srTicketId = null;
 
             // Cara 1: Cek ORIGRECORDID pada WORKORDER (jika WO dibuat dari SR)
-            if (!empty($wo->origrecordid) && strtoupper($wo->origrecordclass ?? '') === 'SR') {
-                $srTicketId = $wo->origrecordid;
+            if (!empty($woArr['origrecordid']) && strtoupper($woArr['origrecordclass'] ?? '') === 'SR') {
+                $srTicketId = $woArr['origrecordid'];
             }
 
             // Cara 2: Fallback - cari di tabel RELATEDRECORD
@@ -960,17 +963,14 @@ class MaximoController extends Controller
             // 6.5. Ambil Long Description untuk PARENT WO
             // =====================================================
             $woLongDesc = '-';
-            if (!empty($wo->workorderid)) {
+            if (!empty($woArr['workorderid'])) {
                 $ldTables = ['LONGDESCRIPTION', 'LONG_DESCRIPTION'];
                 foreach ($ldTables as $ldTable) {
                     try {
                         $longDesc = DB::connection('oracle')
                             ->table($ldTable)
                             ->select(['LDTEXT'])
-                            ->where(function($q) use ($wo) {
-                                $q->where('LDKEY', $wo->workorderid)
-                                  ->orWhere('LDOWNERID', $wo->workorderid);
-                            })
+                            ->where('LDKEY', $woArr['workorderid'])
                             ->whereIn('LDOWNERTABLE', ['WORKORDER', 'WO'])
                             ->first();
                         if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
@@ -1021,7 +1021,8 @@ class MaximoController extends Controller
                     ->get();
 
                 foreach ($childWOs as $child) {
-                    $allWOs[] = $child->wonum;
+                    $childArr = array_change_key_case((array) $child, CASE_LOWER);
+                    $allWOs[] = $childArr['wonum'];
                     
                     // Cek assignment task
                     $taskAssign = '-';
@@ -1029,7 +1030,7 @@ class MaximoController extends Controller
                         $ta = DB::connection('oracle')
                             ->table('ASSIGNMENT')
                             ->select(['LABORCODE'])
-                            ->where('WONUM', $child->wonum)
+                            ->where('WONUM', $childArr['wonum'])
                             ->where('SITEID', 'KD')
                             ->first();
                         if ($ta && !empty($ta->laborcode)) {
@@ -1040,23 +1041,23 @@ class MaximoController extends Controller
                     // Cek Asset & Location Description untuk task
                     $taskAssetDesc = '-';
                     $taskLocDesc = '-';
-                    if (!empty($child->assetnum)) {
+                    if (!empty($childArr['assetnum'])) {
                         try {
                             $ast = DB::connection('oracle')
                                 ->table('ASSET')
                                 ->select(['DESCRIPTION'])
-                                ->where('ASSETNUM', $child->assetnum)
+                                ->where('ASSETNUM', $childArr['assetnum'])
                                 ->where('SITEID', 'KD')
                                 ->first();
                             $taskAssetDesc = $ast->description ?? '-';
                         } catch (\Exception $e) {}
                     }
-                    if (!empty($child->location)) {
+                    if (!empty($childArr['location'])) {
                         try {
                             $loc = DB::connection('oracle')
                                 ->table('LOCATIONS')
                                 ->select(['DESCRIPTION'])
-                                ->where('LOCATION', $child->location)
+                                ->where('LOCATION', $childArr['location'])
                                 ->where('SITEID', 'KD')
                                 ->first();
                             $taskLocDesc = $loc->description ?? '-';
@@ -1065,18 +1066,15 @@ class MaximoController extends Controller
 
                     // Cek Long Description untuk task WT
                     $taskLongDesc = '-';
-                    if (!empty($child->workorderid)) {
+                    if (!empty($childArr['workorderid'])) {
                         $ldTables = ['LONGDESCRIPTION', 'LONG_DESCRIPTION'];
                         foreach ($ldTables as $ldTable) {
                             try {
                                 $longDesc = DB::connection('oracle')
                                     ->table($ldTable)
                                     ->select(['LDTEXT'])
-                                    ->where(function($q) use ($child) {
-                                        $q->where('LDKEY', $child->workorderid)
-                                          ->orWhere('LDOWNERID', $child->workorderid);
-                                    })
-                                    ->whereIn('LDOWNERTABLE', ['WORKORDER', 'JOBTASK', 'WO'])
+                                    ->where('LDKEY', $childArr['workorderid'])
+                                    ->whereIn('LDOWNERTABLE', ['WORKORDER', 'JOBTASK', 'WO', 'WOACTIVITY'])
                                     ->first();
                                 if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
                                     $taskLongDesc = $longDesc->ldtext;
@@ -1089,27 +1087,27 @@ class MaximoController extends Controller
                     }
 
                     $tasks[] = [
-                        'wonum' => $child->wonum ?? '-',
-                        'description' => $child->description ?? '-',
-                        'status' => $child->status ?? '-',
-                        'schedstart' => isset($child->schedstart) && $child->schedstart ? Carbon::parse($child->schedstart)->format('d-m-Y H:i') : '-',
-                        'schedfinish' => isset($child->schedfinish) && $child->schedfinish ? Carbon::parse($child->schedfinish)->format('d-m-Y H:i') : '-',
-                        'actstart' => isset($child->actstart) && $child->actstart ? Carbon::parse($child->actstart)->format('d-m-Y H:i') : '-',
-                        'actfinish' => isset($child->actfinish) && $child->actfinish ? Carbon::parse($child->actfinish)->format('d-m-Y H:i') : '-',
-                        'persongroup' => $child->persongroup ?? '-',
-                        'siteid' => $child->siteid ?? '-',
-                        'targstartdate' => isset($child->targstartdate) && $child->targstartdate ? Carbon::parse($child->targstartdate)->format('d-m-Y H:i') : '-',
-                        'targcompdate' => isset($child->targcompdate) && $child->targcompdate ? Carbon::parse($child->targcompdate)->format('d-m-Y H:i') : '-',
-                        'parent' => $child->parent ?? '-',
-                        'worktype' => $child->worktype ?? '-',
-                        'reportdate' => isset($child->reportdate) && $child->reportdate ? Carbon::parse($child->reportdate)->format('d-m-Y H:i') : '-',
-                        'reportedby' => $child->reportedby ?? '-',
-                        'failurecode' => $child->failurecode ?? '-',
-                        'glaccount' => $child->glaccount ?? '-',
-                        'wopriority' => $child->wopriority ?? '-',
-                        'assetnum' => $child->assetnum ?? '-',
+                        'wonum' => $childArr['wonum'] ?? '-',
+                        'description' => $childArr['description'] ?? '-',
+                        'status' => $childArr['status'] ?? '-',
+                        'schedstart' => !empty($childArr['schedstart']) ? Carbon::parse($childArr['schedstart'])->format('d-m-Y H:i') : '-',
+                        'schedfinish' => !empty($childArr['schedfinish']) ? Carbon::parse($childArr['schedfinish'])->format('d-m-Y H:i') : '-',
+                        'actstart' => !empty($childArr['actstart']) ? Carbon::parse($childArr['actstart'])->format('d-m-Y H:i') : '-',
+                        'actfinish' => !empty($childArr['actfinish']) ? Carbon::parse($childArr['actfinish'])->format('d-m-Y H:i') : '-',
+                        'persongroup' => $childArr['persongroup'] ?? '-',
+                        'siteid' => $childArr['siteid'] ?? '-',
+                        'targstartdate' => !empty($childArr['targstartdate']) ? Carbon::parse($childArr['targstartdate'])->format('d-m-Y H:i') : '-',
+                        'targcompdate' => !empty($childArr['targcompdate']) ? Carbon::parse($childArr['targcompdate'])->format('d-m-Y H:i') : '-',
+                        'parent' => $childArr['parent'] ?? '-',
+                        'worktype' => $childArr['worktype'] ?? '-',
+                        'reportdate' => !empty($childArr['reportdate']) ? Carbon::parse($childArr['reportdate'])->format('d-m-Y H:i') : '-',
+                        'reportedby' => $childArr['reportedby'] ?? '-',
+                        'failurecode' => $childArr['failurecode'] ?? '-',
+                        'glaccount' => $childArr['glaccount'] ?? '-',
+                        'wopriority' => $childArr['wopriority'] ?? '-',
+                        'assetnum' => $childArr['assetnum'] ?? '-',
                         'asset_description' => $taskAssetDesc,
-                        'location' => $child->location ?? '-',
+                        'location' => $childArr['location'] ?? '-',
                         'location_description' => $taskLocDesc,
                         'assigned_to' => $taskAssign,
                         'longdescription' => $taskLongDesc,
@@ -1146,37 +1144,37 @@ class MaximoController extends Controller
             // 9. Format data lengkap untuk PDF
             // =====================================================
             $woData = [
-                'wonum' => $wo->wonum ?? '-',
-                'parent' => $wo->parent ?? '-',
-                'status' => $wo->status ?? '-',
-                'statusdate' => isset($wo->statusdate) && $wo->statusdate ? Carbon::parse($wo->statusdate)->format('d-m-Y H:i') : '-',
-                'worktype' => $wo->worktype ?? '-',
-                'wopriority' => $wo->wopriority ?? '-',
-                'reportdate' => isset($wo->reportdate) && $wo->reportdate ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i') : '-',
-                'assetnum' => $wo->assetnum ?? '-',
-                'location' => $wo->location ?? '-',
-                'siteid' => $wo->siteid ?? '-',
-                'downtime' => $wo->downtime ?? '-',
-                'schedstart' => isset($wo->schedstart) && $wo->schedstart ? Carbon::parse($wo->schedstart)->format('d-m-Y H:i') : '-',
-                'schedfinish' => isset($wo->schedfinish) && $wo->schedfinish ? Carbon::parse($wo->schedfinish)->format('d-m-Y H:i') : '-',
-                'description' => $wo->description ?? '-',
+                'wonum' => $woArr['wonum'] ?? '-',
+                'parent' => $woArr['parent'] ?? '-',
+                'status' => $woArr['status'] ?? '-',
+                'statusdate' => !empty($woArr['statusdate']) ? Carbon::parse($woArr['statusdate'])->format('d-m-Y H:i') : '-',
+                'worktype' => $woArr['worktype'] ?? '-',
+                'wopriority' => $woArr['wopriority'] ?? '-',
+                'reportdate' => !empty($woArr['reportdate']) ? Carbon::parse($woArr['reportdate'])->format('d-m-Y H:i') : '-',
+                'assetnum' => $woArr['assetnum'] ?? '-',
+                'location' => $woArr['location'] ?? '-',
+                'siteid' => $woArr['siteid'] ?? '-',
+                'downtime' => $woArr['downtime'] ?? '-',
+                'schedstart' => !empty($woArr['schedstart']) ? Carbon::parse($woArr['schedstart'])->format('d-m-Y H:i') : '-',
+                'schedfinish' => !empty($woArr['schedfinish']) ? Carbon::parse($woArr['schedfinish'])->format('d-m-Y H:i') : '-',
+                'description' => $woArr['description'] ?? '-',
                 // Field tambahan dari Maximo
-                'reportedby' => $wo->reportedby ?? '-',
+                'reportedby' => $woArr['reportedby'] ?? '-',
                 'reportedby_name' => $woReportedByName,
-                'actstart' => isset($wo->actstart) && $wo->actstart ? Carbon::parse($wo->actstart)->format('d-m-Y H:i') : '-',
-                'actfinish' => isset($wo->actfinish) && $wo->actfinish ? Carbon::parse($wo->actfinish)->format('d-m-Y H:i') : '-',
-                'glaccount' => $wo->glaccount ?? '-',
-                'failurecode' => $wo->failurecode ?? '-',
-                'jpnum' => $wo->jpnum ?? '-',
-                'persongroup' => $wo->persongroup ?? '-',
-                'targstartdate' => isset($wo->targstartdate) && $wo->targstartdate ? Carbon::parse($wo->targstartdate)->format('d-m-Y H:i') : '-',
-                'targcompdate' => isset($wo->targcompdate) && $wo->targcompdate ? Carbon::parse($wo->targcompdate)->format('d-m-Y H:i') : '-',
-                'lead' => $wo->lead ?? '-',
+                'actstart' => !empty($woArr['actstart']) ? Carbon::parse($woArr['actstart'])->format('d-m-Y H:i') : '-',
+                'actfinish' => !empty($woArr['actfinish']) ? Carbon::parse($woArr['actfinish'])->format('d-m-Y H:i') : '-',
+                'glaccount' => $woArr['glaccount'] ?? '-',
+                'failurecode' => $woArr['failurecode'] ?? '-',
+                'jpnum' => $woArr['jpnum'] ?? '-',
+                'persongroup' => $woArr['persongroup'] ?? '-',
+                'targstartdate' => !empty($woArr['targstartdate']) ? Carbon::parse($woArr['targstartdate'])->format('d-m-Y H:i') : '-',
+                'targcompdate' => !empty($woArr['targcompdate']) ? Carbon::parse($woArr['targcompdate'])->format('d-m-Y H:i') : '-',
+                'lead' => $woArr['lead'] ?? '-',
                 'asset_description' => $assetDescription,
                 'location_description' => $locationDescription,
                 'assigned_to' => $assignedTo,
                 'assigned_to_name' => $assignedToName,
-                'anggaran' => $wo->anggaran ?? '-',
+                'anggaran' => $woArr['anggaran'] ?? '-',
                 'longdescription' => $woLongDesc,
             ];
 
