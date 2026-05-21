@@ -132,11 +132,13 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     </table>
   </div>
 
+  @if(isset($sr['longdescription']) && $sr['longdescription'] != '-' && !empty(trim($sr['longdescription'])))
   <!-- DETIL SR -->
   <div class="detil-section" style="margin-top:6px;">
     <div class="bold" style="margin-bottom:3px;">Detil SR</div>
-    {!! $sr['longdescription'] ?? '-' !!}
+    {!! $sr['longdescription'] !!}
   </div>
+  @endif
   @endif
 
   <!-- TASK SECTION -->
@@ -194,6 +196,10 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
       <div class="task-ld" style="margin-top: 8px; font-size: 9.5px; padding-left: 15px;">
         {!! nl2br(e($task['longdescription'])) !!}
+      </div>
+      @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
+      <div class="task-ld" style="margin-top: 8px; font-size: 9.5px; padding-left: 15px;">
+        {!! nl2br(e($wo['longdescription'])) !!}
       </div>
       @endif
     </div>
@@ -437,13 +443,20 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     <tr>
       <td style="text-align:center;">1</td>
       <td style="font-size:8.5px; line-height:1.6;">
+        @php $hasTaskDesc = false; @endphp
         @if(isset($tasks) && count($tasks) > 0)
           @foreach($tasks as $task)
             @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
+              @php $hasTaskDesc = true; @endphp
               <strong>Task : {{ $task['description'] ?? '-' }}</strong><br>
               {!! nl2br(e($task['longdescription'])) !!}<br><br>
             @endif
           @endforeach
+        @endif
+        
+        @if(!$hasTaskDesc && isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
+          <strong>Task : {{ $wo['description'] ?? '-' }}</strong><br>
+          {!! nl2br(e($wo['longdescription'])) !!}<br><br>
         @endif
       </td>
       <td style="text-align:center; font-weight:bold; font-size:9px;">1<br>GENERAL</td>
