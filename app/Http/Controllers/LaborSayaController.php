@@ -668,6 +668,7 @@ class LaborSayaController extends Controller
                     'ORIGRECORDID',
                     'ORIGRECORDCLASS',
                     'ANGGARAN',
+                    'WORKORDERID',
                 ])
                 ->where('SITEID', 'KD')
                 ->where('WONUM', $wonum)
@@ -890,6 +891,33 @@ class LaborSayaController extends Controller
             }
 
             // =====================================================
+            // 6.5. Ambil Long Description untuk PARENT WO
+            // =====================================================
+            $woLongDesc = '-';
+            if (!empty($wo->workorderid)) {
+                $ldTables = ['LONGDESCRIPTION', 'LONG_DESCRIPTION'];
+                foreach ($ldTables as $ldTable) {
+                    try {
+                        $longDesc = DB::connection('oracle')
+                            ->table($ldTable)
+                            ->select(['LDTEXT'])
+                            ->where(function($q) use ($wo) {
+                                $q->where('LDKEY', $wo->workorderid)
+                                  ->orWhere('LDOWNERID', $wo->workorderid);
+                            })
+                            ->whereIn('LDOWNERTABLE', ['WORKORDER', 'WO'])
+                            ->first();
+                        if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
+                            $woLongDesc = $longDesc->ldtext;
+                            break;
+                        }
+                    } catch (\Exception $e) {
+                        continue;
+                    }
+                }
+            }
+
+            // =====================================================
             // 7. Ambil child tasks (child WO dimana PARENT = WONUM)
             // =====================================================
             $tasks = [];
@@ -978,8 +1006,11 @@ class LaborSayaController extends Controller
                                 $longDesc = DB::connection('oracle')
                                     ->table($ldTable)
                                     ->select(['LDTEXT'])
-                                    ->where('LDKEY', $child->workorderid)
-                                    ->where('LDOWNERTABLE', 'WORKORDER')
+                                    ->where(function($q) use ($child) {
+                                        $q->where('LDKEY', $child->workorderid)
+                                          ->orWhere('LDOWNERID', $child->workorderid);
+                                    })
+                                    ->whereIn('LDOWNERTABLE', ['WORKORDER', 'JOBTASK', 'WO'])
                                     ->first();
                                 if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
                                     $taskLongDesc = $longDesc->ldtext;
@@ -1079,6 +1110,7 @@ class LaborSayaController extends Controller
                 'assigned_to' => $assignedTo,
                 'assigned_to_name' => $assignedToName,
                 'anggaran' => $wo->anggaran ?? '-',
+                'longdescription' => $woLongDesc,
             ];
 
             // Generate PDF dengan data lengkap
