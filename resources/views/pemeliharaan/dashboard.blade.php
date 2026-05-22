@@ -112,6 +112,52 @@
                 </div>
             </div>
 
+            <!-- Kinerja KPIs -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <!-- PM Compliance -->
+                <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">PM Compliance</h3>
+                    <div class="relative w-32 h-32">
+                        <canvas id="chartPmComp"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-xl text-gray-700">{{ $kpiPmCompliance }}%</div>
+                    </div>
+                </div>
+                <!-- Non PM Compliance -->
+                <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Non PM Compliance</h3>
+                    <div class="relative w-32 h-32">
+                        <canvas id="chartNonPmComp"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-xl text-gray-700">{{ $kpiNonPmCompliance }}%</div>
+                    </div>
+                </div>
+                <!-- Reactive Work -->
+                <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Reactive Work</h3>
+                    <div class="relative w-32 h-32">
+                        <canvas id="chartReactive"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-xl text-gray-700">{{ $kpiReactiveWork }}%</div>
+                    </div>
+                </div>
+                <!-- Schedule Compliance -->
+                <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-2">Schedule Compliance</h3>
+                    <div class="relative w-32 h-32">
+                        <canvas id="chartSchedComp"></canvas>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-xl text-gray-700">{{ $kpiScheduleCompliance }}%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Trend Line Chart -->
+            <div class="bg-white rounded-lg shadow p-6 mb-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-800">Tren Kinerja Pemeliharaan (6 Bulan Terakhir)</h3>
+                </div>
+                <div class="relative w-full h-[300px]">
+                    <canvas id="chartKpiTrend"></canvas>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 items-stretch">
                 <!-- Status Chart -->
                 <div class="bg-white rounded-lg shadow p-6 flex flex-col h-full min-h-[350px]">
@@ -299,6 +345,62 @@
                     padding: {
                         top: 10,
                         bottom: 10
+                    }
+                }
+            }
+        });
+
+        // 4 KPI Circular Charts (Donut)
+        const kpiOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: { tooltip: { enabled: false }, legend: { display: false } }
+        };
+
+        new Chart(document.getElementById('chartPmComp').getContext('2d'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [{{ $kpiPmCompliance }}, {{ max(0, 100 - $kpiPmCompliance) }}], backgroundColor: ['#10b981', '#e5e7eb'], borderWidth: 0 }] },
+            options: kpiOptions
+        });
+        
+        new Chart(document.getElementById('chartNonPmComp').getContext('2d'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [{{ $kpiNonPmCompliance }}, {{ max(0, 100 - $kpiNonPmCompliance) }}], backgroundColor: ['#3b82f6', '#e5e7eb'], borderWidth: 0 }] },
+            options: kpiOptions
+        });
+
+        new Chart(document.getElementById('chartReactive').getContext('2d'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [{{ $kpiReactiveWork }}, {{ max(0, 100 - $kpiReactiveWork) }}], backgroundColor: ['#ef4444', '#e5e7eb'], borderWidth: 0 }] },
+            options: kpiOptions
+        });
+
+        new Chart(document.getElementById('chartSchedComp').getContext('2d'), {
+            type: 'doughnut',
+            data: { datasets: [{ data: [{{ $kpiScheduleCompliance }}, {{ max(0, 100 - $kpiScheduleCompliance) }}], backgroundColor: ['#8b5cf6', '#e5e7eb'], borderWidth: 0 }] },
+            options: kpiOptions
+        });
+
+        // Trend Line Chart
+        new Chart(document.getElementById('chartKpiTrend').getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: @json($trendLabels),
+                datasets: [
+                    { label: 'PM Compliance (%)', data: @json($pmCompTrend), borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, fill: false },
+                    { label: 'Non PM Compliance (%)', data: @json($nonPmCompTrend), borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.3, fill: false },
+                    { label: 'Reactive Work (%)', data: @json($reactiveTrend), borderColor: '#ef4444', backgroundColor: '#ef4444', tension: 0.3, fill: false },
+                    { label: 'Schedule Comp. (%)', data: @json($schedCompTrend), borderColor: '#8b5cf6', backgroundColor: '#8b5cf6', tension: 0.3, fill: false }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, max: 100 } },
+                plugins: {
+                    legend: {
+                        position: 'top',
                     }
                 }
             }
