@@ -159,7 +159,7 @@ class LaborSayaController extends Controller
             $workOrdersQuery->orderBy('STATUSDATE', 'desc');
 
             // Paginate query
-            $workOrdersPaginator = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage);
+            $workOrdersPaginator = $workOrdersQuery->paginate(10, ['*'], 'wo_page', $workOrderPage)->appends(request()->query());
 
             // Normalize items first to avoid case issues (Oracle keys can be uppercase/lowercase depending on driver)
             $normalizedItems = collect($workOrdersPaginator->items())->map(function($item) {

@@ -81,9 +81,17 @@ class PemeliharaanLocationHelper
             $childEmails = static::$parentChildMapping[$emailPrefix];
             $prefixes = [];
 
+            // Tambahkan dukungan filter dari URL ?unit_prefix=
+            $requestedPrefix = request('unit_prefix');
+
             foreach ($childEmails as $childEmail) {
                 if (isset(static::$emailToLocationPrefix[$childEmail])) {
-                    $prefixes[] = static::$emailToLocationPrefix[$childEmail];
+                    $prefix = static::$emailToLocationPrefix[$childEmail];
+                    // Jika ada request filter dan cocok, kembalikan HANYA prefix ini
+                    if ($requestedPrefix && $requestedPrefix === $prefix) {
+                        return [$prefix];
+                    }
+                    $prefixes[] = $prefix;
                 }
             }
 
@@ -92,10 +100,36 @@ class PemeliharaanLocationHelper
 
         // Akun child biasa: hanya return prefix sendiri
         if (isset(static::$emailToLocationPrefix[$emailPrefix])) {
+            // Walaupun ada request unit_prefix, kita abaikan karena akun child hanya bisa lihat miliknya sendiri
             return [static::$emailToLocationPrefix[$emailPrefix]];
         }
 
         return null;
+    }
+
+    /**
+     * Mendapatkan daftar unit cabang (child) untuk ditampilkan di sidebar filter.
+     * Hanya berlaku untuk akun parent. Return format: [ 'PREFIX' => 'Nama Unit' ]
+     *
+     * @return array
+     */
+    public static function getChildUnits(): array
+    {
+        $emailPrefix = static::getEmailPrefix();
+        $units = [];
+
+        if ($emailPrefix && isset(static::$parentChildMapping[$emailPrefix])) {
+            $childEmails = static::$parentChildMapping[$emailPrefix];
+            foreach ($childEmails as $childEmail) {
+                if (isset(static::$emailToLocationPrefix[$childEmail])) {
+                    $prefix = static::$emailToLocationPrefix[$childEmail];
+                    // Format nama: "bau-bau" -> "Bau-bau"
+                    $units[$prefix] = ucwords(str_replace('-', ' ', $childEmail));
+                }
+            }
+        }
+
+        return $units;
     }
 
     /**

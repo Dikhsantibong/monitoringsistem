@@ -32,7 +32,7 @@ class PemeliharaanWoWmatlController extends Controller
                 });
             }
 
-            $workOrdersPaginator = $query->orderBy('STATUSDATE', 'desc')->paginate(10);
+            $workOrdersPaginator = $query->orderBy('STATUSDATE', 'desc')->paginate(10)->appends(request()->query());
             
             // Format data for view consistency
             $workOrders = collect($workOrdersPaginator->items())->map(function($wo) {
