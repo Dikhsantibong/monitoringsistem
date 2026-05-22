@@ -26,7 +26,7 @@ class PemeliharaanLocationHelper
         'poasia'       => 'POAS',
         'langara'      => 'LANG',
         'wua-wua'      => 'WUAW',
-        'pasarwajo'    => 'PASA',
+        'pasarwajo'    => 'PASR',
     ];
 
     /**
