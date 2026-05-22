@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Helpers\PemeliharaanLocationHelper;
 
 class PemeliharaanDashboardController extends Controller
 {
@@ -22,6 +23,8 @@ class PemeliharaanDashboardController extends Controller
                 ->table('WORKORDER')
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%');
+            PemeliharaanLocationHelper::applyLocationFilter($baseWOQuery);
+
 
             $totalWO = (clone $baseWOQuery)->count();
 
@@ -47,6 +50,7 @@ class PemeliharaanDashboardController extends Controller
             $baseSRQuery = DB::connection('oracle')
                 ->table('SR')
                 ->where('SITEID', 'KD');
+            PemeliharaanLocationHelper::applyLocationFilter($baseSRQuery);
 
             $totalSR = (clone $baseSRQuery)->count();
 
@@ -67,6 +71,7 @@ class PemeliharaanDashboardController extends Controller
                 ])
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%');
+            PemeliharaanLocationHelper::applyLocationFilter($recentQuery);
 
             $recentWorkOrders = $recentQuery
                 ->orderBy('STATUSDATE', 'desc')
@@ -74,7 +79,7 @@ class PemeliharaanDashboardController extends Controller
                 ->get();
 
             // Urgent/Emergency Open Work Orders
-            $urgentWorkOrders = DB::connection('oracle')
+            $urgentQuery = DB::connection('oracle')
                 ->table('WORKORDER')
                 ->select([
                     'WONUM',
@@ -88,10 +93,13 @@ class PemeliharaanDashboardController extends Controller
                 ->where('SITEID', 'KD')
                 ->where('WONUM', 'LIKE', 'WO%')
                 ->whereIn('STATUS', $openStatuses)
-                ->whereIn('WOPRIORTEXT', ['URGENT', 'EMERGENCY'])
+                ->whereIn('WOPRIORTEXT', ['URGENT', 'EMERGENCY']);
+            PemeliharaanLocationHelper::applyLocationFilter($urgentQuery);
+            $urgentWorkOrders = $urgentQuery
                 ->orderBy('STATUSDATE', 'desc')
                 ->take(10)
                 ->get();
+
 
             // ==========================================
             // KINERJA KPIs (6 Months)
