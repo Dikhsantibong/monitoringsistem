@@ -915,6 +915,7 @@ Route::get('/peta-kesehatan-unit', [\App\Http\Controllers\PetaKesehatanUnitContr
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/dashboard', [\App\Http\Controllers\PemeliharaanDashboardController::class, 'index'])->name('pemeliharaan.dashboard');
+    Route::get('/pemeliharaan/debug-oracle', [\App\Http\Controllers\DebugOracleController::class, 'index'])->name('pemeliharaan.debug-oracle');
     Route::get('/pemeliharaan/labor-saya', [LaborSayaController::class, 'index'])->name('pemeliharaan.labor-saya');
     Route::get('/pemeliharaan/labor-saya/{id}/edit', [LaborSayaController::class, 'edit'])->name('pemeliharaan.labor-saya.edit');
     Route::post('/pemeliharaan/labor-saya/{id}/update', [LaborSayaController::class, 'update'])->name('pemeliharaan.labor-saya.update');
@@ -998,5 +999,4 @@ Route::resource('admin/score-card-monthly', ScoreCardMonthlyController::class)->
 Route::resource('admin/score-card-quarterly', ScoreCardQuarterlyController::class)->only(['create', 'store'])->names([
     'create' => 'admin.score-card-quarterly.create',
     'store' => 'admin.score-card-quarterly.store',
-]);R o u t e : : g e t ( ' / d e b u g - m a x i m o / { w o n u m } ' ,   [ A p p \ H t t p \ C o n t r o l l e r s \ P e m e l i h a r a a n \ D e b u g M a x i m o C o n t r o l l e r : : c l a s s ,   ' d e b u g W o ' ] ) ;  
- 
+]);
