@@ -792,7 +792,7 @@ class LaborSayaController extends Controller
                                     ->table($ldTable)
                                     ->select(['LDTEXT'])
                                     ->where('LDKEY', $srTicketId)
-                                    ->where('LDOWNERTABLE', 'SR')
+                                    ->whereIn('LDOWNERTABLE', ['SR', 'TICKET'])
                                     ->first();
                                 if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
                                     $val = $longDesc->ldtext;
@@ -817,7 +817,7 @@ class LaborSayaController extends Controller
                                         ->table($ldTable)
                                         ->select(['LDTEXT'])
                                         ->where('LDKEY', $srArr['ticketuid'])
-                                        ->where('LDOWNERTABLE', 'SR')
+                                        ->whereIn('LDOWNERTABLE', ['SR', 'TICKET'])
                                         ->first();
                                     if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
                                         $val = $longDesc->ldtext;

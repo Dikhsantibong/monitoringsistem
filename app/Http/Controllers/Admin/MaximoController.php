@@ -855,11 +855,17 @@ class MaximoController extends Controller
                                     ->table($ldTable)
                                     ->select(['LDTEXT'])
                                     ->where('LDKEY', $srTicketId)
-                                    ->where('LDOWNERTABLE', 'SR')
+                                    ->whereIn('LDOWNERTABLE', ['SR', 'TICKET'])
                                     ->first();
                                 if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
-                                    $srLongDesc = $longDesc->ldtext;
-                                    break;
+                                    $val = $longDesc->ldtext;
+                                    if (is_resource($val)) $val = stream_get_contents($val);
+                                    elseif (is_object($val) && method_exists($val, 'load')) $val = $val->load();
+                                    
+                                    if (is_string($val) && trim($val) !== '') {
+                                        $srLongDesc = $val;
+                                        break;
+                                    }
                                 }
                             } catch (\Exception $e) {
                                 continue;
@@ -878,11 +884,17 @@ class MaximoController extends Controller
                                             $q->where('LDKEY', $sr->ticketuid)
                                               ->orWhere('LDOWNERID', $sr->ticketuid);
                                         })
-                                        ->where('LDOWNERTABLE', 'SR')
+                                        ->whereIn('LDOWNERTABLE', ['SR', 'TICKET'])
                                         ->first();
                                     if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
-                                        $srLongDesc = $longDesc->ldtext;
-                                        break;
+                                        $val = $longDesc->ldtext;
+                                        if (is_resource($val)) $val = stream_get_contents($val);
+                                        elseif (is_object($val) && method_exists($val, 'load')) $val = $val->load();
+                                        
+                                        if (is_string($val) && trim($val) !== '') {
+                                            $srLongDesc = $val;
+                                            break;
+                                        }
                                     }
                                 } catch (\Exception $e) {
                                     continue;
@@ -974,8 +986,14 @@ class MaximoController extends Controller
                             ->whereIn('LDOWNERTABLE', ['WORKORDER', 'WO'])
                             ->first();
                         if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
-                            $woLongDesc = $longDesc->ldtext;
-                            break;
+                            $val = $longDesc->ldtext;
+                            if (is_resource($val)) $val = stream_get_contents($val);
+                            elseif (is_object($val) && method_exists($val, 'load')) $val = $val->load();
+                            
+                            if (is_string($val) && trim($val) !== '') {
+                                $woLongDesc = $val;
+                                break;
+                            }
                         }
                     } catch (\Exception $e) {
                         continue;
@@ -1077,8 +1095,14 @@ class MaximoController extends Controller
                                     ->whereIn('LDOWNERTABLE', ['WORKORDER', 'JOBTASK', 'WO', 'WOACTIVITY'])
                                     ->first();
                                 if ($longDesc && isset($longDesc->ldtext) && $longDesc->ldtext) {
-                                    $taskLongDesc = $longDesc->ldtext;
-                                    break;
+                                    $val = $longDesc->ldtext;
+                                    if (is_resource($val)) $val = stream_get_contents($val);
+                                    elseif (is_object($val) && method_exists($val, 'load')) $val = $val->load();
+                                    
+                                    if (is_string($val) && trim($val) !== '') {
+                                        $taskLongDesc = $val;
+                                        break;
+                                    }
                                 }
                             } catch (\Exception $e) {
                                 continue;
