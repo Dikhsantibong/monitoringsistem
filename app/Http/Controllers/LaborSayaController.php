@@ -1102,7 +1102,7 @@ class LaborSayaController extends Controller
             $hazards = [];
             try {
                 $woHazards = DB::connection('oracle')->table('WOHAZARD')
-                    ->where('WONUM', $wonum)
+                    ->whereIn('WONUM', $allWOs)
                     ->where('SITEID', 'KD')
                     ->get();
                     
@@ -1123,7 +1123,7 @@ class LaborSayaController extends Controller
                     $precautions = [];
                     try {
                         $woPrecs = DB::connection('oracle')->table('WOHAZARDPREC')
-                            ->where('WONUM', $wonum)
+                            ->whereIn('WONUM', $allWOs)
                             ->where('HAZARDID', $hazardId)
                             ->get();
                             
