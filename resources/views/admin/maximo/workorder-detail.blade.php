@@ -92,12 +92,6 @@
                     <p class="text-sm text-gray-800 whitespace-pre-wrap break-words">{{ $wo['description'] }}</p>
                 </div>
                 @endif
-                @if(isset($wo['longdescription']) && $wo['longdescription'] !== '-')
-                <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <p class="text-xs font-medium text-blue-500 mb-1"><i class="fas fa-file-alt mr-1"></i> Long Description</p>
-                    <div class="text-sm text-gray-800 whitespace-pre-wrap break-words leading-relaxed">{!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription'])))) !!}</div>
-                </div>
-                @endif
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">

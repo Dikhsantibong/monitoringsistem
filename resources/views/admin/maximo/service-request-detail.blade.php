@@ -81,12 +81,6 @@
                     <p class="text-sm text-gray-800 font-medium">{{ $sr['description'] }}</p>
                 </div>
                 @endif
-                @if(isset($sr['longdescription']) && $sr['longdescription'] !== '-')
-                <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-                    <p class="text-xs font-medium text-blue-500 mb-1"><i class="fas fa-file-alt mr-1"></i> Long Description</p>
-                    <div class="text-sm text-gray-800 whitespace-pre-wrap break-words leading-relaxed">{!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $sr['longdescription'])))) !!}</div>
-                </div>
-                @endif
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -312,7 +306,26 @@
                 </div>
             </div>
 
-
+            {{-- Long Description / Detil SR --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mt-5">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-file-alt text-orange-500"></i> Detil SR (Long Description)
+                    @if($sr['hasld'] == 1)
+                    <span class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">hasld=1</span>
+                    @endif
+                </h3>
+                @if($sr['longdescription'] !== '-')
+                <div class="p-4 bg-gray-50 rounded-lg text-sm text-gray-800 whitespace-pre-wrap break-words leading-relaxed">{{ $sr['longdescription'] }}</div>
+                @else
+                <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-700">
+                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                    Data long description tidak dapat diambil.
+                    @if($sr['hasld'] == 1)
+                    <br>Flag <code>hasld=1</code> menunjukkan data ada di database, tetapi tabel LONGDESCRIPTION tidak dapat diakses.
+                    @endif
+                </div>
+                @endif
+            </div>
 
         </main>
     </div>
