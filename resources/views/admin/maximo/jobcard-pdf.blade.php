@@ -136,7 +136,12 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   <!-- DETIL SR -->
   <div class="detil-section" style="margin-top:6px;">
     <div class="bold" style="margin-bottom:3px;">Detil SR</div>
-    {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $sr['longdescription'])))) !!}
+    @php
+        $text = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $sr['longdescription']);
+        $text = strip_tags($text);
+        $text = preg_replace("/[\r\n]+/", "\n\n", $text); // collapse multiple newlines to max 2
+    @endphp
+    {!! nl2br(e(trim($text))) !!}
   </div>
   @endif
   @endif
@@ -199,7 +204,12 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       </div>
       @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
       <div class="task-ld" style="margin-top: 8px; font-size: 9.5px; padding-left: 15px;">
-        {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription'])))) !!}
+        @php
+            $wText = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
+            $wText = strip_tags($wText);
+            $wText = preg_replace("/[\r\n]+/", "\n\n", $wText);
+        @endphp
+        {!! nl2br(e(trim($wText))) !!}
       </div>
       @endif
     </div>
@@ -451,15 +461,30 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
           @foreach($tasks as $task)
             <strong>Task : {{ $task['description'] ?? '-' }}</strong><br>
             @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
-              {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription'])))) !!}<br><br>
+              @php
+                  $tText = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription']);
+                  $tText = strip_tags($tText);
+                  $tText = preg_replace("/[\r\n]+/", "\n\n", $tText);
+              @endphp
+              {!! nl2br(e(trim($tText))) !!}<br><br>
             @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
-              {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription'])))) !!}<br><br>
+              @php
+                  $wText2 = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
+                  $wText2 = strip_tags($wText2);
+                  $wText2 = preg_replace("/[\r\n]+/", "\n\n", $wText2);
+              @endphp
+              {!! nl2br(e(trim($wText2))) !!}<br><br>
             @endif
           @endforeach
         @else
           <strong>Task : {{ $wo['description'] ?? '-' }}</strong><br>
           @if(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
-            {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription'])))) !!}<br><br>
+            @php
+                $wText3 = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
+                $wText3 = strip_tags($wText3);
+                $wText3 = preg_replace("/[\r\n]+/", "\n\n", $wText3);
+            @endphp
+            {!! nl2br(e(trim($wText3))) !!}<br><br>
           @endif
         @endif
       </td>

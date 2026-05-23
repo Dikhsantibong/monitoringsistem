@@ -963,7 +963,8 @@ class LaborSayaController extends Controller
                         'WOPRIORITY',
                         'ASSETNUM',
                         'LOCATION',
-                        'WORKORDERID'
+                        'WORKORDERID',
+                        'LEAD'
                     ])
                     ->where('PARENT', $wonum)
                     ->where('SITEID', 'KD')
@@ -987,6 +988,11 @@ class LaborSayaController extends Controller
                             $taskAssign = $ta->laborcode;
                         }
                     } catch (\Exception $e) {}
+
+                    // Fallback: gunakan LEAD dari WORKORDER jika ASSIGNMENT kosong
+                    if ($taskAssign === '-' && !empty($childArr['lead'])) {
+                        $taskAssign = $childArr['lead'];
+                    }
 
                     // Cek Asset & Location Description untuk task
                     $taskAssetDesc = '-';
@@ -1060,7 +1066,7 @@ class LaborSayaController extends Controller
                         'reportedby' => $childArr['reportedby'] ?? '-',
                         'failurecode' => $childArr['failurecode'] ?? '-',
                         'glaccount' => $childArr['glaccount'] ?? '-',
-                        'wopriority' => $childArr['wopriority'] ?? '-',
+                        'wopriority' => !empty($childArr['wopriority']) ? $childArr['wopriority'] : ($woArr['wopriority'] ?? '-'),
                         'assetnum' => $childArr['assetnum'] ?? '-',
                         'asset_description' => $taskAssetDesc,
                         'location' => $childArr['location'] ?? '-',
