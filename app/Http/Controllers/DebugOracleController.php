@@ -127,39 +127,34 @@ class DebugOracleController extends Controller
             $hazards = ['error' => $e->getMessage()];
         }
 
-        // Cari tahu tabel apa saja di database yang berelasi dengan WONUM (mempunyai kolom WONUM)
-        $availableTables = [];
+        // Coba langsung tembak ke tabel WOSAFETYLINK atau tabel safety standar lainnya
+        $safetyLinkData = [];
         try {
-            $cols = DB::connection('oracle')->select("
-                SELECT TABLE_NAME 
-                FROM ALL_TAB_COLUMNS 
-                WHERE COLUMN_NAME = 'WONUM'
-                AND TABLE_NAME NOT IN (
-                    'WORKORDER', 'WPLABOR', 'WPTOOL', 'WPMATERIAL', 'WPSERVICE', 
-                    'WPACTIVITY', 'LABTRANS', 'MATUSETRANS', 'SERVRECTRANS', 'FAILUREREPORT', 
-                    'RELATEDRECORD', 'WORKLOG', 'MULTIASSETLOCCI', 'ASSIGNMENT', 'WOSTATUS',
-                    'TKSTATUS', 'SR', 'INCIDENT', 'PROBLEM', 'WPLABOR_VD', 'WPMATERIAL_VD',
-                    'WPTOOL_VD', 'WPSERVICE_VD', 'JOBTASK', 'LOCATIONS'
-                )
-                AND TABLE_NAME NOT LIKE 'BIN$%' 
-                AND TABLE_NAME NOT LIKE 'V_%'
-                AND TABLE_NAME NOT LIKE '%_VW'
-                AND ROWNUM <= 100
-            ");
-            foreach ($cols as $c) {
-                $tableName = $c->table_name ?? $c->TABLE_NAME;
-                $availableTables[] = $tableName;
-            }
+            $safetyLinkData = DB::connection('oracle')->table('WOSAFETYLINK')
+                ->whereIn('WONUM', $allWOs)
+                ->where('SITEID', 'KD')
+                ->get();
         } catch (\Exception $e) {
-            $availableTables = ['error' => 'Gagal cek schema: ' . $e->getMessage()];
+            $safetyLinkData = ['error' => $e->getMessage()];
+        }
+        
+        $woSafetyPlan = [];
+        try {
+            $woSafetyPlan = DB::connection('oracle')->table('WOSAFETYPLAN')
+                ->whereIn('WONUM', $allWOs)
+                ->where('SITEID', 'KD')
+                ->get();
+        } catch (\Exception $e) {
+            $woSafetyPlan = ['error' => $e->getMessage()];
         }
 
         return response()->json([
             'requested_wonum' => $wonum,
             'all_related_wonums' => $allWOs,
             'wplabor_data' => $wplabors,
-            'hazard_and_precaution_data' => $hazards,
-            'tables_linked_to_wonum' => $availableTables
+            'hazard_data_wohazard_error' => $hazards['error'] ?? null,
+            'wosafetylink_data' => $safetyLinkData,
+            'wosafetyplan_data' => $woSafetyPlan
         ], 200, [], JSON_PRETTY_PRINT);
     }
 }
