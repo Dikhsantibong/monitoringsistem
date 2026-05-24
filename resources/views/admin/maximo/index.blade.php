@@ -353,7 +353,7 @@
                                                 <span class="text-gray-400">-</span>
                                             @endif
                                         </td>
-                                        <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['wopriority'] }}</td>
+                                        <td class="px-4 py-2 text-center border border-gray-200">{{ is_array($wo) ? ($wo['wopriortext'] ?? '-') : ($wo->wopriortext ?? '-') }}</td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['worktype'] }}</td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['schedstart'] }}</td>
                                         <td class="px-4 py-2 text-center border border-gray-200">{{ $wo['schedfinish'] }}</td>

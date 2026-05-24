@@ -77,7 +77,7 @@ class MaximoController extends Controller
                     'STATUS',
                     'STATUSDATE',
                     'WORKTYPE',
-                    'WOPRIORITY',
+                    'WOPRIORTEXT',
                     'DESCRIPTION',
                     'ASSETNUM',
                     'LOCATION',
