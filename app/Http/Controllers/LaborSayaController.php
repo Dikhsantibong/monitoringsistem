@@ -330,7 +330,7 @@ class LaborSayaController extends Controller
                 'status' => $woRaw->status ?? '-',
                 'statusdate' => $fmtDate($woRaw->statusdate ?? null),
                 'worktype' => $woRaw->worktype ?? '-',
-                'wopriority' => $woRaw->wopriority ?? '-',
+                'wopriortext' => $woRaw->wopriortext ?? '-',
                 'woclass' => $woRaw->woclass ?? '-',
                 'description' => $woRaw->description ?? '-',
                 // Asset & Lokasi
