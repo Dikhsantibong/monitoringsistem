@@ -133,6 +133,10 @@
                             'Site ID' => $wo['siteid'],
                             'Org ID' => $wo['orgid'],
                             'Downtime' => $wo['downtime'],
+                            'Risk' => $wo['risk'],
+                            'Environment' => $wo['environment'],
+                            'Backout Plan' => $wo['backoutplan'],
+                            'Justify Priority' => $wo['justifypriority'],
                         ] as $label => $value)
                         <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
                             <dt class="text-gray-500 whitespace-nowrap">{{ $label }}</dt>
@@ -177,6 +181,10 @@
                             'PM Number' => $wo['pmnum'],
                             'Failure Code' => $wo['failurecode'],
                             'Problem Code' => $wo['problemcode'],
+                            'Problem Code PLN' => $wo['problemcodepln'],
+                            'Action Code PLN' => $wo['actioncodepln'],
+                            'Cause Code PLN' => $wo['causecodepln'],
+                            'Failure Code PLN' => $wo['failurecodepln'],
                             'GL Account' => $wo['glaccount'],
                             'Contract' => $wo['contract'],
                             'Orig Record ID' => $wo['origrecordid'],
@@ -275,6 +283,41 @@
                 </div>
             </div>
 
+            {{-- PLN Costs --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mt-5">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-coins text-yellow-600"></i> Ellipse vs WO Costs
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left border border-gray-200 text-gray-600">Category</th>
+                                <th class="px-4 py-2 text-right border border-gray-200 text-blue-600">Ellipse Cost</th>
+                                <th class="px-4 py-2 text-right border border-gray-200 text-green-600">WO Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2 border border-gray-200 font-medium">Material</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($wo['matcostellipse'], 2) }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($wo['matcostwo'], 2) }}</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2 border border-gray-200 font-medium">Service</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($wo['servcostellipse'], 2) }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($wo['servcostwo'], 2) }}</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 font-bold bg-gray-50">
+                                <td class="px-4 py-2 border border-gray-200">Total</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($wo['totalcostellipse'], 2) }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($wo['totalcostwo'], 2) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             {{-- Custom Fields (WOEQ) --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
@@ -289,6 +332,14 @@
                             'WOEQ4' => $wo['woeq4'],
                             'WOEQ5' => is_numeric($wo['woeq5']) ? number_format($wo['woeq5'], 2) : $wo['woeq5'],
                             'WOEQ6' => $wo['woeq6'],
+                            'WOEQ7' => $wo['woeq7'],
+                            'WOEQ8' => $wo['woeq8'],
+                            'WOEQ9' => $wo['woeq9'],
+                            'WOEQ10' => $wo['woeq10'],
+                            'WOEQ11' => $wo['woeq11'],
+                            'WOEQ12' => $wo['woeq12'],
+                            'WOEQ13' => $wo['woeq13'],
+                            'WOEQ14' => $wo['woeq14'],
                         ] as $label => $value)
                         <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
                             <dt class="text-gray-500 whitespace-nowrap">{{ $label }}</dt>
