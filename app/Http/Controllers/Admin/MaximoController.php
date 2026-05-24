@@ -258,6 +258,7 @@ class MaximoController extends Controller
                     'ASSETNUM', 'LOCATION', 'JPNUM', 'FAILDATE', 'CHANGEBY', 'CHANGEDATE',
                     'ESTDUR', 'ESTLABHRS', 'ESTMATCOST', 'ESTLABCOST', 'ESTTOOLCOST',
                     'PMNUM', 'ACTLABHRS', 'ACTMATCOST', 'ACTLABCOST', 'ACTTOOLCOST',
+                    'WORKLOCATION',
                     'HASCHILDREN', 'OUTLABCOST', 'OUTMATCOST', 'OUTTOOLCOST', 'HISTORYFLAG',
                     'CONTRACT', 'WOPRIORTEXT', 'TARGCOMPDATE', 'TARGSTARTDATE',
                     'WOEQ1', 'WOEQ2', 'WOEQ3', 'WOEQ4', 'WOEQ5', 'WOEQ6',
@@ -302,6 +303,7 @@ class MaximoController extends Controller
                     // Asset & Lokasi
                     'assetnum' => $wo->assetnum ?? '-',
                     'location' => $wo->location ?? '-',
+                    'worklocation' => $wo->worklocation ?? '-',
                     'siteid' => $wo->siteid ?? '-',
                     'orgid' => $wo->orgid ?? '-',
                     'downtime' => $wo->downtime ?? '-',

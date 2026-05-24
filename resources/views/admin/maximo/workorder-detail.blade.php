@@ -130,6 +130,7 @@
                         @foreach([
                             'Asset Number' => $wo['assetnum'],
                             'Location' => $wo['location'],
+                            'Work Location' => $wo['worklocation'],
                             'Site ID' => $wo['siteid'],
                             'Org ID' => $wo['orgid'],
                             'Downtime' => $wo['downtime'],
