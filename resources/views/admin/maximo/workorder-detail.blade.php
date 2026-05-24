@@ -81,8 +81,8 @@
                         @if($wo['worktype'] !== '-')
                         <span class="px-3 py-1 text-sm font-medium rounded-full bg-indigo-100 text-indigo-700">{{ $wo['worktype'] }}</span>
                         @endif
-                        @if($wo['wopriority'] !== '-')
-                        <span class="px-3 py-1 text-sm font-medium rounded-full bg-red-50 text-red-700">Priority: {{ $wo['wopriority'] }}</span>
+                        @if($wo['wopriortext'] !== '-')
+                        <span class="px-3 py-1 text-sm font-medium rounded-full bg-red-50 text-red-700">Priority: {{ $wo['wopriortext'] }}</span>
                         @endif
                     </div>
                 </div>
@@ -108,7 +108,7 @@
                             'Status' => $wo['status'],
                             'Status Date' => $wo['statusdate'],
                             'Work Type' => $wo['worktype'],
-                            'Priority' => $wo['wopriority'],
+                            'Priority' => $wo['wopriortext'],
                             'WO Class' => $wo['woclass'],
                             'WO PLN' => $wo['wonumpln'],
                             'Anggaran' => $wo['anggaran'],

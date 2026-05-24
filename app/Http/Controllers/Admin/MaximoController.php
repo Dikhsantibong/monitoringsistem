@@ -259,7 +259,7 @@ class MaximoController extends Controller
                     'ESTDUR', 'ESTLABHRS', 'ESTMATCOST', 'ESTLABCOST', 'ESTTOOLCOST',
                     'PMNUM', 'ACTLABHRS', 'ACTMATCOST', 'ACTLABCOST', 'ACTTOOLCOST',
                     'HASCHILDREN', 'OUTLABCOST', 'OUTMATCOST', 'OUTTOOLCOST', 'HISTORYFLAG',
-                    'CONTRACT', 'WOPRIORITY', 'TARGCOMPDATE', 'TARGSTARTDATE',
+                    'CONTRACT', 'WOPRIORTEXT', 'TARGCOMPDATE', 'TARGSTARTDATE',
                     'WOEQ1', 'WOEQ2', 'WOEQ3', 'WOEQ4', 'WOEQ5', 'WOEQ6',
                     'REPORTEDBY', 'REPORTDATE', 'PROBLEMCODE', 'DOWNTIME',
                     'ACTSTART', 'ACTFINISH', 'SCHEDSTART', 'SCHEDFINISH',
@@ -291,7 +291,7 @@ class MaximoController extends Controller
                     'status' => $wo->status ?? '-',
                     'statusdate' => $fmtDate($wo->statusdate ?? null),
                     'worktype' => $wo->worktype ?? '-',
-                    'wopriority' => $wo->wopriority ?? '-',
+                    'wopriortext' => $wo->wopriortext ?? '-',
                     'woclass' => $wo->woclass ?? '-',
                     'description' => $wo->description ?? '-',
                     // Asset & Lokasi
@@ -633,7 +633,7 @@ class MaximoController extends Controller
                     ? Carbon::parse($wo->reportdate)->format('d-m-Y H:i')
                     : '-',
                 'assetnum'    => $wo->assetnum ?? '-',
-                'wopriority'  => $wo->wopriority ?? '-',
+                'wopriority'  => $wo->wopriortext ?? '-',
                 'location'    => $wo->location ?? '-',
                 'siteid'      => $wo->siteid ?? '-',
                 'downtime'    => $wo->downtime ?? '-',
