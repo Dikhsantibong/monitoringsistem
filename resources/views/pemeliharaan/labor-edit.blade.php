@@ -83,8 +83,8 @@
                         @if($workOrder->worktype !== '-')
                         <span class="px-3 py-1 text-sm font-medium rounded-full bg-indigo-100 text-indigo-700">{{ $workOrder->worktype }}</span>
                         @endif
-                        @if($workOrder->wopriority !== '-')
-                        <span class="px-3 py-1 text-sm font-medium rounded-full bg-red-50 text-red-700">Priority: {{ $workOrder->wopriority }}</span>
+                        @if($workOrder->wopriortext !== '-')
+                        <span class="px-3 py-1 text-sm font-medium rounded-full bg-red-50 text-red-700">Priority: {{ $workOrder->wopriortext }}</span>
                         @endif
                     </div>
                 </div>
@@ -109,7 +109,7 @@
                             'Status' => $workOrder->status,
                             'Status Date' => $workOrder->statusdate,
                             'Work Type' => $workOrder->worktype,
-                            'Priority' => $workOrder->wopriority,
+                            'Priority' => $workOrder->wopriortext,
                             'WO Class' => $workOrder->woclass,
                             'WO PLN' => $workOrder->wonumpln,
                             'Anggaran' => $workOrder->anggaran,
@@ -131,9 +131,14 @@
                         @foreach([
                             'Asset Number' => $workOrder->assetnum,
                             'Location' => $workOrder->location,
+                            'Work Location' => $workOrder->worklocation,
                             'Site ID' => $workOrder->siteid,
                             'Org ID' => $workOrder->orgid,
                             'Downtime' => $workOrder->downtime,
+                            'Risk' => $workOrder->risk,
+                            'Environment' => $workOrder->environment,
+                            'Backout Plan' => $workOrder->backoutplan,
+                            'Justify Priority' => $workOrder->justifypriority,
                         ] as $label => $value)
                         <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
                             <dt class="text-gray-500 whitespace-nowrap">{{ $label }}</dt>
@@ -229,6 +234,10 @@
                             'PM Number' => $workOrder->pmnum,
                             'Failure Code' => $workOrder->failurecode,
                             'Problem Code' => $workOrder->problemcode,
+                            'Problem Code PLN' => $workOrder->problemcodepln,
+                            'Action Code PLN' => $workOrder->actioncodepln,
+                            'Cause Code PLN' => $workOrder->causecodepln,
+                            'Failure Code PLN' => $workOrder->failurecodepln,
                             'GL Account' => $workOrder->glaccount,
                             'Contract' => $workOrder->contract,
                             'Orig Record ID' => $workOrder->origrecordid,
@@ -322,6 +331,41 @@
                 </div>
             </div>
 
+            {{-- PLN Costs --}}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 mt-5">
+                <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-coins text-yellow-600"></i> Ellipse vs WO Costs
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full text-sm border border-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 text-left border border-gray-200 text-gray-600">Category</th>
+                                <th class="px-4 py-2 text-right border border-gray-200 text-blue-600">Ellipse Cost</th>
+                                <th class="px-4 py-2 text-right border border-gray-200 text-green-600">WO Cost</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2 border border-gray-200 font-medium">Material</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($workOrder->matcostellipse, 2) }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($workOrder->matcostwo, 2) }}</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-4 py-2 border border-gray-200 font-medium">Service</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($workOrder->servcostellipse, 2) }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($workOrder->servcostwo, 2) }}</td>
+                            </tr>
+                            <tr class="hover:bg-gray-50 font-bold bg-gray-50">
+                                <td class="px-4 py-2 border border-gray-200">Total</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($workOrder->totalcostellipse, 2) }}</td>
+                                <td class="px-4 py-2 border border-gray-200 text-right">{{ number_format($workOrder->totalcostwo, 2) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             {{-- Custom Fields & Remarks --}}
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
@@ -336,6 +380,14 @@
                             'WOEQ4' => $workOrder->woeq4,
                             'WOEQ5' => is_numeric($workOrder->woeq5) ? number_format($workOrder->woeq5, 2) : $workOrder->woeq5,
                             'WOEQ6' => $workOrder->woeq6,
+                            'WOEQ7' => $workOrder->woeq7,
+                            'WOEQ8' => $workOrder->woeq8,
+                            'WOEQ9' => $workOrder->woeq9,
+                            'WOEQ10' => $workOrder->woeq10,
+                            'WOEQ11' => $workOrder->woeq11,
+                            'WOEQ12' => $workOrder->woeq12,
+                            'WOEQ13' => $workOrder->woeq13,
+                            'WOEQ14' => $workOrder->woeq14,
                         ] as $label => $value)
                         <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
                             <dt class="text-gray-500 whitespace-nowrap">{{ $label }}</dt>
