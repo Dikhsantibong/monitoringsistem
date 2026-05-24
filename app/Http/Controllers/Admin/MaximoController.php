@@ -599,6 +599,33 @@ class MaximoController extends Controller
                     'origrecordclass' => $sr->origrecordclass ?? '-',
                     // Solution
                     'solution' => $sr->solution ?? '-',
+                    // Global & Template
+                    'globalticketid' => $sr->globalticketid ?? '-',
+                    'globalticketclass' => $sr->globalticketclass ?? '-',
+                    'isglobal' => $sr->isglobal ?? 0,
+                    'relatedtoglobal' => $sr->relatedtoglobal ?? 0,
+                    'template' => $sr->template ?? 0,
+                    'templateid' => $sr->templateid ?? '-',
+                    // Contacts
+                    'affectedphone' => $sr->affectedphone ?? '-',
+                    'affectedemail' => $sr->affectedemail ?? '-',
+                    'reportedphone' => $sr->reportedphone ?? '-',
+                    'reportedemail' => $sr->reportedemail ?? '-',
+                    'reportedpriority' => $sr->reportedpriority ?? '-',
+                    'urgency' => $sr->urgency ?? '-',
+                    'targetcontactdate' => $fmtDate($sr->targetcontactdate ?? null),
+                    // Specifics
+                    'fr1code' => $sr->fr1code ?? '-',
+                    'fr2code' => $sr->fr2code ?? '-',
+                    'fieldcba' => $sr->fieldcba ?? '-',
+                    'fieldfmea' => $sr->fieldfmea ?? '-',
+                    'fieldlcca' => $sr->fieldlcca ?? '-',
+                    'fieldrcfa' => $sr->fieldrcfa ?? '-',
+                    'vendor' => $sr->vendor ?? '-',
+                    'sitevisit' => $sr->sitevisit ?? 0,
+                    'isknownerror' => $sr->isknownerror ?? 0,
+                    'commodity' => $sr->commodity ?? '-',
+                    'commoditygroup' => $sr->commoditygroup ?? '-',
                 ],
             ]);
 

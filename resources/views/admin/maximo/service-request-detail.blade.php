@@ -161,6 +161,18 @@
                         </div>
                         @endif
                         <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
+                            <dt class="text-gray-500">Reported Phone</dt>
+                            <dd class="font-medium text-gray-800 text-right">{{ $sr['reportedphone'] }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
+                            <dt class="text-gray-500">Reported Email</dt>
+                            <dd class="font-medium text-gray-800 text-right">{{ $sr['reportedemail'] }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
+                            <dt class="text-gray-500">Reported Priority</dt>
+                            <dd class="font-medium text-gray-800 text-right">{{ $sr['reportedpriority'] }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-4 py-1 border-b border-gray-50 mt-2">
                             <dt class="text-gray-500">Affected Person</dt>
                             <dd class="font-medium text-gray-800 text-right">{{ $sr['affectedperson'] }}</dd>
                         </div>
@@ -171,6 +183,14 @@
                         </div>
                         @endif
                         <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
+                            <dt class="text-gray-500">Affected Phone</dt>
+                            <dd class="font-medium text-gray-800 text-right">{{ $sr['affectedphone'] }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
+                            <dt class="text-gray-500">Affected Email</dt>
+                            <dd class="font-medium text-gray-800 text-right">{{ $sr['affectedemail'] }}</dd>
+                        </div>
+                        <div class="flex justify-between gap-4 py-1 border-b border-gray-50 mt-2">
                             <dt class="text-gray-500">Owner</dt>
                             <dd class="font-medium text-gray-800 text-right">{{ $sr['owner'] }}</dd>
                         </div>
@@ -227,6 +247,7 @@
                         'Actual Start' => $sr['actualstart'],
                         'Actual Finish' => $sr['actualfinish'],
                         'Change Date' => $sr['changedate'],
+                        'Target Contact Date' => $sr['targetcontactdate'],
                     ] as $label => $value)
                     <div class="p-3 bg-gray-50 rounded-lg">
                         <p class="text-xs text-gray-400 mb-1">{{ $label }}</p>
@@ -280,10 +301,60 @@
                         @foreach([
                             'Failure Code' => $sr['failurecode'],
                             'Problem Code' => $sr['problemcode'],
+                            'FR1 Code' => $sr['fr1code'],
+                            'FR2 Code' => $sr['fr2code'],
                             'Orig Record ID' => $sr['origrecordid'],
                             'Orig Record Class' => $sr['origrecordclass'],
                             'History Flag' => $sr['historyflag'],
                             'Has Long Desc' => $sr['hasld'],
+                        ] as $label => $value)
+                        <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
+                            <dt class="text-gray-500 whitespace-nowrap">{{ $label }}</dt>
+                            <dd class="font-medium text-gray-800 text-right">{{ $value }}</dd>
+                        </div>
+                        @endforeach
+                    </dl>
+                </div>
+
+                {{-- Global & Ticket Data --}}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-globe text-blue-500"></i> Global & Ticket Settings
+                    </h3>
+                    <dl class="text-sm space-y-2">
+                        @foreach([
+                            'Is Global?' => $sr['isglobal'] == 1 ? 'Ya' : 'Tidak',
+                            'Related To Global?' => $sr['relatedtoglobal'] == 1 ? 'Ya' : 'Tidak',
+                            'Global Ticket ID' => $sr['globalticketid'],
+                            'Global Ticket Class' => $sr['globalticketclass'],
+                            'Is Template?' => $sr['template'] == 1 ? 'Ya' : 'Tidak',
+                            'Template ID' => $sr['templateid'],
+                            'Is Known Error?' => $sr['isknownerror'] == 1 ? 'Ya' : 'Tidak',
+                            'Urgency' => $sr['urgency'],
+                            'Vendor' => $sr['vendor'],
+                            'Site Visit?' => $sr['sitevisit'] == 1 ? 'Ya' : 'Tidak',
+                        ] as $label => $value)
+                        <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
+                            <dt class="text-gray-500 whitespace-nowrap">{{ $label }}</dt>
+                            <dd class="font-medium text-gray-800 text-right">{{ $value }}</dd>
+                        </div>
+                        @endforeach
+                    </dl>
+                </div>
+
+                {{-- Fields & Analytics --}}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+                    <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-purple-500"></i> Analytics & Commodity
+                    </h3>
+                    <dl class="text-sm space-y-2">
+                        @foreach([
+                            'Field CBA' => $sr['fieldcba'],
+                            'Field FMEA' => $sr['fieldfmea'],
+                            'Field LCCA' => $sr['fieldlcca'],
+                            'Field RCFA' => $sr['fieldrcfa'],
+                            'Commodity' => $sr['commodity'],
+                            'Commodity Group' => $sr['commoditygroup'],
                         ] as $label => $value)
                         <div class="flex justify-between gap-4 py-1 border-b border-gray-50">
                             <dt class="text-gray-500 whitespace-nowrap">{{ $label }}</dt>
