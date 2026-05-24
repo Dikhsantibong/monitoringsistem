@@ -127,20 +127,28 @@ class DebugOracleController extends Controller
             $hazards = ['error' => $e->getMessage()];
         }
 
-        // Cari tahu tabel apa yang tersedia di database yang memiliki kolom HAZARD atau PRECAUTION
+        // Cari tahu tabel apa saja di database yang berelasi dengan WONUM (mempunyai kolom WONUM)
         $availableTables = [];
         try {
             $cols = DB::connection('oracle')->select("
-                SELECT TABLE_NAME, COLUMN_NAME 
+                SELECT TABLE_NAME 
                 FROM ALL_TAB_COLUMNS 
-                WHERE (COLUMN_NAME LIKE '%HAZARD%' OR COLUMN_NAME LIKE '%PRECAUTION%' OR COLUMN_NAME LIKE '%SAFETY%')
+                WHERE COLUMN_NAME = 'WONUM'
+                AND TABLE_NAME NOT IN (
+                    'WORKORDER', 'WPLABOR', 'WPTOOL', 'WPMATERIAL', 'WPSERVICE', 
+                    'WPACTIVITY', 'LABTRANS', 'MATUSETRANS', 'SERVRECTRANS', 'FAILUREREPORT', 
+                    'RELATEDRECORD', 'WORKLOG', 'MULTIASSETLOCCI', 'ASSIGNMENT', 'WOSTATUS',
+                    'TKSTATUS', 'SR', 'INCIDENT', 'PROBLEM', 'WPLABOR_VD', 'WPMATERIAL_VD',
+                    'WPTOOL_VD', 'WPSERVICE_VD', 'JOBTASK', 'LOCATIONS'
+                )
                 AND TABLE_NAME NOT LIKE 'BIN$%' 
-                AND ROWNUM <= 50
+                AND TABLE_NAME NOT LIKE 'V_%'
+                AND TABLE_NAME NOT LIKE '%_VW'
+                AND ROWNUM <= 100
             ");
             foreach ($cols as $c) {
                 $tableName = $c->table_name ?? $c->TABLE_NAME;
-                $colName = $c->column_name ?? $c->COLUMN_NAME;
-                $availableTables[] = $tableName . ' (' . $colName . ')';
+                $availableTables[] = $tableName;
             }
         } catch (\Exception $e) {
             $availableTables = ['error' => 'Gagal cek schema: ' . $e->getMessage()];
@@ -151,7 +159,7 @@ class DebugOracleController extends Controller
             'all_related_wonums' => $allWOs,
             'wplabor_data' => $wplabors,
             'hazard_and_precaution_data' => $hazards,
-            'possible_tables_with_hazard_columns' => $availableTables
+            'tables_linked_to_wonum' => $availableTables
         ], 200, [], JSON_PRETTY_PRINT);
     }
 }
