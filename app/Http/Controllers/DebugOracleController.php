@@ -127,12 +127,20 @@ class DebugOracleController extends Controller
             $hazards = ['error' => $e->getMessage()];
         }
 
-        // Cari tahu tabel apa yang tersedia di database yang berhubungan dengan HAZARD / SAFETY
+        // Cari tahu tabel apa yang tersedia di database yang memiliki kolom HAZARD atau PRECAUTION
         $availableTables = [];
         try {
-            $tables = DB::connection('oracle')->select("SELECT TABLE_NAME FROM ALL_TABLES WHERE TABLE_NAME LIKE '%HAZARD%' OR TABLE_NAME LIKE '%SAFETY%'");
-            foreach ($tables as $t) {
-                $availableTables[] = $t->table_name ?? $t->TABLE_NAME;
+            $cols = DB::connection('oracle')->select("
+                SELECT TABLE_NAME, COLUMN_NAME 
+                FROM ALL_TAB_COLUMNS 
+                WHERE (COLUMN_NAME LIKE '%HAZARD%' OR COLUMN_NAME LIKE '%PRECAUTION%' OR COLUMN_NAME LIKE '%SAFETY%')
+                AND TABLE_NAME NOT LIKE 'BIN$%' 
+                AND ROWNUM <= 50
+            ");
+            foreach ($cols as $c) {
+                $tableName = $c->table_name ?? $c->TABLE_NAME;
+                $colName = $c->column_name ?? $c->COLUMN_NAME;
+                $availableTables[] = $tableName . ' (' . $colName . ')';
             }
         } catch (\Exception $e) {
             $availableTables = ['error' => 'Gagal cek schema: ' . $e->getMessage()];
@@ -143,7 +151,7 @@ class DebugOracleController extends Controller
             'all_related_wonums' => $allWOs,
             'wplabor_data' => $wplabors,
             'hazard_and_precaution_data' => $hazards,
-            'possible_hazard_tables_in_db' => $availableTables
+            'possible_tables_with_hazard_columns' => $availableTables
         ], 200, [], JSON_PRETTY_PRINT);
     }
 }
