@@ -46,4 +46,92 @@ class DebugOracleController extends Controller
 
         return view('pemeliharaan.debug-oracle', compact('table', 'column', 'value', 'results', 'error'));
     }
+
+    public function jobcard($wonum)
+    {
+        $wonum = strtoupper($wonum);
+        $allWOs = [$wonum];
+        
+        // Ambil child WOs
+        try {
+            $children = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM')
+                ->where('PARENT', $wonum)
+                ->where('SITEID', 'KD')
+                ->get();
+            foreach ($children as $c) {
+                $allWOs[] = $c->wonum;
+            }
+        } catch (\Exception $e) {}
+
+        // WPLABOR
+        $wplabors = [];
+        try {
+            $wplabors = DB::connection('oracle')->table('WPLABOR')
+                ->whereIn('WONUM', $allWOs)
+                ->where('SITEID', 'KD')
+                ->get();
+        } catch (\Exception $e) {
+            $wplabors = ['error' => $e->getMessage()];
+        }
+
+        // WOHAZARD
+        $hazards = [];
+        try {
+            $woHazards = DB::connection('oracle')->table('WOHAZARD')
+                ->whereIn('WONUM', $allWOs)
+                ->where('SITEID', 'KD')
+                ->get();
+                
+            foreach ($woHazards as $hz) {
+                $hazardId = $hz->hazardid;
+                $hazardDesc = $hazardId;
+                
+                try {
+                    $h = DB::connection('oracle')->table('HAZARD')->where('HAZARDID', $hazardId)->first();
+                    if ($h) $hazardDesc = $h->description ?? $hazardId;
+                } catch (\Exception $e) {}
+                
+                $precautions = [];
+                try {
+                    $woPrecs = DB::connection('oracle')->table('WOHAZARDPREC')
+                        ->whereIn('WONUM', $allWOs)
+                        ->where('HAZARDID', $hazardId)
+                        ->get();
+                        
+                    if ($woPrecs->isEmpty()) {
+                        $woPrecs = DB::connection('oracle')->table('HAZARDPREC')
+                            ->where('HAZARDID', $hazardId)
+                            ->get();
+                    }
+                    
+                    foreach($woPrecs as $wp) {
+                        $precId = $wp->precautionid;
+                        $precDesc = $precId;
+                        try {
+                            $p = DB::connection('oracle')->table('PRECAUTION')->where('PRECAUTIONID', $precId)->first();
+                            if ($p) $precDesc = $p->description ?? $precId;
+                        } catch (\Exception $e) {}
+                        $precautions[] = ['precautionid' => $precId, 'description' => $precDesc];
+                    }
+                } catch (\Exception $e) {}
+                
+                $hazards[] = [
+                    'wonum' => $hz->wonum,
+                    'hazardid' => $hazardId,
+                    'description' => $hazardDesc,
+                    'precautions' => $precautions
+                ];
+            }
+        } catch (\Exception $e) {
+            $hazards = ['error' => $e->getMessage()];
+        }
+
+        return response()->json([
+            'requested_wonum' => $wonum,
+            'all_related_wonums' => $allWOs,
+            'wplabor_data' => $wplabors,
+            'hazard_and_precaution_data' => $hazards
+        ], 200, [], JSON_PRETTY_PRINT);
+    }
 }

@@ -916,6 +916,7 @@ Route::get('/peta-kesehatan-unit', [\App\Http\Controllers\PetaKesehatanUnitContr
 Route::middleware(['auth'])->group(function () {
     Route::get('/pemeliharaan/dashboard', [\App\Http\Controllers\PemeliharaanDashboardController::class, 'index'])->name('pemeliharaan.dashboard');
     Route::get('/pemeliharaan/debug-oracle', [\App\Http\Controllers\DebugOracleController::class, 'index'])->name('pemeliharaan.debug-oracle');
+    Route::get('/pemeliharaan/debug-jobcard/{wonum}', [\App\Http\Controllers\DebugOracleController::class, 'jobcard'])->name('pemeliharaan.debug-jobcard');
     Route::get('/pemeliharaan/labor-saya', [LaborSayaController::class, 'index'])->name('pemeliharaan.labor-saya');
     Route::get('/pemeliharaan/labor-saya/{id}/edit', [LaborSayaController::class, 'edit'])->name('pemeliharaan.labor-saya.edit');
     Route::post('/pemeliharaan/labor-saya/{id}/update', [LaborSayaController::class, 'update'])->name('pemeliharaan.labor-saya.update');
