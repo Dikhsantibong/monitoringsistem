@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 26mm 15mm 10mm 15mm; 
+    margin: 28mm 15mm 10mm 15mm; 
     size: A4; 
 }
 body { 
@@ -20,10 +20,10 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 
 .running-header {
     position: fixed;
-    top: 8mm;
+    top: 9mm;
     left: 15mm;
     right: 15mm;
-    height: 15mm;
+    height: 16mm;
     background: #fff;
     z-index: 1000;
 }
@@ -35,6 +35,7 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 .page {
     width: 100%;
     margin: 0;
+    padding-top: 18mm;
     position: relative; 
     overflow: visible;
     page-break-inside: auto;
@@ -45,6 +46,9 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 }
 .page .hdr-table {
     display: none;
+}
+.page > .hdr-table + * {
+    margin-top: 0 !important;
 }
 
 /*
