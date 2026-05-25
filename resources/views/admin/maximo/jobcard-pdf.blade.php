@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 0; 
+    margin: 24mm 15mm 10mm 15mm; 
     size: A4; 
 }
 body { 
@@ -18,13 +18,21 @@ body {
 }
 table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break-word; }
 
-/* 
- * Setiap .page punya margin sendiri (10mm atas-bawah, 15mm kiri-kanan)
- * page-break-after memisahkan antar halaman
- */
+.running-header {
+    position: fixed;
+    top: -17mm;
+    left: 0;
+    right: 0;
+    height: 15mm;
+}
+.page-number:after {
+    content: counter(page);
+}
+
+/* Setiap .page hanya mengatur pergantian halaman manual. Margin halaman diatur oleh @page. */
 .page {
-    width: 180mm;
-    margin: 10mm 15mm;
+    width: 100%;
+    margin: 0;
     position: relative; 
     overflow: visible;
     page-break-inside: auto;
@@ -32,6 +40,9 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 }
 .page:last-child {
     page-break-after: auto;
+}
+.page .hdr-table {
+    display: none;
 }
 
 /*
@@ -121,7 +132,9 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </head>
 <body>
 
-{{-- Header tetap memakai thead table-header-group agar kompatibel dengan engine PDF. --}}
+<div class="running-header">
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])
+</div>
 
 <!-- ========== PAGE 1 ========== -->
 <div class="page">

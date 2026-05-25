@@ -7,6 +7,13 @@
       <div class="co">PLN Nusantara Power</div>
       <div class="unit">Unit Pembangkitan Kendari</div>
     </td>
-    <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">Halaman : {{ $pageNumber }}</td>
+    <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">
+      Halaman :
+      @if(isset($pageNumber) && $pageNumber !== null)
+        {{ $pageNumber }}
+      @else
+        <span class="page-number"></span>
+      @endif
+    </td>
   </tr>
 </table>
