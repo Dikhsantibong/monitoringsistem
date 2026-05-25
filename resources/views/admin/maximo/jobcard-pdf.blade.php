@@ -22,7 +22,7 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
     position: fixed;
     top: 9mm;
     left: 15mm;
-    right: 15mm;
+    width: 180mm;
     height: 16mm;
     background: #fff;
     z-index: 1000;
@@ -33,9 +33,9 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 
 /* Setiap .page hanya mengatur pergantian halaman manual. Margin halaman diatur oleh @page. */
 .page {
-    width: 100%;
-    margin: 0;
-    padding: 18mm 15mm 0 15mm;
+    width: 180mm;
+    margin: 0 auto;
+    padding-top: 18mm;
     position: relative; 
     overflow: visible;
     page-break-inside: auto;
