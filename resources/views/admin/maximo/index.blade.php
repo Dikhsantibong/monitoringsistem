@@ -301,7 +301,7 @@
                                                     </a>
                                                 @endif
                                                 @if(strtoupper($wo['status']) === 'APPR')
-                                                    <form method="POST" action="{{ route('admin.maximo.jobcard.generate') }}" class="inline">
+                                                    <form method="POST" action="{{ route('admin.maximo.jobcard.generate') }}" class="inline jobcard-generate-form" data-wonum="{{ $wo['wonum'] }}">
                                                         @csrf
                                                         <input type="hidden" name="wonum" value="{{ $wo['wonum'] }}">
                                                         <input type="hidden" name="wo_page" value="{{ request('wo_page', 1) }}">
@@ -309,9 +309,9 @@
                                                         <input type="hidden" name="search" value="{{ request('search') }}">
                                                         <input type="hidden" name="wo_status" value="{{ request('wo_status') }}">
                                                         <input type="hidden" name="wo_worktype" value="{{ request('wo_worktype') }}">
-                                                        <button type="submit" 
+                                                        <button type="button"
                                                                 class="inline-flex items-center px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs"
-                                                                onclick="return confirm('Generate jobcard untuk WO {{ $wo['wonum'] }}?')">
+                                                                onclick="confirmGenerateJobcard(this)">
                                                             <i class="fas fa-file-alt mr-1"></i>
                                                             Generate Jobcard
                                                         </button>
@@ -606,6 +606,33 @@
 </div>
 
 <script>
+function confirmGenerateJobcard(btn) {
+    const form = btn.closest('form');
+    const wonum = form ? form.getAttribute('data-wonum') : '';
+
+    if (typeof Swal === 'undefined') {
+        if (confirm('Generate jobcard untuk WO ' + wonum + '?')) {
+            form.submit();
+        }
+        return;
+    }
+
+    Swal.fire({
+        title: 'Konfirmasi Generate Jobcard',
+        text: 'Generate jobcard untuk WO ' + wonum + '?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Ya, Generate',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed && form) {
+            form.submit();
+        }
+    });
+}
+
 let pdfSaved = false;
 let currentPdfPath = '';
 

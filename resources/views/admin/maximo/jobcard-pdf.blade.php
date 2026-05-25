@@ -17,11 +17,26 @@ body {
     background:#fff; 
 }
 .page { 
-    width: 180mm; /* 210mm - 15mm(left) - 15mm(right) */
-    min-height: 277mm; /* 297mm - 10mm(top) - 10mm(bottom) */
-    margin: 10mm 15mm; /* top/bottom 10mm, left/right 15mm */
+    width: 180mm;
+    margin: 10mm 15mm;
     position: relative; 
     page-break-after: always; 
+}
+.page-cover {
+    min-height: auto;
+    padding-bottom: 4px;
+}
+.page-flow {
+    page-break-after: always;
+}
+.page-fixed {
+    min-height: 277mm;
+}
+.page-footer-num {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    font-size: 10px;
 }
 
 
@@ -49,10 +64,14 @@ body {
 .detil-section p { margin-bottom:1px; }
 
 /* TASK SECTION */
-.task-section { margin-top:6px; }
+.task-section { margin-top:6px; page-break-before:always; }
+.task-section:first-child { page-break-before:auto; }
+.task-block-head { page-break-inside:avoid; page-break-after:avoid; }
 .task-id { font-weight:bold; font-size:12px; margin:5px 0 5px 0; }
 .task-nm { font-size:13px; font-weight:bold; font-style:italic; margin-top:3px; }
-.task-ld { margin-top:8px; font-size:9.5px; padding-left:15px; line-height:1.45; }
+.task-ld { margin-top:8px; font-size:9.5px; padding-left:15px; line-height:1.45; page-break-inside:auto; orphans:2; widows:2; }
+.jobcard-end-section { margin-top:15px; page-break-before:always; page-break-inside:avoid; }
+.jobcard-end-section .blue-table { page-break-inside:avoid; }
 
 /* PAGE 2 STEPS */
 .step-t { font-weight:bold; margin:6px 0 2px; font-size:10px; }
@@ -88,8 +107,8 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </head>
 <body>
 
-<!-- ========== PAGE 1 ========== -->
-<div class="page">
+<!-- ========== PAGE 1 (HEADER + TASK FLOW) ========== -->
+<div class="page page-cover">
   <table class="hdr-table">
     <tr>
       <td style="width:30%; vertical-align:middle;">
@@ -150,11 +169,14 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   </div>
   @endif
   @endif
+</div>
 
-  <!-- TASK SECTION -->
+<div class="page-flow">
+  <!-- TASK SECTION (bisa lebih dari 1 halaman) -->
   @if(isset($tasks) && count($tasks) > 0)
     @foreach($tasks as $task)
     <div class="task-section">
+      <div class="task-block-head">
       <hr class="hr1">
       <div class="task-id" style="margin-top:4px;">Task : <b>{{ $task['wonum'] ?? '-' }}</b></div>
 
@@ -202,7 +224,8 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       </table>
 
       <div class="task-nm">Task : {{ $task['description'] ?? '-' }}</div>
-      
+      </div>
+
       @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
       <div class="task-ld">
         {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription'])))) !!}
@@ -216,8 +239,9 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     @endforeach
   @endif
 
-  <!-- Planned & Actual Labor (Moved to Page 1) -->
-  <table class="blue-table" style="margin-top:15px;">
+  <div class="jobcard-end-section">
+  <!-- Planned & Actual Labor -->
+  <table class="blue-table">
     <tr><th colspan="8">Planned &amp; Actual Labor</th></tr>
     <tr style="background:#4472C4; color:#fff;">
       <th>Task ID</th><th>Craft</th><th>Skill Level</th><th>Labor</th>
@@ -242,12 +266,11 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   </table>
 
   @include('admin.maximo.partials.jobcard-hazard-table', ['hazards' => $hazards ?? []])
-
-  <div style="position:absolute; bottom:0; left:0; font-size:10px;">Halaman : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1</div>
+  </div>
 </div>
 
 <!-- ========== PAGE 2 ========== -->
-<div class="page">
+<div class="page page-fixed">
   <table class="hdr-table">
     <tr>
       <td style="width:30%; vertical-align:middle;">
@@ -288,7 +311,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </div>
 
 <!-- ========== PAGE 3 ========== -->
-<div class="page">
+<div class="page page-fixed">
   <table class="hdr-table">
     <tr>
       <td style="width:30%; vertical-align:middle;">
@@ -366,7 +389,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </div>
 
 <!-- ========== PAGE 4 (JSA) ========== -->
-<div class="page">
+<div class="page page-fixed">
   <table class="hdr-table">
     <tr>
       <td style="width:30%; vertical-align:middle;">
@@ -530,7 +553,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </div>
 
 <!-- ========== PAGE 5 ========== -->
-<div class="page">
+<div class="page page-fixed">
   <table class="hdr-table">
     <tr>
       <td style="width:30%; vertical-align:middle;">
