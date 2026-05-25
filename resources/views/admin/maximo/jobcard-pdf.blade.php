@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 0; 
+    margin: 25mm 15mm 12mm 15mm; 
     size: A4; 
 }
 body { 
@@ -16,15 +16,23 @@ body {
     color:#000; 
     background:#fff; 
 }
-table th, table td { line-height:1.35; }
+table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break-word; }
+.pdf-header {
+    position: fixed;
+    top: -18mm;
+    left: 0;
+    right: 0;
+    height: 16mm;
+}
+.page-number:after { content: counter(page); }
 
 /* 
  * Setiap .page punya margin sendiri (10mm atas-bawah, 15mm kiri-kanan)
  * page-break-after memisahkan antar halaman
  */
-.page { 
-    width: 180mm;
-    margin: 10mm 15mm;
+.page {
+    width: 100%;
+    margin: 0;
     position: relative; 
     page-break-after: always; 
 }
@@ -42,11 +50,18 @@ table th, table td { line-height:1.35; }
 .repeating-header-table {
     width: 100%;
     border-collapse: collapse;
+    display: block;
 }
-.repeating-header-table thead {
-    display: table-header-group;
+.repeating-header-table > thead {
+    display: none;
 }
-.repeating-header-table tbody tr > td {
+.repeating-header-table > tbody,
+.repeating-header-table > tbody > tr,
+.repeating-header-table > tbody > tr > td {
+    display: block;
+    width: 100%;
+}
+.repeating-header-table > tbody > tr > td {
     vertical-align: top;
     padding: 0;
 }
@@ -84,6 +99,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 /* TABLES */
 .blue-table { width:100%; border-collapse:collapse; font-size:10px; margin:6px 0; table-layout:fixed; border:1px solid #000; page-break-inside:auto; }
 .blue-table thead { display:table-header-group; }
+.blue-table tr { page-break-inside:avoid; page-break-after:auto; }
 .blue-table th, .blue-table td { border:1px solid #000; padding:4px 6px; vertical-align:top; text-align:left; }
 .blue-table th { background:#4472C4; color:#fff; font-weight:bold; }
 .blue-table .blue-table-title th { text-align:center; }
@@ -94,6 +110,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 /* JSA */
 .jsa-tbl { width:100%; border-collapse:collapse; font-size:9.5px; table-layout:fixed; border:1px solid #000; page-break-inside:auto; }
 .jsa-tbl thead { display:table-header-group; }
+.jsa-tbl tr { page-break-inside:auto; page-break-after:auto; }
 .jsa-tbl th, .jsa-tbl td { border:1px solid #000; padding:5px 6px; vertical-align:top; word-wrap:break-word; }
 .jsa-tbl th { background:#4472C4; color:#fff; font-weight:bold; }
 .jsa-tbl .jsa-tahapan { font-size:9.5px; line-height:1.45; padding:6px 8px 6px 15px; }
@@ -117,7 +134,21 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </head>
 <body>
 
-{{-- ========== PARTIAL: HEADER SNIPPET (reusable via @include tidak bisa di dalam loop, jadi kita inline) ========== --}}
+{{-- Header PDF tunggal: otomatis tampil ulang di setiap halaman fisik PDF. --}}
+<div class="pdf-header">
+  <table class="hdr-table">
+    <tr>
+      <td style="width:30%; vertical-align:middle;">
+        <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
+      </td>
+      <td style="width:40%; text-align:center; vertical-align:middle;">
+        <div class="co">PLN Nusantara Power</div>
+        <div class="unit">Unit Pembangkitan Kendari</div>
+      </td>
+      <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">Halaman : <span class="page-number"></span></td>
+    </tr>
+  </table>
+</div>
 
 <!-- ========== PAGE 1 ========== -->
 <div class="page">
@@ -530,6 +561,17 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
                 $jsaTahapanBlocks[] = $block;
             }
             $jsaTahapanText = implode("\n\n", $jsaTahapanBlocks);
+            $jsaTahapanRows = [];
+            foreach ($jsaTahapanBlocks as $block) {
+                $parts = preg_split("/\n{2,}/", trim($block));
+                foreach ($parts as $part) {
+                    $part = trim($part);
+                    if ($part !== '') { $jsaTahapanRows[] = $part; }
+                }
+            }
+            if (count($jsaTahapanRows) === 0 && trim($jsaTahapanText) !== '') {
+                $jsaTahapanRows[] = $jsaTahapanText;
+            }
 
             $jsaRiskLines = [];
             $jsaPrecLines = [];
@@ -575,19 +617,25 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             </tr>
           </thead>
           <tbody>
+            @foreach($jsaTahapanRows as $rowIndex => $jsaTahapanRow)
             <tr>
-              <td style="text-align:center;">1</td>
-              <td class="jsa-tahapan">{!! nl2br(e($jsaTahapanText)) !!}</td>
-              @if($jsaHasHazards)
+              <td style="text-align:center;">{{ $rowIndex === 0 ? '1' : '' }}</td>
+              <td class="jsa-tahapan">{!! nl2br(e($jsaTahapanRow)) !!}</td>
+              @if($rowIndex === 0 && $jsaHasHazards)
               <td class="jsa-risk-col">{!! nl2br(e($jsaRiskText)) !!}</td>
               <td class="jsa-prec-col">{!! nl2br(e($jsaPrecText)) !!}</td>
               <td>&nbsp;</td>
-              @else
+              @elseif($rowIndex === 0)
               <td class="jsa-empty">-</td>
               <td class="jsa-empty" style="font-style:italic;">Tidak ada data Precaution &amp; Hazard</td>
               <td>&nbsp;</td>
+              @else
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
+              <td>&nbsp;</td>
               @endif
             </tr>
+            @endforeach
           </tbody>
         </table>
 
