@@ -26,6 +26,8 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
     width: 180mm;
     margin: 10mm 15mm;
     position: relative; 
+    overflow: visible;
+    page-break-inside: auto;
     page-break-after: always; 
 }
 .page:last-child {
@@ -123,14 +125,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 1 ========== -->
 <div class="page">
-  <table class="repeating-header-table">
-    <thead>
-      <tr><td>
-        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 1])
-      </td></tr>
-    </thead>
-    <tbody>
-      <tr><td>
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 1])
 
         <div class="jc-title">JOB CARD</div>
         <hr class="hr1">
@@ -277,22 +272,11 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
           @include('admin.maximo.partials.jobcard-hazard-table', ['hazards' => $hazards ?? []])
         </div>
-
-      </td></tr>
-    </tbody>
-  </table>
 </div>
 
 <!-- ========== PAGE 2 ========== -->
 <div class="page">
-  <table class="repeating-header-table">
-    <thead>
-      <tr><td>
-        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 2])
-      </td></tr>
-    </thead>
-    <tbody>
-      <tr><td>
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 2])
 
         <div class="step-t" style="margin-top:8px;">&nbsp;REALISASI PEKERJAAN :</div>
         <table style="width:100%; font-size:10px; margin-top:4px; margin-bottom:12px;">
@@ -309,22 +293,11 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <div style="font-weight:bold; font-style:italic; font-size:10px; margin-top:5px;"><em>Isolasi dan Perhatian Keselamatan Kerja</em></div>
         <div style="border-bottom:1px dotted #888; margin-top:18px;"></div>
         <div style="border-bottom:1px dotted #888; margin-top:18px;"></div>
-
-      </td></tr>
-    </tbody>
-  </table>
 </div>
 
 <!-- ========== PAGE 3 ========== -->
 <div class="page">
-  <table class="repeating-header-table">
-    <thead>
-      <tr><td>
-        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 3])
-      </td></tr>
-    </thead>
-    <tbody>
-      <tr><td>
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 3])
 
         <div class="sig-lbl">Diminta Oleh</div>
         <table style="width:200px; margin-left:20px; margin-bottom:30px; text-align:center;">
@@ -378,22 +351,11 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             <tr><td style="font-size:10px; font-style:italic; padding-top:3px;">Supervisor Operasi</td></tr>
           </table>
         </div>
-
-      </td></tr>
-    </tbody>
-  </table>
 </div>
 
 <!-- ========== PAGE 4 (JSA) ========== -->
 <div class="page">
-  <table class="repeating-header-table">
-    <thead>
-      <tr><td>
-        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 4])
-      </td></tr>
-    </thead>
-    <tbody>
-      <tr><td>
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 4])
 
         <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px;">
           <tr>
@@ -569,22 +531,11 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             @endforeach
           </tbody>
         </table>
-
-      </td></tr>
-    </tbody>
-  </table>
 </div>
 
 <!-- ========== PAGE 5 ========== -->
 <div class="page">
-  <table class="repeating-header-table">
-    <thead>
-      <tr><td>
-        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 5])
-      </td></tr>
-    </thead>
-    <tbody>
-      <tr><td>
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 5])
 
         <table style="width:100%; margin-bottom:8px;">
           <tr>
@@ -629,24 +580,12 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             </td>
           </tr>
         </table>
-
-      </td></tr>
-    </tbody>
-  </table>
 </div>
 
 <!-- ========== PAGE 6 ========== -->
 <div class="page" style="page-break-after:auto;">
-  <table class="repeating-header-table">
-    <thead>
-      <tr><td>
-        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 6])
-      </td></tr>
-    </thead>
-    <tbody>
-      <tr><td>&nbsp;</td></tr>
-    </tbody>
-  </table>
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 6])
+  &nbsp;
 </div>
 
 </body>
