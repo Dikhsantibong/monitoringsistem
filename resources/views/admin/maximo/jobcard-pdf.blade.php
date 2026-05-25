@@ -125,7 +125,15 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 1 ========== -->
 <div class="page">
-  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 1])
+  <table class="repeating-header-table">
+    <thead>
+      <tr>
+        <td>@include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 1])</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
 
         <div class="jc-title">JOB CARD</div>
         <hr class="hr1">
@@ -272,6 +280,10 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
           @include('admin.maximo.partials.jobcard-hazard-table', ['hazards' => $hazards ?? []])
         </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <!-- ========== PAGE 2 ========== -->
@@ -355,7 +367,15 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 4 (JSA) ========== -->
 <div class="page">
-  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 4])
+  <table class="repeating-header-table">
+    <thead>
+      <tr>
+        <td>@include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 4])</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
 
         <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px;">
           <tr>
@@ -531,6 +551,10 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             @endforeach
           </tbody>
         </table>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <!-- ========== PAGE 5 ========== -->
