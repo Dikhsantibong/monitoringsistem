@@ -469,21 +469,25 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             $jsaTahapanBlocks = [];
             if (isset($tasks) && count($tasks) > 0) {
                 foreach ($tasks as $task) {
-                    $block = 'Task : ' . ($task['description'] ?? '-');
+                    $block = '';
                     if (isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription']))) {
                         $formatted = $formatJsaTahapan($task['longdescription']);
-                        if ($formatted !== '') { $block .= "\n" . $formatted; }
+                        if ($formatted !== '') { $block = $formatted; }
                     } elseif (isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription']))) {
                         $formatted = $formatJsaTahapan($wo['longdescription']);
-                        if ($formatted !== '') { $block .= "\n" . $formatted; }
+                        if ($formatted !== '') { $block = $formatted; }
+                    } else {
+                        $block = $task['description'] ?? '-';
                     }
                     $jsaTahapanBlocks[] = $block;
                 }
             } else {
-                $block = 'Task : ' . ($wo['description'] ?? '-');
+                $block = '';
                 if (isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription']))) {
                     $formatted = $formatJsaTahapan($wo['longdescription']);
-                    if ($formatted !== '') { $block .= "\n" . $formatted; }
+                    if ($formatted !== '') { $block = $formatted; }
+                } else {
+                    $block = $wo['description'] ?? '-';
                 }
                 $jsaTahapanBlocks[] = $block;
             }
