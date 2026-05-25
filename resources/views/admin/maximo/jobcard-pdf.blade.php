@@ -6,43 +6,37 @@
 <title>Job Card - {{ $wo['wonum'] ?? '-' }} - PLN Nusantara Power</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-
-/*
- * SOLUSI MARGIN:
- * Gunakan @page margin untuk mendefinisikan margin halaman secara konsisten.
- * Kemudian .page TIDAK pakai margin lagi — semua margin ditangani @page.
- * Ini cara paling reliable untuk wkhtmltopdf / DomPDF / Snappy.
- */
 @page { 
-    margin: 12mm 15mm;
+    margin: 0; 
     size: A4; 
 }
 body { 
     font-family: Arial, sans-serif; 
-    font-size: 11px; 
-    color: #000; 
-    background: #fff;
-    /* Tambahkan padding body agar konten tidak mepet di engine tertentu */
-    margin: 0;
-    padding: 0;
+    font-size:11px; 
+    color:#000; 
+    background:#fff; 
 }
 
-/*
- * .page: pembatas halaman, TIDAK pakai margin karena sudah dihandle @page.
- * width 100% agar mengisi area yang sudah di-margin oleh @page.
+/* 
+ * Setiap .page punya margin sendiri (10mm atas-bawah, 15mm kiri-kanan)
+ * page-break-after memisahkan antar halaman
  */
 .page { 
-    width: 100%;
+    width: 180mm;
+    margin: 10mm 15mm;
+    position: relative; 
     page-break-after: always; 
-    position: relative;
 }
 .page:last-child {
     page-break-after: auto;
 }
 
 /*
- * repeating-header-table: thead akan di-repeat saat konten overflow ke halaman baru.
- * Karena @page sudah handle margin, tabel ini cukup width:100%.
+ * repeating-header-table: tabel pembungkus per halaman.
+ * thead dengan display:table-header-group akan di-repeat
+ * oleh PDF engine saat konten overflow ke halaman baru.
+ * Catatan: margin dari .page TETAP berlaku karena .page
+ * adalah parent dari tabel ini.
  */
 .repeating-header-table {
     width: 100%;
@@ -51,49 +45,40 @@ body {
 .repeating-header-table thead {
     display: table-header-group;
 }
-.repeating-header-table thead td {
-    padding: 0 0 8px 0;  /* padding bawah sebagai jarak header ke konten */
-}
 .repeating-header-table tbody tr > td {
     vertical-align: top;
     padding: 0;
 }
 
 /* HEADER */
-.hdr-table { 
-    width: 100%; 
-    border-bottom: 2px solid #000; 
-    padding-bottom: 6px; 
-    border-collapse: collapse; 
-}
-/* Logo diperbesar */
-.hdr-logo { width: 90px; height: auto; }
-
-.co   { font-size: 14px; font-weight: bold; }
-.unit { font-size: 11px; }
+.hdr-table { width:100%; border-bottom:2px solid #000; padding-bottom:6px; margin-bottom:8px; border-collapse:collapse; }
+.co { font-size:14px; font-weight:bold; }
+.unit { font-size:11px; }
 
 /* JOB CARD TITLE */
-.jc-title { font-size: 16px; font-weight: bold; margin: 6px 0 6px 0; }
+.jc-title { font-size:16px; font-weight:bold; margin:6px 0 6px 0; }
 
 /* HR dividers */
-.hr1 { border: none; border-top: 1px solid #000; margin: 5px 0; }
-.hr2 { border: none; border-top: 2px solid #000; margin: 5px 0; }
+.hr1 { border:none; border-top:1px solid #000; margin:5px 0; }
+.hr2 { border:none; border-top:2px solid #000; margin:5px 0; }
 
-.bold { font-weight: bold; }
-.f10  { font-size: 10px; }
+.bold { font-weight:bold; }
+.f10 { font-size:10px; }
+.f9 { font-size:9.5px; }
 
-.sr-section    { margin-bottom: 4px; }
-.detil-section { font-size: 10px; line-height: 1.65; margin-bottom: 4px; }
-.detil-section p { margin-bottom: 1px; }
+.sr-section { margin-bottom:4px; }
+.detil-section { font-size:10px; line-height:1.65; margin-bottom:4px; }
+.detil-section p { margin-bottom:1px; }
 
-.task-section    { margin-top: 6px; }
-.task-block-head { page-break-inside: avoid; }
-.task-id  { font-weight: bold; font-size: 12px; margin: 5px 0; }
-.task-nm  { font-size: 13px; font-weight: bold; font-style: italic; margin-top: 3px; }
-.task-ld  { margin-top: 8px; font-size: 9.5px; padding-left: 15px; line-height: 1.45; }
-.jobcard-end-section { margin-top: 12px; }
+.task-section { margin-top:6px; }
+.task-block-head { page-break-inside:avoid; }
+.task-id { font-weight:bold; font-size:12px; margin:5px 0 5px 0; }
+.task-nm { font-size:13px; font-weight:bold; font-style:italic; margin-top:3px; }
+.task-ld { margin-top:8px; font-size:9.5px; padding-left:15px; line-height:1.45; }
+.jobcard-end-section { margin-top:12px; }
 
-.step-t { font-weight: bold; margin: 6px 0 2px; font-size: 10px; }
+.step-t { font-weight:bold; margin:6px 0 2px; font-size:10px; }
+ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 /* TABLES */
 .blue-table { width:100%; border-collapse:collapse; font-size:10px; margin:6px 0; table-layout:fixed; border:1px solid #000; page-break-inside:auto; }
@@ -102,29 +87,27 @@ body {
 .blue-table th { background:#4472C4; color:#fff; font-weight:bold; }
 .blue-table .blue-table-title th { text-align:center; }
 
-.sig-lbl  { font-size: 10px; margin-bottom: 5px; }
-.fr-title { font-weight: bold; font-size: 10px; margin-bottom: 6px; }
+.sig-lbl { font-size:10px; margin-bottom:5px; }
+.fr-title { font-weight:bold; font-size:10px; margin-bottom:6px; }
 
 /* JSA */
 .jsa-tbl { width:100%; border-collapse:collapse; font-size:9.5px; table-layout:fixed; border:1px solid #000; page-break-inside:auto; }
 .jsa-tbl thead { display:table-header-group; }
 .jsa-tbl th, .jsa-tbl td { border:1px solid #000; padding:3px 5px; vertical-align:top; word-wrap:break-word; }
 .jsa-tbl th { background:#4472C4; color:#fff; font-weight:bold; }
-.jsa-tbl .jsa-tahapan  { font-size:8.5px; line-height:1.35; }
-.jsa-tbl .jsa-risk-col,
-.jsa-tbl .jsa-prec-col { font-size:8.5px; line-height:1.35; }
-.jsa-tbl .jsa-empty    { color:#666; text-align:center; }
+.jsa-tbl .jsa-tahapan { font-size:8.5px; line-height:1.35; }
+.jsa-tbl .jsa-risk-col, .jsa-tbl .jsa-prec-col { font-size:8.5px; line-height:1.35; }
+.jsa-tbl .jsa-empty { color:#666; text-align:center; }
 
-/* Kolom No dipersempit */
-.jsa-col-no      { width: 4%;  }
-.jsa-col-tahapan { width: 44%; }
-.jsa-col-risk    { width: 16%; }
-.jsa-col-prec    { width: 30%; }
-.jsa-col-pic     { width: 6%;  }
+/* PERBAIKAN: kolom No dipersempit */
+.jsa-col-no      { width:4%; }
+.jsa-col-tahapan { width:44%; }
+.jsa-col-risk    { width:16%; }
+.jsa-col-prec    { width:30%; }
+.jsa-col-pic     { width:6%; }
 
 .chk { width:12px; height:12px; border:1px solid #000; display:inline-block; }
 
-/* Worker table */
 .w-tbl { width:100%; border-collapse:collapse; font-size:9.5px; }
 .w-tbl th, .w-tbl td { border:1px solid #000; padding:3px 5px; }
 .w-tbl th { background:#ddd; font-weight:bold; }
@@ -132,6 +115,8 @@ body {
 </style>
 </head>
 <body>
+
+{{-- ========== PARTIAL: HEADER SNIPPET (reusable via @include tidak bisa di dalam loop, jadi kita inline) ========== --}}
 
 <!-- ========== PAGE 1 ========== -->
 <div class="page">
@@ -141,7 +126,7 @@ body {
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" class="hdr-logo">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -181,11 +166,12 @@ body {
             </tr>
           </table>
         </div>
+
         @if(isset($sr['longdescription']) && $sr['longdescription'] != '-' && !empty(trim($sr['longdescription'])))
         <div class="detil-section" style="margin-top:6px;">
           <div class="bold" style="margin-bottom:3px;">Detil SR</div>
           @php
-              $text = str_ireplace(['<br>','<br/>','<br />','</p>','</div>','</li>'], "\n", $sr['longdescription']);
+              $text = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $sr['longdescription']);
               $text = strip_tags($text);
               $text = preg_replace("/[\r\n]+/", "\n\n", $text);
           @endphp
@@ -199,7 +185,8 @@ body {
           <div class="task-section">
             <div class="task-block-head">
             <hr class="hr1">
-            <div class="task-id">Task : <b>{{ $task['wonum'] ?? '-' }}</b></div>
+            <div class="task-id" style="margin-top:4px;">Task : <b>{{ $task['wonum'] ?? '-' }}</b></div>
+
             <table style="width:100%; font-size:9.5px; margin-bottom:5px; border-collapse:collapse;">
               <tr>
                 <td style="width:33%; padding:1px 0;"><b>Site :</b> {{ $task['siteid'] ?? '-' }}</td>
@@ -231,6 +218,7 @@ body {
                 <td colspan="2" style="padding:1px 0;"><b>Person Group :</b> {{ $task['persongroup'] ?? '-' }}</td>
               </tr>
             </table>
+
             <table style="width:100%; font-size:9.5px; margin-bottom:5px; border-collapse:collapse;">
               <tr>
                 <td style="width:65px; font-weight:bold; padding:1px 0;">Asset :</td>
@@ -241,12 +229,13 @@ body {
                 <td style="padding:1px 0;">{{ $task['location'] ?? '-' }} &nbsp;&nbsp; {{ $task['location_description'] ?? '-' }}</td>
               </tr>
             </table>
+
             <div class="task-nm">Task : {{ $task['description'] ?? '-' }}</div>
             </div>
 
             @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
             @php
-                $taskLd = str_ireplace(['<br>','<br/>','<br />','</p>','</div>','</li>'], "\n", $task['longdescription']);
+                $taskLd = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription']);
                 $taskLd = strip_tags($taskLd);
                 $taskLd = preg_replace("/[ \t]+/", ' ', $taskLd);
                 $taskLd = preg_replace("/\n{3,}/", "\n\n", trim($taskLd));
@@ -254,7 +243,7 @@ body {
             <div class="task-ld">{!! nl2br(e($taskLd)) !!}</div>
             @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
             @php
-                $taskLd = str_ireplace(['<br>','<br/>','<br />','</p>','</div>','</li>'], "\n", $wo['longdescription']);
+                $taskLd = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
                 $taskLd = strip_tags($taskLd);
                 $taskLd = preg_replace("/[ \t]+/", ' ', $taskLd);
                 $taskLd = preg_replace("/\n{3,}/", "\n\n", trim($taskLd));
@@ -284,7 +273,8 @@ body {
                 <td>{{ $wpl['labor'] }}</td>
                 <td>{{ $wpl['quantity'] }}</td>
                 <td>{{ $wpl['laborhrs'] }}</td>
-                <td></td><td></td>
+                <td></td>
+                <td></td>
               </tr>
               @endforeach
             @else
@@ -292,6 +282,7 @@ body {
             @endif
             </tbody>
           </table>
+
           @include('admin.maximo.partials.jobcard-hazard-table', ['hazards' => $hazards ?? []])
         </div>
 
@@ -308,7 +299,7 @@ body {
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" class="hdr-logo">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -321,6 +312,7 @@ body {
     </thead>
     <tbody>
       <tr><td>
+
         <div class="step-t" style="margin-top:8px;">&nbsp;REALISASI PEKERJAAN :</div>
         <table style="width:100%; font-size:10px; margin-top:4px; margin-bottom:12px;">
           <tr><td style="width:20px; vertical-align:bottom;">1.</td><td style="border-bottom:1px dotted #888;"></td></tr>
@@ -331,10 +323,12 @@ body {
           <tr><td colspan="2" style="height:12px;"></td></tr>
           <tr><td style="vertical-align:bottom;">4.</td><td style="border-bottom:1px dotted #888;"></td></tr>
         </table>
+
         <hr class="hr1" style="margin-top:10px;">
         <div style="font-weight:bold; font-style:italic; font-size:10px; margin-top:5px;"><em>Isolasi dan Perhatian Keselamatan Kerja</em></div>
         <div style="border-bottom:1px dotted #888; margin-top:18px;"></div>
         <div style="border-bottom:1px dotted #888; margin-top:18px;"></div>
+
       </td></tr>
     </tbody>
   </table>
@@ -348,7 +342,7 @@ body {
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" class="hdr-logo">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -361,6 +355,7 @@ body {
     </thead>
     <tbody>
       <tr><td>
+
         <div class="sig-lbl">Diminta Oleh</div>
         <table style="width:200px; margin-left:20px; margin-bottom:30px; text-align:center;">
           <tr><td style="padding-top:28px; border-bottom:1px dotted #555;"></td></tr>
@@ -413,6 +408,7 @@ body {
             <tr><td style="font-size:10px; font-style:italic; padding-top:3px;">Supervisor Operasi</td></tr>
           </table>
         </div>
+
       </td></tr>
     </tbody>
   </table>
@@ -426,7 +422,7 @@ body {
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" class="hdr-logo">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -440,14 +436,10 @@ body {
     <tbody>
       <tr><td>
 
-        {{-- JSA Info Table --}}
         <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px;">
           <tr>
             <td rowspan="4" style="border:1px solid #000; width:70px; text-align:center; padding:4px; vertical-align:middle;">
-              <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 80 80">
-                <rect width="80" height="80" fill="#FFD700"/>
-                <polygon points="40,12 55,35 48,35 55,68 25,45 33,45 26,12" fill="#003087"/>
-              </svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 80 80"><rect width="80" height="80" fill="#FFD700"/><polygon points="40,12 55,35 48,35 55,68 25,45 33,45 26,12" fill="#003087"/></svg>
               <div style="font-size:7px; font-weight:bold; color:#003087; margin-top:2px;">PLN<br>Nusantara Power</div>
             </td>
             <td colspan="2" style="border:1px solid #000; text-align:center; font-weight:bold; font-size:11px; padding:3px;">PT PLN NUSANTARA POWER</td>
@@ -465,25 +457,10 @@ body {
             <td colspan="2" style="border:1px solid #000; padding:2px 5px;"></td>
             <td style="border:1px solid #000; padding:2px 5px;"><strong>Halaman</strong> : Page 1 of 1</td>
           </tr>
-          <tr>
-            <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>NAMA PEKERJAAN (Sesuai No WT)</strong></td>
-            <td colspan="2" style="border:1px solid #000; padding:3px 5px;">[{{ $wo['description'] ?? '-' }}]</td>
-          </tr>
-          <tr>
-            <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>DASAR PEKERJAAN (WO, Task)</strong></td>
-            <td colspan="2" style="border:1px solid #000; padding:3px 5px;">
-              {{ $wo['wonum'] ?? '-' }}
-              @if(isset($tasks) && count($tasks) > 0) , {{ implode(', ', array_column($tasks, 'wonum')) }} @endif
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>LOKASI</strong></td>
-            <td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['location_description'] ?? '-' }}</td>
-          </tr>
-          <tr>
-            <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>PELAKSANA PEKERJAAN</strong></td>
-            <td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['persongroup'] ?? '-' }}</td>
-          </tr>
+          <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>NAMA PEKERJAAN (Sesuai No WT)</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">[{{ $wo['description'] ?? '-' }}]</td></tr>
+          <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>DASAR PEKERJAAN (WO, Task)</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['wonum'] ?? '-' }} @if(isset($tasks) && count($tasks) > 0) , {{ implode(', ', array_column($tasks, 'wonum')) }} @endif</td></tr>
+          <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>LOKASI</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['location_description'] ?? '-' }}</td></tr>
+          <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>PELAKSANA PEKERJAAN</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['persongroup'] ?? '-' }}</td></tr>
           <tr>
             <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>Tgl Hari Kerja</strong> : Tgl .................... sd Tgl ....................</td>
             <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>Waktu Kerja Per Hari</strong> : Pkl .................... sd Pkl ....................</td>
@@ -511,7 +488,7 @@ body {
 
         @php
             $formatJsaTahapan = function ($html) {
-                $text = str_ireplace(['<br>','<br/>','<br />','</p>','</div>','</li>'], "\n", $html);
+                $text = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $html);
                 $text = strip_tags($text);
                 $text = preg_replace("/[ \t]+/", ' ', $text);
                 $lines = preg_split("/\r\n|\n/", trim($text));
@@ -570,8 +547,8 @@ body {
                     }
                 }
             }
-            $jsaRiskText   = implode("\n", $jsaRiskLines);
-            $jsaPrecText   = implode("\n", $jsaPrecLines);
+            $jsaRiskText  = implode("\n", $jsaRiskLines);
+            $jsaPrecText  = implode("\n", $jsaPrecLines);
             $jsaHasHazards = count($jsaRiskLines) > 0;
         @endphp
 
@@ -622,7 +599,7 @@ body {
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" class="hdr-logo">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -635,7 +612,8 @@ body {
     </thead>
     <tbody>
       <tr><td>
-        <table style="width:100%; margin-bottom:8px; border-collapse:collapse;">
+
+        <table style="width:100%; margin-bottom:8px;">
           <tr>
             <td style="vertical-align:top; padding-right:10px;">
               <table class="w-tbl">
@@ -661,7 +639,7 @@ body {
           </tr>
         </table>
 
-        <table style="width:100%; border-collapse:collapse;">
+        <table style="width:100%;">
           <tr>
             <td style="vertical-align:top; border:1px solid #000; padding:4px; font-size:9.5px; height:70px;">
               <div style="font-weight:bold; border-bottom:1px solid #000; padding-bottom:2px; margin-bottom:4px;">Catatan Lain :</div>
@@ -669,29 +647,16 @@ body {
             <td style="width:10px;"></td>
             <td style="width:155px; vertical-align:top;">
               <table style="width:100%; border-collapse:collapse; font-size:9.5px;">
-                <tr>
-                  <td style="border:1px solid #000; padding:3px 5px; font-weight:bold;">Prepared By :</td>
-                  <td style="border:1px solid #000; padding:3px 5px; font-weight:bold;">Sign :</td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #000; padding:3px 5px; height:30px;"></td>
-                  <td style="border:1px solid #000; padding:3px 5px; height:30px;"></td>
-                </tr>
-                <tr>
-                  <td colspan="2" style="border:1px solid #000; padding:2px 5px; background:#ddd; font-weight:bold; text-align:center; font-size:9px;">Created :</td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #000; padding:3px 5px; font-size:8.5px;">Tanggal :</td>
-                  <td style="border:1px solid #000; padding:3px 5px; font-size:8.5px;">Waktu</td>
-                </tr>
-                <tr>
-                  <td style="border:1px solid #000; height:20px;"></td>
-                  <td style="border:1px solid #000; height:20px;"></td>
-                </tr>
+                <tr><td style="border:1px solid #000; padding:3px 5px; font-weight:bold;">Prepared By :</td><td style="border:1px solid #000; padding:3px 5px; font-weight:bold;">Sign :</td></tr>
+                <tr><td style="border:1px solid #000; padding:3px 5px; height:30px;"></td><td style="border:1px solid #000; padding:3px 5px; height:30px;"></td></tr>
+                <tr><td colspan="2" style="border:1px solid #000; padding:2px 5px; background:#ddd; font-weight:bold; text-align:center; font-size:9px;">Created :</td></tr>
+                <tr><td style="border:1px solid #000; padding:3px 5px; font-size:8.5px;">Tanggal :</td><td style="border:1px solid #000; padding:3px 5px; font-size:8.5px;">Waktu</td></tr>
+                <tr><td style="border:1px solid #000; height:20px;"></td><td style="border:1px solid #000; height:20px;"></td></tr>
               </table>
             </td>
           </tr>
         </table>
+
       </td></tr>
     </tbody>
   </table>
@@ -705,7 +670,7 @@ body {
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" class="hdr-logo">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
