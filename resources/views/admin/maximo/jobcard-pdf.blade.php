@@ -22,21 +22,12 @@ body {
     position: relative; 
     page-break-after: always; 
 }
-.page-cover {
+.page-main {
     min-height: auto;
-    padding-bottom: 4px;
-}
-.page-flow {
     page-break-after: always;
 }
 .page-fixed {
     min-height: 277mm;
-}
-.page-footer-num {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    font-size: 10px;
 }
 
 
@@ -64,13 +55,14 @@ body {
 .detil-section p { margin-bottom:1px; }
 
 /* TASK SECTION */
-.task-section { margin-top:6px; page-break-before:always; }
-.task-section:first-child { page-break-before:auto; }
-.task-block-head { page-break-inside:avoid; page-break-after:avoid; }
+.task-section { margin-top:6px; }
+.task-section + .task-section { page-break-before:always; }
+.task-block-head { page-break-inside:avoid; }
 .task-id { font-weight:bold; font-size:12px; margin:5px 0 5px 0; }
 .task-nm { font-size:13px; font-weight:bold; font-style:italic; margin-top:3px; }
-.task-ld { margin-top:8px; font-size:9.5px; padding-left:15px; line-height:1.45; page-break-inside:auto; orphans:2; widows:2; }
-.jobcard-end-section { margin-top:15px; page-break-before:always; page-break-inside:avoid; }
+.task-ld { margin-top:8px; font-size:9.5px; padding-left:15px; line-height:1.45; }
+.task-ld br { line-height:1.45; }
+.jobcard-end-section { margin-top:15px; page-break-inside:avoid; }
 .jobcard-end-section .blue-table { page-break-inside:avoid; }
 
 /* PAGE 2 STEPS */
@@ -107,8 +99,8 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </head>
 <body>
 
-<!-- ========== PAGE 1 (HEADER + TASK FLOW) ========== -->
-<div class="page page-cover">
+<!-- ========== PAGE 1 (HEADER + TASK + LABOR) ========== -->
+<div class="page page-main">
   <table class="hdr-table">
     <tr>
       <td style="width:30%; vertical-align:middle;">
@@ -169,10 +161,8 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   </div>
   @endif
   @endif
-</div>
 
-<div class="page-flow">
-  <!-- TASK SECTION (bisa lebih dari 1 halaman) -->
+  <!-- TASK SECTION -->
   @if(isset($tasks) && count($tasks) > 0)
     @foreach($tasks as $task)
     <div class="task-section">
@@ -227,13 +217,21 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       </div>
 
       @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
-      <div class="task-ld">
-        {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription'])))) !!}
-      </div>
+      @php
+          $taskLd = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription']);
+          $taskLd = strip_tags($taskLd);
+          $taskLd = preg_replace("/[ \t]+/", ' ', $taskLd);
+          $taskLd = preg_replace("/\n{3,}/", "\n\n", trim($taskLd));
+      @endphp
+      <div class="task-ld">{!! nl2br(e($taskLd)) !!}</div>
       @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
-      <div class="task-ld">
-        {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription'])))) !!}
-      </div>
+      @php
+          $taskLd = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
+          $taskLd = strip_tags($taskLd);
+          $taskLd = preg_replace("/[ \t]+/", ' ', $taskLd);
+          $taskLd = preg_replace("/\n{3,}/", "\n\n", trim($taskLd));
+      @endphp
+      <div class="task-ld">{!! nl2br(e($taskLd)) !!}</div>
       @endif
     </div>
     @endforeach
