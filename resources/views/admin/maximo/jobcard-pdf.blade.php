@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 25mm 15mm 12mm 15mm; 
+    margin: 0; 
     size: A4; 
 }
 body { 
@@ -17,22 +17,14 @@ body {
     background:#fff; 
 }
 table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break-word; }
-.pdf-header {
-    position: fixed;
-    top: -18mm;
-    left: 0;
-    right: 0;
-    height: 16mm;
-}
-.page-number:after { content: counter(page); }
 
 /* 
  * Setiap .page punya margin sendiri (10mm atas-bawah, 15mm kiri-kanan)
  * page-break-after memisahkan antar halaman
  */
 .page {
-    width: 100%;
-    margin: 0;
+    width: 180mm;
+    margin: 10mm 15mm;
     position: relative; 
     page-break-after: always; 
 }
@@ -50,18 +42,11 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 .repeating-header-table {
     width: 100%;
     border-collapse: collapse;
-    display: block;
 }
-.repeating-header-table > thead {
-    display: none;
+.repeating-header-table thead {
+    display: table-header-group;
 }
-.repeating-header-table > tbody,
-.repeating-header-table > tbody > tr,
-.repeating-header-table > tbody > tr > td {
-    display: block;
-    width: 100%;
-}
-.repeating-header-table > tbody > tr > td {
+.repeating-header-table tbody tr > td {
     vertical-align: top;
     padding: 0;
 }
@@ -134,39 +119,14 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </head>
 <body>
 
-{{-- Header PDF tunggal: otomatis tampil ulang di setiap halaman fisik PDF. --}}
-<div class="pdf-header">
-  <table class="hdr-table">
-    <tr>
-      <td style="width:30%; vertical-align:middle;">
-        <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
-      </td>
-      <td style="width:40%; text-align:center; vertical-align:middle;">
-        <div class="co">PLN Nusantara Power</div>
-        <div class="unit">Unit Pembangkitan Kendari</div>
-      </td>
-      <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">Halaman : <span class="page-number"></span></td>
-    </tr>
-  </table>
-</div>
+{{-- Header tetap memakai thead table-header-group agar kompatibel dengan engine PDF. --}}
 
 <!-- ========== PAGE 1 ========== -->
 <div class="page">
   <table class="repeating-header-table">
     <thead>
       <tr><td>
-        <table class="hdr-table">
-          <tr>
-            <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
-            </td>
-            <td style="width:40%; text-align:center; vertical-align:middle;">
-              <div class="co">PLN Nusantara Power</div>
-              <div class="unit">Unit Pembangkitan Kendari</div>
-            </td>
-            <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">Halaman : 1</td>
-          </tr>
-        </table>
+        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 1])
       </td></tr>
     </thead>
     <tbody>
@@ -328,18 +288,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   <table class="repeating-header-table">
     <thead>
       <tr><td>
-        <table class="hdr-table">
-          <tr>
-            <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
-            </td>
-            <td style="width:40%; text-align:center; vertical-align:middle;">
-              <div class="co">PLN Nusantara Power</div>
-              <div class="unit">Unit Pembangkitan Kendari</div>
-            </td>
-            <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">Halaman : 2</td>
-          </tr>
-        </table>
+        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 2])
       </td></tr>
     </thead>
     <tbody>
@@ -371,18 +320,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   <table class="repeating-header-table">
     <thead>
       <tr><td>
-        <table class="hdr-table">
-          <tr>
-            <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
-            </td>
-            <td style="width:40%; text-align:center; vertical-align:middle;">
-              <div class="co">PLN Nusantara Power</div>
-              <div class="unit">Unit Pembangkitan Kendari</div>
-            </td>
-            <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">Halaman : 3</td>
-          </tr>
-        </table>
+        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 3])
       </td></tr>
     </thead>
     <tbody>
@@ -451,18 +389,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   <table class="repeating-header-table">
     <thead>
       <tr><td>
-        <table class="hdr-table">
-          <tr>
-            <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
-            </td>
-            <td style="width:40%; text-align:center; vertical-align:middle;">
-              <div class="co">PLN Nusantara Power</div>
-              <div class="unit">Unit Pembangkitan Kendari</div>
-            </td>
-            <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">Halaman : 4</td>
-          </tr>
-        </table>
+        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 4])
       </td></tr>
     </thead>
     <tbody>
@@ -649,18 +576,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   <table class="repeating-header-table">
     <thead>
       <tr><td>
-        <table class="hdr-table">
-          <tr>
-            <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
-            </td>
-            <td style="width:40%; text-align:center; vertical-align:middle;">
-              <div class="co">PLN Nusantara Power</div>
-              <div class="unit">Unit Pembangkitan Kendari</div>
-            </td>
-            <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">Halaman : 5</td>
-          </tr>
-        </table>
+        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 5])
       </td></tr>
     </thead>
     <tbody>
@@ -720,18 +636,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   <table class="repeating-header-table">
     <thead>
       <tr><td>
-        <table class="hdr-table">
-          <tr>
-            <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
-            </td>
-            <td style="width:40%; text-align:center; vertical-align:middle;">
-              <div class="co">PLN Nusantara Power</div>
-              <div class="unit">Unit Pembangkitan Kendari</div>
-            </td>
-            <td style="width:30%; text-align:right; vertical-align:middle; font-size:10px;">Halaman : 6</td>
-          </tr>
-        </table>
+        @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 6])
       </td></tr>
     </thead>
     <tbody>
