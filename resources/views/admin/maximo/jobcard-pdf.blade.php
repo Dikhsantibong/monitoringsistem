@@ -20,10 +20,12 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 
 .running-header {
     position: fixed;
-    top: -17mm;
+    top: 0;
     left: 0;
     right: 0;
     height: 15mm;
+    background: #fff;
+    z-index: 1000;
 }
 .page-number:after {
     content: counter(page);
@@ -33,6 +35,7 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 .page {
     width: 100%;
     margin: 0;
+    padding-top: 17mm;
     position: relative; 
     overflow: visible;
     page-break-inside: auto;
