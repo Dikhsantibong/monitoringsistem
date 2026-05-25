@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 24mm 15mm 10mm 15mm; 
+    margin: 26mm 15mm 10mm 15mm; 
     size: A4; 
 }
 body { 
@@ -20,9 +20,9 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 
 .running-header {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
+    top: 8mm;
+    left: 15mm;
+    right: 15mm;
     height: 15mm;
     background: #fff;
     z-index: 1000;
@@ -35,7 +35,6 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 .page {
     width: 100%;
     margin: 0;
-    padding-top: 17mm;
     position: relative; 
     overflow: visible;
     page-break-inside: auto;
@@ -141,16 +140,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 1 ========== -->
 <div class="page">
-  <table class="repeating-header-table">
-    <thead>
-      <tr>
-        <td>@include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 1])</td>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>
-
         <div class="jc-title">JOB CARD</div>
         <hr class="hr1">
 
@@ -296,10 +285,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
           @include('admin.maximo.partials.jobcard-hazard-table', ['hazards' => $hazards ?? []])
         </div>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 </div>
 
 <!-- ========== PAGE 2 ========== -->
@@ -383,16 +368,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 4 (JSA) ========== -->
 <div class="page">
-  <table class="repeating-header-table">
-    <thead>
-      <tr>
-        <td>@include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 4])</td>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>
-
         <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px;">
           <tr>
             <td rowspan="4" style="border:1px solid #000; width:70px; text-align:center; padding:4px; vertical-align:middle;">
@@ -567,10 +542,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             @endforeach
           </tbody>
         </table>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 </div>
 
 <!-- ========== PAGE 5 ========== -->
