@@ -71,7 +71,11 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 /* JSA */
 .jsa-tbl { width:100%; border-collapse:collapse; font-size:9.5px; }
 .jsa-tbl th, .jsa-tbl td { border:1px solid #000; padding:3px 5px; vertical-align:top; }
-.jsa-tbl th { background:#000; color:#fff; }
+.jsa-tbl th { background:#4472C4; color:#fff; font-weight:bold; }
+.jsa-tahapan { font-size:8.5px; line-height:1.2; }
+.jsa-tahapan p { margin:0 0 2px 0; line-height:1.2; }
+.jsa-tahapan br { line-height:1.2; }
+.jsa-risk, .jsa-prec { font-size:8.5px; line-height:1.2; }
 .chk { width:12px; height:12px; border:1px solid #000; display:inline-block; }
 
 /* Worker table */
@@ -440,7 +444,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     <tr><th style="width:28px;">No</th><th>Tahapan Kerja</th><th style="width:58px;">Risk</th><th>Pengendalian Bahaya (pre caution)</th><th style="width:38px;">PIC</th></tr>
     <tr>
       <td style="text-align:center;">1</td>
-      <td style="font-size:8.5px; line-height:1.6;">
+      <td class="jsa-tahapan">
         @if(isset($tasks) && count($tasks) > 0)
           @foreach($tasks as $task)
             <strong>Task : {{ $task['description'] ?? '-' }}</strong><br>
@@ -448,16 +452,19 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
               @php
                   $tText = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription']);
                   $tText = strip_tags($tText);
-                  $tText = preg_replace("/[\r\n]+/", "\n\n", $tText);
+                  $tText = preg_replace("/[ \t]+/", ' ', $tText);
+                  $tText = preg_replace("/\n{2,}/", "\n", trim($tText));
               @endphp
-              {!! nl2br(e(trim($tText))) !!}<br><br>
+              {!! nl2br(e($tText)) !!}
+              @if(!$loop->last)<br>@endif
             @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
               @php
                   $wText2 = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
                   $wText2 = strip_tags($wText2);
-                  $wText2 = preg_replace("/[\r\n]+/", "\n\n", $wText2);
+                  $wText2 = preg_replace("/[ \t]+/", ' ', $wText2);
+                  $wText2 = preg_replace("/\n{2,}/", "\n", trim($wText2));
               @endphp
-              {!! nl2br(e(trim($wText2))) !!}<br><br>
+              {!! nl2br(e($wText2)) !!}
             @endif
           @endforeach
         @else
@@ -466,43 +473,49 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             @php
                 $wText3 = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
                 $wText3 = strip_tags($wText3);
-                $wText3 = preg_replace("/[\r\n]+/", "\n\n", $wText3);
+                $wText3 = preg_replace("/[ \t]+/", ' ', $wText3);
+                $wText3 = preg_replace("/\n{2,}/", "\n", trim($wText3));
             @endphp
-            {!! nl2br(e(trim($wText3))) !!}<br><br>
+            {!! nl2br(e($wText3)) !!}
           @endif
         @endif
       </td>
       @if(isset($hazards) && count($hazards) > 0)
-      <td style="text-align:center; font-weight:bold; font-size:9px;">
+      <td class="jsa-risk" style="text-align:center; font-weight:bold;">
         @php $jsaRow = 0; @endphp
         @foreach($hazards as $hz)
           @if(!empty($hz['precautions']) && count($hz['precautions']) > 0)
             @foreach($hz['precautions'] as $prec)
               @php $jsaRow++; @endphp
-              {{ $jsaRow }}<br>{{ $hz['description'] }}<br><br>
+              @if($jsaRow > 1)<br>@endif
+              {{ $jsaRow }}. {{ $hz['description'] }}
             @endforeach
           @else
             @php $jsaRow++; @endphp
-            {{ $jsaRow }}<br>{{ $hz['description'] }}<br><br>
+            @if($jsaRow > 1)<br>@endif
+            {{ $jsaRow }}. {{ $hz['description'] }}
           @endif
         @endforeach
       </td>
-      <td style="font-size:8.5px; line-height:1.9;">
+      <td class="jsa-prec">
         @php $jsaRow = 0; @endphp
         @foreach($hazards as $hz)
           @if(!empty($hz['precautions']) && count($hz['precautions']) > 0)
             @foreach($hz['precautions'] as $prec)
               @php $jsaRow++; @endphp
-              {{ $jsaRow }} &nbsp;<strong>
+              @if($jsaRow > 1)<br>@endif
+              {{ $jsaRow }}. <strong>
                 @if(is_array($prec))
                   {{ $prec['description'] ?? ($prec['precautionid'] ?? '-') }}
                 @else
                   {{ $prec }}
                 @endif
-              </strong><br>
+              </strong>
             @endforeach
           @else
-            -<br>
+            @php $jsaRow++; @endphp
+            @if($jsaRow > 1)<br>@endif
+            {{ $jsaRow }}. -
           @endif
         @endforeach
       </td>
