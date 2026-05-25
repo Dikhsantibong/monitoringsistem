@@ -26,6 +26,10 @@ body {
     min-height: auto;
     page-break-after: always;
 }
+.page-main .jobcard-end-section {
+    page-break-before: auto;
+    page-break-inside: auto;
+}
 .page-fixed {
     min-height: 277mm;
 }
@@ -62,17 +66,18 @@ body {
 .task-nm { font-size:13px; font-weight:bold; font-style:italic; margin-top:3px; }
 .task-ld { margin-top:8px; font-size:9.5px; padding-left:15px; line-height:1.45; }
 .task-ld br { line-height:1.45; }
-.jobcard-end-section { margin-top:15px; page-break-inside:avoid; }
-.jobcard-end-section .blue-table { page-break-inside:avoid; }
+.jobcard-end-section { margin-top:12px; }
 
 /* PAGE 2 STEPS */
 .step-t { font-weight:bold; margin:6px 0 2px; font-size:10px; }
 ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 /* TABLES */
-.blue-table { width:100%; border-collapse:collapse; font-size:10px; margin:6px 0; }
-.blue-table th { background:#4472C4; color:#fff; padding:4px 6px; text-align:left; }
-.blue-table td { padding:3px 6px; border-bottom:1px dotted #bbb; }
+.blue-table { width:100%; border-collapse:collapse; font-size:10px; margin:6px 0; table-layout:fixed; border:1px solid #000; page-break-inside:auto; }
+.blue-table thead { display:table-header-group; }
+.blue-table th, .blue-table td { border:1px solid #000; padding:3px 6px; vertical-align:top; text-align:left; }
+.blue-table th { background:#4472C4; color:#fff; font-weight:bold; }
+.blue-table .blue-table-title th { text-align:center; }
 
 /* SIGNATURE */
 .sig-lbl { font-size:10px; margin-bottom:5px; }
@@ -81,14 +86,19 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 .fr-title { font-weight:bold; font-size:10px; margin-bottom:6px; }
 
 /* JSA */
-.jsa-tbl { width:100%; border-collapse:collapse; font-size:9.5px; page-break-inside:auto; }
+.jsa-tbl { width:100%; border-collapse:collapse; font-size:9.5px; table-layout:fixed; border:1px solid #000; page-break-inside:auto; }
 .jsa-tbl thead { display:table-header-group; }
-.jsa-tbl th, .jsa-tbl td { border:1px solid #000; padding:3px 5px; vertical-align:top; }
+.jsa-tbl th, .jsa-tbl td { border:1px solid #000; padding:3px 5px; vertical-align:top; word-wrap:break-word; }
 .jsa-tbl th { background:#4472C4; color:#fff; font-weight:bold; }
-.jsa-tbl .jsa-tahapan { font-size:8.5px; line-height:1.35; padding:4px 5px; }
+.jsa-tbl .jsa-tahapan { font-size:8.5px; line-height:1.35; }
 .jsa-tbl .jsa-tahapan br { line-height:1.35; }
-.jsa-tahapan-row td { vertical-align:top; }
-.jsa-hazard-row td { font-size:8.5px; line-height:1.35; vertical-align:top; }
+.jsa-tbl .jsa-risk-col, .jsa-tbl .jsa-prec-col { font-size:8.5px; line-height:1.35; }
+.jsa-tbl .jsa-empty { color:#666; text-align:center; }
+.jsa-col-no { width:6%; }
+.jsa-col-tahapan { width:42%; }
+.jsa-col-risk { width:16%; }
+.jsa-col-prec { width:30%; }
+.jsa-col-pic { width:6%; }
 .chk { width:12px; height:12px; border:1px solid #000; display:inline-block; }
 
 /* Worker table */
@@ -241,11 +251,14 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
   <div class="jobcard-end-section">
   <!-- Planned & Actual Labor -->
   <table class="blue-table">
-    <tr><th colspan="8">Planned &amp; Actual Labor</th></tr>
-    <tr style="background:#4472C4; color:#fff;">
+    <thead>
+    <tr class="blue-table-title"><th colspan="8">Planned &amp; Actual Labor</th></tr>
+    <tr>
       <th>Task ID</th><th>Craft</th><th>Skill Level</th><th>Labor</th>
       <th>Planned Quantity</th><th>Planned Hours</th><th>Actual Quantity</th><th>Actual Hours</th>
     </tr>
+    </thead>
+    <tbody>
     @if(isset($wplabors) && count($wplabors) > 0)
       @foreach($wplabors as $wpl)
       <tr>
@@ -262,6 +275,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     @else
       <tr><td>{{ $wo['wonum'] }}</td><td>MECH1</td><td>JUNIOR</td><td></td><td>4</td><td>5</td><td></td><td></td></tr>
     @endif
+    </tbody>
   </table>
 
   @include('admin.maximo.partials.jobcard-hazard-table', ['hazards' => $hazards ?? []])
@@ -511,7 +525,8 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       }
       $jsaTahapanText = implode("\n\n", $jsaTahapanBlocks);
 
-      $jsaHazardRows = [];
+      $jsaRiskLines = [];
+      $jsaPrecLines = [];
       if (isset($hazards) && count($hazards) > 0) {
           $n = 0;
           foreach ($hazards as $hz) {
@@ -521,58 +536,52 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
                       $precLabel = is_array($prec)
                           ? ($prec['description'] ?? ($prec['precautionid'] ?? '-'))
                           : $prec;
-                      $jsaHazardRows[] = [
-                          'no' => $n,
-                          'risk' => $hz['description'] ?? '-',
-                          'prec' => $precLabel,
-                      ];
+                      $jsaRiskLines[] = $n . '. ' . ($hz['description'] ?? '-');
+                      $jsaPrecLines[] = $n . '. ' . $precLabel;
                   }
               } else {
                   $n++;
-                  $jsaHazardRows[] = [
-                      'no' => $n,
-                      'risk' => $hz['description'] ?? '-',
-                      'prec' => '-',
-                  ];
+                  $jsaRiskLines[] = $n . '. ' . ($hz['description'] ?? '-');
+                  $jsaPrecLines[] = $n . '. -';
               }
           }
       }
+      $jsaRiskText = implode("\n", $jsaRiskLines);
+      $jsaPrecText = implode("\n", $jsaPrecLines);
+      $jsaHasHazards = count($jsaRiskLines) > 0;
   @endphp
 
   <table class="jsa-tbl">
+    <colgroup>
+      <col class="jsa-col-no">
+      <col class="jsa-col-tahapan">
+      <col class="jsa-col-risk">
+      <col class="jsa-col-prec">
+      <col class="jsa-col-pic">
+    </colgroup>
     <thead>
       <tr>
-        <th style="width:28px;">No</th>
+        <th>No</th>
         <th>Tahapan Kerja</th>
-        <th style="width:58px;">Risk</th>
+        <th>Risk</th>
         <th>Pengendalian Bahaya (pre caution)</th>
-        <th style="width:38px;">PIC</th>
+        <th>PIC</th>
       </tr>
     </thead>
     <tbody>
-      <tr class="jsa-tahapan-row">
+      <tr>
         <td style="text-align:center;">1</td>
-        <td colspan="4" class="jsa-tahapan">{!! nl2br(e($jsaTahapanText)) !!}</td>
+        <td class="jsa-tahapan">{!! nl2br(e($jsaTahapanText)) !!}</td>
+        @if($jsaHasHazards)
+        <td class="jsa-risk-col">{!! nl2br(e($jsaRiskText)) !!}</td>
+        <td class="jsa-prec-col">{!! nl2br(e($jsaPrecText)) !!}</td>
+        <td>&nbsp;</td>
+        @else
+        <td class="jsa-empty">-</td>
+        <td class="jsa-empty" style="font-style:italic;">Tidak ada data Precaution &amp; Hazard</td>
+        <td>&nbsp;</td>
+        @endif
       </tr>
-      @if(count($jsaHazardRows) > 0)
-        @foreach($jsaHazardRows as $row)
-        <tr class="jsa-hazard-row">
-          <td style="text-align:center;">{{ $row['no'] }}</td>
-          <td></td>
-          <td>{{ $row['risk'] }}</td>
-          <td><strong>{{ $row['prec'] }}</strong></td>
-          <td></td>
-        </tr>
-        @endforeach
-      @else
-        <tr class="jsa-hazard-row">
-          <td style="text-align:center;">-</td>
-          <td></td>
-          <td style="text-align:center; color:#666;">-</td>
-          <td style="font-style:italic; color:#666;">Tidak ada data Precaution &amp; Hazard</td>
-          <td></td>
-        </tr>
-      @endif
     </tbody>
   </table>
 
