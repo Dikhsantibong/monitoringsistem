@@ -52,6 +52,7 @@ body {
 .task-section { margin-top:6px; }
 .task-id { font-weight:bold; font-size:12px; margin:5px 0 5px 0; }
 .task-nm { font-size:13px; font-weight:bold; font-style:italic; margin-top:3px; }
+.task-ld { margin-top:8px; font-size:9.5px; padding-left:15px; line-height:1.45; }
 
 /* PAGE 2 STEPS */
 .step-t { font-weight:bold; margin:6px 0 2px; font-size:10px; }
@@ -72,10 +73,10 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 .jsa-tbl { width:100%; border-collapse:collapse; font-size:9.5px; }
 .jsa-tbl th, .jsa-tbl td { border:1px solid #000; padding:3px 5px; vertical-align:top; }
 .jsa-tbl th { background:#4472C4; color:#fff; font-weight:bold; }
-.jsa-tahapan { font-size:8.5px; line-height:1.2; }
-.jsa-tahapan p { margin:0 0 2px 0; line-height:1.2; }
-.jsa-tahapan br { line-height:1.2; }
-.jsa-risk, .jsa-prec { font-size:8.5px; line-height:1.2; }
+.jsa-tbl .jsa-tahapan { font-size:8.5px; line-height:1.2; }
+.jsa-tbl .jsa-tahapan p { margin:0 0 2px 0; line-height:1.2; }
+.jsa-tbl .jsa-tahapan br { line-height:1.2; }
+.jsa-tbl .jsa-risk, .jsa-tbl .jsa-prec { font-size:8.5px; line-height:1.2; }
 .chk { width:12px; height:12px; border:1px solid #000; display:inline-block; }
 
 /* Worker table */
@@ -203,17 +204,12 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <div class="task-nm">Task : {{ $task['description'] ?? '-' }}</div>
       
       @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
-      <div class="task-ld" style="margin-top: 8px; font-size: 9.5px; padding-left: 15px;">
+      <div class="task-ld">
         {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription'])))) !!}
       </div>
       @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
-      <div class="task-ld" style="margin-top: 8px; font-size: 9.5px; padding-left: 15px;">
-        @php
-            $wText = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
-            $wText = strip_tags($wText);
-            $wText = preg_replace("/[\r\n]+/", "\n\n", $wText);
-        @endphp
-        {!! nl2br(e(trim($wText))) !!}
+      <div class="task-ld">
+        {!! nl2br(e(strip_tags(str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription'])))) !!}
       </div>
       @endif
     </div>
