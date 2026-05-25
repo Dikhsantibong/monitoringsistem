@@ -81,13 +81,14 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 .fr-title { font-weight:bold; font-size:10px; margin-bottom:6px; }
 
 /* JSA */
-.jsa-tbl { width:100%; border-collapse:collapse; font-size:9.5px; }
+.jsa-tbl { width:100%; border-collapse:collapse; font-size:9.5px; page-break-inside:auto; }
+.jsa-tbl thead { display:table-header-group; }
 .jsa-tbl th, .jsa-tbl td { border:1px solid #000; padding:3px 5px; vertical-align:top; }
 .jsa-tbl th { background:#4472C4; color:#fff; font-weight:bold; }
-.jsa-tbl .jsa-tahapan { font-size:8.5px; line-height:1.2; }
-.jsa-tbl .jsa-tahapan p { margin:0 0 2px 0; line-height:1.2; }
-.jsa-tbl .jsa-tahapan br { line-height:1.2; }
-.jsa-tbl .jsa-risk, .jsa-tbl .jsa-prec { font-size:8.5px; line-height:1.2; }
+.jsa-tbl .jsa-tahapan { font-size:8.5px; line-height:1.35; padding:4px 5px; }
+.jsa-tbl .jsa-tahapan br { line-height:1.35; }
+.jsa-tahapan-row td { vertical-align:top; }
+.jsa-hazard-row td { font-size:8.5px; line-height:1.35; vertical-align:top; }
 .chk { width:12px; height:12px; border:1px solid #000; display:inline-block; }
 
 /* Worker table */
@@ -457,94 +458,122 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     </tr>
   </table>
 
+  @php
+      $formatJsaTahapan = function ($html) {
+          $text = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $html);
+          $text = strip_tags($text);
+          $text = preg_replace("/[ \t]+/", ' ', $text);
+          $lines = preg_split("/\r\n|\n/", trim($text));
+          $out = [];
+          foreach ($lines as $line) {
+              $trim = trim($line);
+              if ($trim === '') {
+                  continue;
+              }
+              if (preg_match('/^\d+\.\s*$/u', $trim)) {
+                  continue;
+              }
+              if (preg_match('/^[.\-–—\s]+$/u', $trim)) {
+                  continue;
+              }
+              $out[] = $trim;
+          }
+
+          return implode("\n", $out);
+      };
+
+      $jsaTahapanBlocks = [];
+      if (isset($tasks) && count($tasks) > 0) {
+          foreach ($tasks as $task) {
+              $block = 'Task : ' . ($task['description'] ?? '-');
+              if (isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription']))) {
+                  $formatted = $formatJsaTahapan($task['longdescription']);
+                  if ($formatted !== '') {
+                      $block .= "\n" . $formatted;
+                  }
+              } elseif (isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription']))) {
+                  $formatted = $formatJsaTahapan($wo['longdescription']);
+                  if ($formatted !== '') {
+                      $block .= "\n" . $formatted;
+                  }
+              }
+              $jsaTahapanBlocks[] = $block;
+          }
+      } else {
+          $block = 'Task : ' . ($wo['description'] ?? '-');
+          if (isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription']))) {
+              $formatted = $formatJsaTahapan($wo['longdescription']);
+              if ($formatted !== '') {
+                  $block .= "\n" . $formatted;
+              }
+          }
+          $jsaTahapanBlocks[] = $block;
+      }
+      $jsaTahapanText = implode("\n\n", $jsaTahapanBlocks);
+
+      $jsaHazardRows = [];
+      if (isset($hazards) && count($hazards) > 0) {
+          $n = 0;
+          foreach ($hazards as $hz) {
+              if (!empty($hz['precautions']) && count($hz['precautions']) > 0) {
+                  foreach ($hz['precautions'] as $prec) {
+                      $n++;
+                      $precLabel = is_array($prec)
+                          ? ($prec['description'] ?? ($prec['precautionid'] ?? '-'))
+                          : $prec;
+                      $jsaHazardRows[] = [
+                          'no' => $n,
+                          'risk' => $hz['description'] ?? '-',
+                          'prec' => $precLabel,
+                      ];
+                  }
+              } else {
+                  $n++;
+                  $jsaHazardRows[] = [
+                      'no' => $n,
+                      'risk' => $hz['description'] ?? '-',
+                      'prec' => '-',
+                  ];
+              }
+          }
+      }
+  @endphp
+
   <table class="jsa-tbl">
-    <tr><th style="width:28px;">No</th><th>Tahapan Kerja</th><th style="width:58px;">Risk</th><th>Pengendalian Bahaya (pre caution)</th><th style="width:38px;">PIC</th></tr>
-    <tr>
-      <td style="text-align:center;">1</td>
-      <td class="jsa-tahapan">
-        @if(isset($tasks) && count($tasks) > 0)
-          @foreach($tasks as $task)
-            <strong>Task : {{ $task['description'] ?? '-' }}</strong><br>
-            @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
-              @php
-                  $tText = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $task['longdescription']);
-                  $tText = strip_tags($tText);
-                  $tText = preg_replace("/[ \t]+/", ' ', $tText);
-                  $tText = preg_replace("/\n{2,}/", "\n", trim($tText));
-              @endphp
-              {!! nl2br(e($tText)) !!}
-              @if(!$loop->last)<br>@endif
-            @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
-              @php
-                  $wText2 = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
-                  $wText2 = strip_tags($wText2);
-                  $wText2 = preg_replace("/[ \t]+/", ' ', $wText2);
-                  $wText2 = preg_replace("/\n{2,}/", "\n", trim($wText2));
-              @endphp
-              {!! nl2br(e($wText2)) !!}
-            @endif
-          @endforeach
-        @else
-          <strong>Task : {{ $wo['description'] ?? '-' }}</strong><br>
-          @if(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
-            @php
-                $wText3 = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
-                $wText3 = strip_tags($wText3);
-                $wText3 = preg_replace("/[ \t]+/", ' ', $wText3);
-                $wText3 = preg_replace("/\n{2,}/", "\n", trim($wText3));
-            @endphp
-            {!! nl2br(e($wText3)) !!}
-          @endif
-        @endif
-      </td>
-      @if(isset($hazards) && count($hazards) > 0)
-      <td class="jsa-risk" style="text-align:center; font-weight:bold;">
-        @php $jsaRow = 0; @endphp
-        @foreach($hazards as $hz)
-          @if(!empty($hz['precautions']) && count($hz['precautions']) > 0)
-            @foreach($hz['precautions'] as $prec)
-              @php $jsaRow++; @endphp
-              @if($jsaRow > 1)<br>@endif
-              {{ $jsaRow }}. {{ $hz['description'] }}
-            @endforeach
-          @else
-            @php $jsaRow++; @endphp
-            @if($jsaRow > 1)<br>@endif
-            {{ $jsaRow }}. {{ $hz['description'] }}
-          @endif
+    <thead>
+      <tr>
+        <th style="width:28px;">No</th>
+        <th>Tahapan Kerja</th>
+        <th style="width:58px;">Risk</th>
+        <th>Pengendalian Bahaya (pre caution)</th>
+        <th style="width:38px;">PIC</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="jsa-tahapan-row">
+        <td style="text-align:center;">1</td>
+        <td colspan="4" class="jsa-tahapan">{!! nl2br(e($jsaTahapanText)) !!}</td>
+      </tr>
+      @if(count($jsaHazardRows) > 0)
+        @foreach($jsaHazardRows as $row)
+        <tr class="jsa-hazard-row">
+          <td style="text-align:center;">{{ $row['no'] }}</td>
+          <td></td>
+          <td>{{ $row['risk'] }}</td>
+          <td><strong>{{ $row['prec'] }}</strong></td>
+          <td></td>
+        </tr>
         @endforeach
-      </td>
-      <td class="jsa-prec">
-        @php $jsaRow = 0; @endphp
-        @foreach($hazards as $hz)
-          @if(!empty($hz['precautions']) && count($hz['precautions']) > 0)
-            @foreach($hz['precautions'] as $prec)
-              @php $jsaRow++; @endphp
-              @if($jsaRow > 1)<br>@endif
-              {{ $jsaRow }}. <strong>
-                @if(is_array($prec))
-                  {{ $prec['description'] ?? ($prec['precautionid'] ?? '-') }}
-                @else
-                  {{ $prec }}
-                @endif
-              </strong>
-            @endforeach
-          @else
-            @php $jsaRow++; @endphp
-            @if($jsaRow > 1)<br>@endif
-            {{ $jsaRow }}. -
-          @endif
-        @endforeach
-      </td>
       @else
-      <td style="text-align:center; padding:10px; color:#666;">-</td>
-      <td style="text-align:center; padding:10px; font-style:italic; color:#666;">
-        Tidak ada data Precaution & Hazard
-      </td>
+        <tr class="jsa-hazard-row">
+          <td style="text-align:center;">-</td>
+          <td></td>
+          <td style="text-align:center; color:#666;">-</td>
+          <td style="font-style:italic; color:#666;">Tidak ada data Precaution &amp; Hazard</td>
+          <td></td>
+        </tr>
       @endif
-      <td></td>
-    </tr>
-    <tr><td style="height:18px;"></td><td></td><td></td><td></td><td></td></tr>
+    </tbody>
   </table>
 
   <div style="position:absolute; bottom:0; left:0; font-size:10px;">Halaman : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4</div>
