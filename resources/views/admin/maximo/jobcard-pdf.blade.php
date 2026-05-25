@@ -16,6 +16,7 @@ body {
     color:#000; 
     background:#fff; 
 }
+table th, table td { line-height:1.35; }
 
 /* 
  * Setiap .page punya margin sendiri (10mm atas-bawah, 15mm kiri-kanan)
@@ -83,7 +84,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 /* TABLES */
 .blue-table { width:100%; border-collapse:collapse; font-size:10px; margin:6px 0; table-layout:fixed; border:1px solid #000; page-break-inside:auto; }
 .blue-table thead { display:table-header-group; }
-.blue-table th, .blue-table td { border:1px solid #000; padding:3px 6px; vertical-align:top; text-align:left; }
+.blue-table th, .blue-table td { border:1px solid #000; padding:4px 6px; vertical-align:top; text-align:left; }
 .blue-table th { background:#4472C4; color:#fff; font-weight:bold; }
 .blue-table .blue-table-title th { text-align:center; }
 
@@ -93,15 +94,15 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 /* JSA */
 .jsa-tbl { width:100%; border-collapse:collapse; font-size:9.5px; table-layout:fixed; border:1px solid #000; page-break-inside:auto; }
 .jsa-tbl thead { display:table-header-group; }
-.jsa-tbl th, .jsa-tbl td { border:1px solid #000; padding:3px 5px; vertical-align:top; word-wrap:break-word; }
+.jsa-tbl th, .jsa-tbl td { border:1px solid #000; padding:5px 6px; vertical-align:top; word-wrap:break-word; }
 .jsa-tbl th { background:#4472C4; color:#fff; font-weight:bold; }
-.jsa-tbl .jsa-tahapan { font-size:8.5px; line-height:1.35; }
-.jsa-tbl .jsa-risk-col, .jsa-tbl .jsa-prec-col { font-size:8.5px; line-height:1.35; }
+.jsa-tbl .jsa-tahapan { font-size:9.5px; line-height:1.45; padding:6px 8px 6px 15px; }
+.jsa-tbl .jsa-risk-col, .jsa-tbl .jsa-prec-col { font-size:8.5px; line-height:1.45; padding:6px 8px; }
 .jsa-tbl .jsa-empty { color:#666; text-align:center; }
 
 /* PERBAIKAN: kolom No dipersempit */
-.jsa-col-no      { width:4%; }
-.jsa-col-tahapan { width:44%; }
+.jsa-col-no      { width:3%; }
+.jsa-col-tahapan { width:45%; }
 .jsa-col-risk    { width:16%; }
 .jsa-col-prec    { width:30%; }
 .jsa-col-pic     { width:6%; }
@@ -109,7 +110,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 .chk { width:12px; height:12px; border:1px solid #000; display:inline-block; }
 
 .w-tbl { width:100%; border-collapse:collapse; font-size:9.5px; }
-.w-tbl th, .w-tbl td { border:1px solid #000; padding:3px 5px; }
+.w-tbl th, .w-tbl td { border:1px solid #000; padding:4px 6px; }
 .w-tbl th { background:#ddd; font-weight:bold; }
 .w-tbl td { height:20px; }
 </style>
@@ -495,12 +496,16 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
                 $out = [];
                 foreach ($lines as $line) {
                     $trim = trim($line);
-                    if ($trim === '') { continue; }
+                    if ($trim === '') {
+                        if (count($out) > 0 && end($out) !== '') { $out[] = ''; }
+                        continue;
+                    }
                     if (preg_match('/^\d+\.\s*$/u', $trim)) { continue; }
                     if (preg_match('/^[.\-–—\s]+$/u', $trim)) { continue; }
                     $out[] = $trim;
                 }
-                return implode("\n", $out);
+                $text = implode("\n", $out);
+                return preg_replace("/\n{3,}/", "\n\n", trim($text));
             };
 
             $jsaTahapanBlocks = [];
@@ -562,7 +567,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
           </colgroup>
           <thead>
             <tr>
-              <th>No</th>
+              <th style="text-align:center;">No</th>
               <th>Tahapan Kerja</th>
               <th>Risk</th>
               <th>Pengendalian Bahaya (pre caution)</th>
