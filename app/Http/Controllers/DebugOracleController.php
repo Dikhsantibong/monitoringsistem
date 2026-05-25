@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\MaximoJobcardHazards;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -220,45 +221,14 @@ class DebugOracleController extends Controller
             }
         }
 
-        $hazardById = collect($tables['HAZARD']['rows'])->keyBy('hazardid');
-        $precById = collect($tables['PRECAUTION']['rows'])->keyBy('precautionid');
-
-        $summary = [];
-        foreach ($tables['WOHAZARD']['rows'] as $wh) {
-            $hazardId = $wh['hazardid'] ?? '';
-            $hazardRec = $hazardById->get($hazardId);
-            $hazardDesc = $hazardRec['description'] ?? $hazardId;
-
-            $precautions = [];
-            $precSource = 'WOHAZARDPREC';
-            $woPrecRows = collect($tables['WOHAZARDPREC']['rows'])
-                ->filter(fn ($r) => ($r['hazardid'] ?? '') === $hazardId);
-
-            if ($woPrecRows->isEmpty()) {
-                $precSource = 'HAZARDPREC';
-                $woPrecRows = collect($tables['HAZARDPREC']['rows'])
-                    ->filter(fn ($r) => ($r['hazardid'] ?? '') === $hazardId);
+        $summary = MaximoJobcardHazards::fetch($allWOs);
+        foreach ($summary as $i => $item) {
+            foreach ($item['precautions'] as $j => $prec) {
+                $summary[$i]['precautions'][$j]['source'] = collect($tables['WOHAZARDPREC']['rows'])
+                    ->contains(fn ($r) => ($r['precautionid'] ?? '') === ($prec['precautionid'] ?? ''))
+                    ? 'WOHAZARDPREC'
+                    : 'HAZARDPREC';
             }
-
-            foreach ($woPrecRows as $wp) {
-                $precId = $wp['precautionid'] ?? '';
-                if ($precId === '') {
-                    continue;
-                }
-                $precRec = $precById->get($precId);
-                $precautions[] = [
-                    'precautionid' => $precId,
-                    'description' => $precRec['description'] ?? $precId,
-                    'source' => $precSource,
-                ];
-            }
-
-            $summary[] = [
-                'wonum' => $wh['wonum'] ?? '',
-                'hazardid' => $hazardId,
-                'description' => $hazardDesc,
-                'precautions' => $precautions,
-            ];
         }
 
         return [

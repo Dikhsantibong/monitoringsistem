@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Database\QueryException;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\UnitStatus;
+use App\Support\MaximoJobcardHazards;
 
 class MaximoController extends Controller
 {
@@ -1229,66 +1230,7 @@ class MaximoController extends Controller
             // =====================================================
             // 8.5. Ambil Hazard & Precaution (WOHAZARD / HAZARD)
             // =====================================================
-            $hazards = [];
-            try {
-                $woHazards = DB::connection('oracle')->table('WOHAZARD')
-                    ->whereIn('WONUM', $allWOs)
-                    ->where('SITEID', 'KD')
-                    ->get();
-                    
-                foreach ($woHazards as $hz) {
-                    $hzArr = array_change_key_case((array) $hz, CASE_LOWER);
-                    $hazardId = $hzArr['hazardid'] ?? '';
-                    if (!$hazardId) continue;
-                    
-                    $hazardDesc = $hazardId;
-                    try {
-                        $hazardRec = DB::connection('oracle')->table('HAZARD')->where('HAZARDID', $hazardId)->first();
-                        if ($hazardRec) {
-                            $hRecArr = array_change_key_case((array) $hazardRec, CASE_LOWER);
-                            $hazardDesc = $hRecArr['description'] ?? $hazardId;
-                        }
-                    } catch (\Exception $e) {}
-                    
-                    $precautions = [];
-                    try {
-                        $woPrecs = DB::connection('oracle')->table('WOHAZARDPREC')
-                            ->whereIn('WONUM', $allWOs)
-                            ->where('HAZARDID', $hazardId)
-                            ->get();
-                            
-                        if ($woPrecs->isEmpty()) {
-                            $woPrecs = DB::connection('oracle')->table('HAZARDPREC')
-                                ->where('HAZARDID', $hazardId)
-                                ->get();
-                        }
-                        
-                        foreach($woPrecs as $wp) {
-                            $wpArr = array_change_key_case((array) $wp, CASE_LOWER);
-                            $precId = $wpArr['precautionid'] ?? '';
-                            if ($precId) {
-                                $precDesc = $precId;
-                                try {
-                                    $precRec = DB::connection('oracle')->table('PRECAUTION')->where('PRECAUTIONID', $precId)->first();
-                                    if ($precRec) {
-                                        $pRecArr = array_change_key_case((array) $precRec, CASE_LOWER);
-                                        $precDesc = $pRecArr['description'] ?? $precId;
-                                    }
-                                } catch (\Exception $e) {}
-                                $precautions[] = $precId . ': ' . $precDesc;
-                            }
-                        }
-                    } catch (\Exception $e) {}
-                    
-                    $hazards[] = [
-                        'hazardid' => $hazardId,
-                        'description' => $hazardDesc,
-                        'precautions' => $precautions
-                    ];
-                }
-            } catch (\Exception $e) {
-                Log::warning('Failed to fetch Hazards', ['error' => $e->getMessage()]);
-            }
+            $hazards = MaximoJobcardHazards::fetch($allWOs);
 
             // =====================================================
             // 9. Format data lengkap untuk PDF

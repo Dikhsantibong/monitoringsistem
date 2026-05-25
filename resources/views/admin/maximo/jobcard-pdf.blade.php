@@ -241,6 +241,8 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     @endif
   </table>
 
+  @include('admin.maximo.partials.jobcard-hazard-table', ['hazards' => $hazards ?? []])
+
   <div style="position:absolute; bottom:0; left:0; font-size:10px;">Halaman : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1</div>
 </div>
 
@@ -276,24 +278,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
     <tr><td colspan="2" style="height:12px;"></td></tr>
     <tr><td style="vertical-align:bottom;">4.</td><td style="border-bottom:1px dotted #888;"></td></tr>
   </table>
-
-  <!-- Precaution & Hazard -->
-  @if(isset($hazards) && count($hazards) > 0)
-  <table class="blue-table">
-    <tr><th colspan="3">Precaution &amp; Hazard</th></tr>
-    <tr style="background:#4472C4; color:#fff;"><th style="width:30px;">No.</th><th>Hazard</th><th>Precaution</th></tr>
-    @php $rowNum = 1; @endphp
-    @foreach($hazards as $hz)
-      @if(count($hz['precautions']) > 0)
-        @foreach($hz['precautions'] as $prec)
-          <tr><td style="text-align:center;">{{ $rowNum++ }}</td><td>{{ $hz['description'] }}</td><td>{{ $prec }}</td></tr>
-        @endforeach
-      @else
-        <tr><td style="text-align:center;">{{ $rowNum++ }}</td><td>{{ $hz['description'] }}</td><td>-</td></tr>
-      @endif
-    @endforeach
-  </table>
-  @endif
 
   <hr class="hr1" style="margin-top:10px;">
   <div style="font-weight:bold; font-style:italic; font-size:10px; margin-top:5px;"><em>Isolasi dan Perhatian Keselamatan Kerja</em></div>
@@ -490,21 +474,36 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       </td>
       @if(isset($hazards) && count($hazards) > 0)
       <td style="text-align:center; font-weight:bold; font-size:9px;">
-        @foreach($hazards as $idx => $hz)
-          {{ $idx + 1 }}<br>{{ $hz['description'] }}<br><br>
+        @php $jsaRow = 0; @endphp
+        @foreach($hazards as $hz)
+          @if(!empty($hz['precautions']) && count($hz['precautions']) > 0)
+            @foreach($hz['precautions'] as $prec)
+              @php $jsaRow++; @endphp
+              {{ $jsaRow }}<br>{{ $hz['description'] }}<br><br>
+            @endforeach
+          @else
+            @php $jsaRow++; @endphp
+            {{ $jsaRow }}<br>{{ $hz['description'] }}<br><br>
+          @endif
         @endforeach
       </td>
       <td style="font-size:8.5px; line-height:1.9;">
-        @foreach($hazards as $idx => $hz)
-          <strong>Risiko {{ $idx + 1 }}:</strong><br>
-          @if(isset($hz['precautions']) && count($hz['precautions']) > 0)
-            @foreach($hz['precautions'] as $pidx => $prec)
-              {{ $pidx + 1 }} &nbsp;<strong>{{ $prec }}</strong><br>
+        @php $jsaRow = 0; @endphp
+        @foreach($hazards as $hz)
+          @if(!empty($hz['precautions']) && count($hz['precautions']) > 0)
+            @foreach($hz['precautions'] as $prec)
+              @php $jsaRow++; @endphp
+              {{ $jsaRow }} &nbsp;<strong>
+                @if(is_array($prec))
+                  {{ $prec['description'] ?? ($prec['precautionid'] ?? '-') }}
+                @else
+                  {{ $prec }}
+                @endif
+              </strong><br>
             @endforeach
           @else
             -<br>
           @endif
-          <br>
         @endforeach
       </td>
       @else
