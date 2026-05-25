@@ -126,7 +126,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -299,7 +299,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -342,7 +342,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -422,7 +422,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -599,7 +599,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
@@ -670,7 +670,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <table class="hdr-table">
           <tr>
             <td style="width:30%; vertical-align:middle;">
-              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:75px; height:auto;">
+              <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:85px; height:auto;">
             </td>
             <td style="width:40%; text-align:center; vertical-align:middle;">
               <div class="co">PLN Nusantara Power</div>
