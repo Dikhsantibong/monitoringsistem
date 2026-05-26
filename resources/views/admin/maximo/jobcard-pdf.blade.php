@@ -7,8 +7,15 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 35mm 0 25mm 0; 
+    margin: 35mm 15mm 25mm 15mm; 
     size: A4; 
+}
+header {
+    position: fixed;
+    top: -28mm;
+    left: 0;
+    right: 0;
+    height: 25mm;
 }
 body { 
     font-family: Arial, sans-serif; 
@@ -155,14 +162,13 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </head>
 <body>
 
+<header>
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])
+</header>
+
 <!-- ========== PAGE 1 ========== -->
 <div class="page">
   <table class="repeating-header-table">
-    <thead>
-      <tr>
-        <td>@include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])</td>
-      </tr>
-    </thead>
     <tbody>
       <tr class="content-row keep-with-next">
         <td>
@@ -343,8 +349,10 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 2 ========== -->
 <div class="page">
-  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 2])
-
+  <table class="repeating-header-table">
+    <tbody>
+      <tr class="content-row">
+        <td>
         <div class="step-t" style="margin-top:8px;">&nbsp;REALISASI PEKERJAAN :</div>
         <table style="width:100%; font-size:10px; margin-top:4px; margin-bottom:12px;">
           <tr><td style="width:20px; vertical-align:bottom;">1.</td><td style="border-bottom:1px dotted #888;"></td></tr>
@@ -360,12 +368,18 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <div style="font-weight:bold; font-style:italic; font-size:10px; margin-top:5px;"><em>Isolasi dan Perhatian Keselamatan Kerja</em></div>
         <div style="border-bottom:1px dotted #888; margin-top:18px;"></div>
         <div style="border-bottom:1px dotted #888; margin-top:18px;"></div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <!-- ========== PAGE 3 ========== -->
 <div class="page">
-  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 3])
-
+  <table class="repeating-header-table">
+    <tbody>
+      <tr class="content-row">
+        <td>
         <div class="sig-lbl">Diminta Oleh</div>
         <table style="width:200px; margin-left:20px; margin-bottom:30px; text-align:center;">
           <tr><td style="padding-top:28px; border-bottom:1px dotted #555;"></td></tr>
@@ -422,7 +436,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 4 (JSA) ========== -->
 <div class="page">
-  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])
   
   <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px;">
           <tr>
@@ -575,11 +588,11 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
           </colgroup>
           <thead>
             <tr>
-              <th style="text-align:center;">No</th>
-              <th>Tahapan Kerja</th>
-              <th>Risk</th>
-              <th>Pengendalian Bahaya (pre caution)</th>
-              <th>PIC</th>
+              <th style="width:5%; text-align:center;">No</th>
+              <th style="width:40%;">Tahapan Kerja</th>
+              <th style="width:20%;">Risk</th>
+              <th style="width:25%;">Pengendalian Bahaya (pre caution)</th>
+              <th style="width:10%;">PIC</th>
             </tr>
           </thead>
             @php
@@ -611,8 +624,8 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
                   <td class="jsa-empty" style="font-style:italic;">Tidak ada data Precaution &amp; Hazard</td>
                   <td>&nbsp;</td>
                   @else
-                  <td class="jsa-risk-col">{{ $rLine ?? '&nbsp;' }}</td>
-                  <td class="jsa-prec-col">{{ $pLine ?? '&nbsp;' }}</td>
+                  <td class="jsa-risk-col">{!! $rLine ?? '&nbsp;' !!}</td>
+                  <td class="jsa-prec-col">{!! $pLine ?? '&nbsp;' !!}</td>
                   <td>&nbsp;</td>
                   @endif
                 </tr>
@@ -623,8 +636,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 5 ========== -->
 <div class="page">
-  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 5])
-
         <table style="width:100%; margin-bottom:8px;">
           <tr>
             <td style="vertical-align:top; padding-right:10px;">
@@ -671,10 +682,8 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </div>
 
 <!-- ========== PAGE 6 ========== -->
-<div class="page" style="page-break-after:auto;">
-  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => 6])
-  &nbsp;
-</div>
+<div class="page">
+        <table style="width:100%;">
 
 </body>
 </html>
