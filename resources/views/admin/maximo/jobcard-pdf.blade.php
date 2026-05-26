@@ -422,9 +422,59 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 4 (JSA) ========== -->
 <div class="page">
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])
 
-        @php
-            $formatJsaTahapan = function ($html) {
+  <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px;">
+    <tr>
+      <td rowspan="4" style="border:1px solid #000; width:70px; text-align:center; padding:4px; vertical-align:middle;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 80 80"><rect width="80" height="80" fill="#FFD700"/><polygon points="40,12 55,35 48,35 55,68 25,45 33,45 26,12" fill="#003087"/></svg>
+        <div style="font-size:7px; font-weight:bold; color:#003087; margin-top:2px;">PLN<br>Nusantara Power</div>
+      </td>
+      <td colspan="2" style="border:1px solid #000; text-align:center; font-weight:bold; font-size:11px; padding:3px;">PT PLN NUSANTARA POWER</td>
+      <td style="border:1px solid #000; padding:2px 5px;"><strong>No Dokumen</strong> : FMZ 08.2.3.4</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="border:1px solid #000; text-align:center; font-weight:bold; padding:3px;">INTEGRATED MANAGEMENT SYSTEM</td>
+      <td style="border:1px solid #000; padding:2px 5px;"><strong>Tgl Terbit</strong> : 02-02-2017</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="border:1px solid #000; text-align:center; font-weight:bold; font-size:11px; padding:3px;">FORM JOB SAFETY ANALYSIS</td>
+      <td style="border:1px solid #000; padding:2px 5px;"><strong>Revisi</strong> : 1</td>
+    </tr>
+    <tr>
+      <td colspan="2" style="border:1px solid #000; padding:2px 5px;"></td>
+      <td style="border:1px solid #000; padding:2px 5px;"><strong>Halaman</strong> : Page 1 of 1</td>
+    </tr>
+    <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>NAMA PEKERJAAN (Sesuai No WT)</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">[{{ $wo['description'] ?? '-' }}]</td></tr>
+    <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>DASAR PEKERJAAN (WO, Task)</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['wonum'] ?? '-' }} @if(isset($tasks) && count($tasks) > 0) , {{ implode(', ', array_column($tasks, 'wonum')) }} @endif</td></tr>
+    <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>LOKASI</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['location_description'] ?? '-' }}</td></tr>
+    <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>PELAKSANA PEKERJAAN</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['persongroup'] ?? '-' }}</td></tr>
+    <tr>
+      <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>Tgl Hari Kerja</strong> : Tgl .................... sd Tgl ....................</td>
+      <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>Waktu Kerja Per Hari</strong> : Pkl .................... sd Pkl ....................</td>
+    </tr>
+  </table>
+
+  <div style="font-size:9.5px; margin:5px 0;">
+    <strong>BERI TANDA</strong> &nbsp;&#9745;&nbsp; <strong>IJIN PEKERJAAN YANG HARUS DILENGKAPI</strong>
+  </div>
+
+  <table style="width:100%; font-size:9px; margin-bottom:6px;">
+    <tr>
+      <td><span class="chk"></span> HOT WORK</td>
+      <td><span class="chk"></span> CONFINED SPACE</td>
+      <td><span class="chk"></span> WORKING AT HEIGHT</td>
+      <td><span class="chk"></span> ISOLASI</td>
+    </tr>
+    <tr>
+      <td style="padding-top:4px;"><span class="chk"></span> DIGGING</td>
+      <td style="padding-top:4px;"><span class="chk"></span> VICINITY</td>
+      <td style="padding-top:4px;"><span class="chk"></span> NEAR &amp; UNDERWATER</td>
+      <td style="padding-top:4px;"><span class="chk"></span> NOTHING</td>
+    </tr>
+  </table>
+
+  @php
                 $text = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $html);
                 $text = strip_tags($text);
                 $text = preg_replace("/[ \t]+/", ' ', $text);
@@ -524,11 +574,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
           </colgroup>
           <thead>
             <tr>
-              <td colspan="5" style="border:none; padding:0;">
-                @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])
-              </td>
-            </tr>
-            <tr>
               <th style="width:5%; text-align:center;">No</th>
               <th style="width:40%;">Tahapan Kerja</th>
               <th style="width:20%;">Risk</th>
@@ -537,60 +582,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             </tr>
           </thead>
           <tbody>
-            {{-- Form IMS & Ijin Pekerjaan (hanya tampil halaman pertama) --}}
-            <tr>
-              <td colspan="5" style="border:none; padding:0;">
-                <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px;">
-                  <tr>
-                    <td rowspan="4" style="border:1px solid #000; width:70px; text-align:center; padding:4px; vertical-align:middle;">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 80 80"><rect width="80" height="80" fill="#FFD700"/><polygon points="40,12 55,35 48,35 55,68 25,45 33,45 26,12" fill="#003087"/></svg>
-                      <div style="font-size:7px; font-weight:bold; color:#003087; margin-top:2px;">PLN<br>Nusantara Power</div>
-                    </td>
-                    <td colspan="2" style="border:1px solid #000; text-align:center; font-weight:bold; font-size:11px; padding:3px;">PT PLN NUSANTARA POWER</td>
-                    <td style="border:1px solid #000; padding:2px 5px;"><strong>No Dokumen</strong> : FMZ 08.2.3.4</td>
-                  </tr>
-                  <tr>
-                    <td colspan="2" style="border:1px solid #000; text-align:center; font-weight:bold; padding:3px;">INTEGRATED MANAGEMENT SYSTEM</td>
-                    <td style="border:1px solid #000; padding:2px 5px;"><strong>Tgl Terbit</strong> : 02-02-2017</td>
-                  </tr>
-                  <tr>
-                    <td colspan="2" style="border:1px solid #000; text-align:center; font-weight:bold; font-size:11px; padding:3px;">FORM JOB SAFETY ANALYSIS</td>
-                    <td style="border:1px solid #000; padding:2px 5px;"><strong>Revisi</strong> : 1</td>
-                  </tr>
-                  <tr>
-                    <td colspan="2" style="border:1px solid #000; padding:2px 5px;"></td>
-                    <td style="border:1px solid #000; padding:2px 5px;"><strong>Halaman</strong> : Page 1 of 1</td>
-                  </tr>
-                  <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>NAMA PEKERJAAN (Sesuai No WT)</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">[{{ $wo['description'] ?? '-' }}]</td></tr>
-                  <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>DASAR PEKERJAAN (WO, Task)</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['wonum'] ?? '-' }} @if(isset($tasks) && count($tasks) > 0) , {{ implode(', ', array_column($tasks, 'wonum')) }} @endif</td></tr>
-                  <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>LOKASI</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['location_description'] ?? '-' }}</td></tr>
-                  <tr><td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>PELAKSANA PEKERJAAN</strong></td><td colspan="2" style="border:1px solid #000; padding:3px 5px;">{{ $wo['persongroup'] ?? '-' }}</td></tr>
-                  <tr>
-                    <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>Tgl Hari Kerja</strong> : Tgl .................... sd Tgl ....................</td>
-                    <td colspan="2" style="border:1px solid #000; padding:3px 5px;"><strong>Waktu Kerja Per Hari</strong> : Pkl .................... sd Pkl ....................</td>
-                  </tr>
-                </table>
-
-                <div style="font-size:9.5px; margin:5px 0;">
-                  <strong>BERI TANDA</strong> &nbsp;&#9745;&nbsp; <strong>IJIN PEKERJAAN YANG HARUS DILENGKAPI</strong>
-                </div>
-
-                <table style="width:100%; font-size:9px; margin-bottom:6px;">
-                  <tr>
-                    <td><span class="chk"></span> HOT WORK</td>
-                    <td><span class="chk"></span> CONFINED SPACE</td>
-                    <td><span class="chk"></span> WORKING AT HEIGHT</td>
-                    <td><span class="chk"></span> ISOLASI</td>
-                  </tr>
-                  <tr>
-                    <td style="padding-top:4px;"><span class="chk"></span> DIGGING</td>
-                    <td style="padding-top:4px;"><span class="chk"></span> VICINITY</td>
-                    <td style="padding-top:4px;"><span class="chk"></span> NEAR &amp; UNDERWATER</td>
-                    <td style="padding-top:4px;"><span class="chk"></span> NOTHING</td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
             {{-- Baris data JSA --}}
             @php
                 $maxJsaRows = max(count($jsaTahapanRows), count($jsaRiskLines));
