@@ -59,7 +59,7 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 }
 
 /* HEADER */
-.hdr-table { width:100%; padding-bottom:6px; margin-bottom:8px; border-collapse:collapse; }
+.hdr-table { width:100%; padding-bottom:6px; margin-bottom:8px; border-collapse:collapse; margin-top:25px; }
 .co { font-size:14px; font-weight:bold; }
 .unit { font-size:11px; }
 
@@ -422,16 +422,9 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
 <!-- ========== PAGE 4 (JSA) ========== -->
 <div class="page">
-  <table class="repeating-header-table">
-    <thead>
-      <tr>
-        <td>@include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])</td>
-      </tr>
-    </thead>
-    <tbody>
-      <tr class="content-row">
-        <td>
-        <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px;">
+  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])
+  
+  <table style="width:100%; border-collapse:collapse; font-size:9.5px; margin-bottom:6px;">
           <tr>
             <td rowspan="4" style="border:1px solid #000; width:70px; text-align:center; padding:4px; vertical-align:middle;">
               <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 80 80"><rect width="80" height="80" fill="#FFD700"/><polygon points="40,12 55,35 48,35 55,68 25,45 33,45 26,12" fill="#003087"/></svg>
@@ -626,10 +619,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             @endfor
           </tbody>
         </table>
-        </td>
-      </tr>
-    </tbody>
-  </table>
 </div>
 
 <!-- ========== PAGE 5 ========== -->
