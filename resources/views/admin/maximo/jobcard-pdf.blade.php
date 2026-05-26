@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 18mm 0 15mm 0; 
+    margin: 35mm 0 25mm 0; 
     size: A4; 
 }
 body { 
@@ -589,26 +589,41 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
               <th>PIC</th>
             </tr>
           </thead>
-          <tbody>
-            @foreach($jsaTahapanRows as $rowIndex => $jsaTahapanRow)
-            <tr class="{{ ($jsaTahapanRow['is_group_end'] ?? false) ? 'jsa-group-end' : 'jsa-no-bottom' }}">
-              <td style="text-align:center;">{{ $rowIndex === 0 ? '1' : '' }}</td>
-              <td class="jsa-tahapan">{!! nl2br(e($jsaTahapanRow['text'] ?? $jsaTahapanRow)) !!}</td>
-              @if($rowIndex === 0 && $jsaHasHazards)
-              <td class="jsa-risk-col">{!! nl2br(e($jsaRiskText)) !!}</td>
-              <td class="jsa-prec-col">{!! nl2br(e($jsaPrecText)) !!}</td>
-              <td>&nbsp;</td>
-              @elseif($rowIndex === 0)
-              <td class="jsa-empty">-</td>
-              <td class="jsa-empty" style="font-style:italic;">Tidak ada data Precaution &amp; Hazard</td>
-              <td>&nbsp;</td>
-              @else
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              <td>&nbsp;</td>
-              @endif
-            </tr>
-            @endforeach
+            @php
+                $maxJsaRows = max(count($jsaTahapanRows), count($jsaRiskLines));
+                if ($maxJsaRows === 0) $maxJsaRows = 1;
+            @endphp
+            @for($i = 0; $i < $maxJsaRows; $i++)
+                @php
+                    $tRow = $jsaTahapanRows[$i] ?? null;
+                    $rLine = $jsaRiskLines[$i] ?? null;
+                    $pLine = $jsaPrecLines[$i] ?? null;
+                    
+                    $isGroupEnd = false;
+                    if ($tRow && isset($tRow['is_group_end'])) {
+                        $isGroupEnd = $tRow['is_group_end'];
+                    }
+                    if ($i === $maxJsaRows - 1) {
+                        $isGroupEnd = true;
+                    }
+                    
+                    $tText = $tRow ? ($tRow['text'] ?? $tRow) : '';
+                @endphp
+                <tr class="{{ $isGroupEnd ? 'jsa-group-end' : 'jsa-no-bottom' }}">
+                  <td style="text-align:center;">{{ $i === 0 ? '1' : '' }}</td>
+                  <td class="jsa-tahapan">{!! $tText !== '' ? nl2br(e($tText)) : '&nbsp;' !!}</td>
+                  
+                  @if($i === 0 && !$jsaHasHazards)
+                  <td class="jsa-empty">-</td>
+                  <td class="jsa-empty" style="font-style:italic;">Tidak ada data Precaution &amp; Hazard</td>
+                  <td>&nbsp;</td>
+                  @else
+                  <td class="jsa-risk-col">{{ $rLine ?? '&nbsp;' }}</td>
+                  <td class="jsa-prec-col">{{ $pLine ?? '&nbsp;' }}</td>
+                  <td>&nbsp;</td>
+                  @endif
+                </tr>
+            @endfor
           </tbody>
         </table>
         </td>
