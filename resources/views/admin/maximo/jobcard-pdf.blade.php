@@ -424,9 +424,6 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 <div class="page">
 
         @php
-
-
-        @php
             $formatJsaTahapan = function ($html) {
                 $text = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $html);
                 $text = strip_tags($text);
