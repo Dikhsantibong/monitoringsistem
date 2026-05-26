@@ -116,6 +116,15 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 .blue-table th { background:#4472C4; color:#fff; font-weight:bold; }
 .blue-table .blue-table-title th { text-align:center; }
 
+.report-table { width:100%; border-collapse:collapse; font-size:10px; margin:6px 0; table-layout:fixed; }
+.report-table thead { display:table-header-group; }
+.report-table tr { page-break-inside:auto; page-break-after:auto; }
+.report-table th, .report-table td { padding:4px 6px; vertical-align:top; text-align:left; }
+.report-title-row th { background:#8EA9DB; color:#fff; font-weight:bold; text-align:left; border:none; padding:4px 10px; }
+.report-col-row th { background:#fff; color:#000; font-weight:bold; border-top:1px dotted #000; border-bottom:1.5px solid #000; text-align:left; }
+.report-table tbody td { border-bottom:1px dotted #000; }
+.report-table tbody tr:last-child td { border-bottom:1.5px solid #000; }
+
 .sig-lbl { font-size:10px; margin-bottom:5px; }
 .fr-title { font-weight:bold; font-size:10px; margin-bottom:6px; }
 
@@ -305,10 +314,10 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
       <tr class="content-row">
         <td>
         <div class="jobcard-end-section">
-          <table class="blue-table">
+          <table class="report-table">
             <thead>
-            <tr class="blue-table-title"><th colspan="8">Planned &amp; Actual Labor</th></tr>
-            <tr>
+            <tr class="report-title-row"><th colspan="8">Planned &amp; Actual Labor</th></tr>
+            <tr class="report-col-row">
               <th>Task ID</th><th>Craft</th><th>Skill Level</th><th>Labor</th>
               <th>Planned Quantity</th><th>Planned Hours</th><th>Actual Quantity</th><th>Actual Hours</th>
             </tr>
