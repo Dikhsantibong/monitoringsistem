@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 28mm 0 10mm 0; 
+    margin: 10mm 15mm; 
     size: A4; 
 }
 body { 
@@ -18,51 +18,26 @@ body {
 }
 table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break-word; }
 
-.running-header {
-    position: fixed;
-    top: 9mm;
-    left: 15mm;
-    width: 180mm;
-    height: 16mm;
-    background: #fff;
-    z-index: 1000;
-}
 .page-number:after {
     content: counter(page);
 }
 
-/* Setiap .page hanya mengatur pergantian halaman manual. Margin halaman diatur oleh @page. */
 .page {
     width: 180mm;
-    margin: 0 auto;
-    padding-top: 18mm;
+    margin: 0;
     position: relative; 
     overflow: visible;
     page-break-inside: auto;
     page-break-after: always; 
-    box-decoration-break: clone;
-    -webkit-box-decoration-break: clone;
 }
 .page:last-child {
     page-break-after: auto;
 }
-.page .hdr-table {
-    display: none;
-}
-.page > .hdr-table + * {
-    margin-top: 0 !important;
-}
 
-/*
- * repeating-header-table: tabel pembungkus per halaman.
- * thead dengan display:table-header-group akan di-repeat
- * oleh PDF engine saat konten overflow ke halaman baru.
- * Catatan: margin dari .page TETAP berlaku karena .page
- * adalah parent dari tabel ini.
- */
 .repeating-header-table {
     width: 100%;
     border-collapse: collapse;
+    page-break-inside: auto;
 }
 .repeating-header-table thead {
     display: table-header-group;
@@ -70,6 +45,17 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 .repeating-header-table tbody tr > td {
     vertical-align: top;
     padding: 0;
+}
+.repeating-header-table tbody tr {
+    page-break-inside: auto;
+    page-break-after: auto;
+}
+.content-row {
+    page-break-inside: auto;
+    page-break-after: auto;
+}
+.keep-with-next {
+    page-break-after: avoid;
 }
 
 /* HEADER */
@@ -108,8 +94,14 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
     font-size:9.5px;
     padding-left:15px;
     line-height:1.45;
-    page-break-inside:auto;
-    break-inside:auto;
+}
+.task-ld-chunk {
+    font-size:9.5px;
+    padding-left:15px;
+    line-height:1.45;
+    page-break-inside:avoid;
+    break-inside:avoid;
+    margin-top:4px;
 }
 .jobcard-end-section { margin-top:12px; }
 
@@ -154,12 +146,17 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 </head>
 <body>
 
-<div class="running-header">
-  @include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])
-</div>
-
 <!-- ========== PAGE 1 ========== -->
 <div class="page">
+  <table class="repeating-header-table">
+    <thead>
+      <tr>
+        <td>@include('admin.maximo.partials.jobcard-pdf-header', ['pageNumber' => null])</td>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="content-row keep-with-next">
+        <td>
         <div class="jc-title">JOB CARD</div>
         <hr class="hr1">
 
@@ -172,8 +169,12 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
         <div class="f10" style="margin-bottom:6px;"><b>Job Plan :</b> {{ $wo['jpnum'] ?? '-' }}</div>
 
         <hr class="hr1">
+        </td>
+      </tr>
 
         @if($sr)
+      <tr class="content-row">
+        <td>
         <div class="sr-section">
           <div class="bold f10" style="margin-bottom:3px;">Service Request Information</div>
           <table style="width:100%; font-size:10px; margin-bottom:3px;">
@@ -198,10 +199,14 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
           {!! nl2br(e(trim($text))) !!}
         </div>
         @endif
+        </td>
+      </tr>
         @endif
 
         @if(isset($tasks) && count($tasks) > 0)
           @foreach($tasks as $task)
+      <tr class="content-row keep-with-next">
+        <td>
           <div class="task-section">
             <div class="task-block-head">
             <hr class="hr1">
@@ -252,6 +257,9 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
             <div class="task-nm">Task : {{ $task['description'] ?? '-' }}</div>
             </div>
+          </div>
+        </td>
+      </tr>
 
             @if(isset($task['longdescription']) && $task['longdescription'] != '-' && !empty(trim($task['longdescription'])))
             @php
@@ -260,7 +268,13 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
                 $taskLd = preg_replace("/[ \t]+/", ' ', $taskLd);
                 $taskLd = preg_replace("/\n{3,}/", "\n\n", trim($taskLd));
             @endphp
-            <div class="task-ld">{!! nl2br(e($taskLd)) !!}</div>
+            @foreach(array_chunk(preg_split("/\n{2,}/", $taskLd), 4) as $chunk)
+      <tr class="content-row">
+        <td>
+            <div class="task-ld-chunk">{!! nl2br(e(implode("\n\n", array_filter($chunk, fn($line) => trim($line) !== '')))) !!}</div>
+        </td>
+      </tr>
+            @endforeach
             @elseif(isset($wo['longdescription']) && $wo['longdescription'] != '-' && !empty(trim($wo['longdescription'])))
             @php
                 $taskLd = str_ireplace(['<br>', '<br/>', '<br />', '</p>', '</div>', '</li>'], "\n", $wo['longdescription']);
@@ -268,12 +282,19 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
                 $taskLd = preg_replace("/[ \t]+/", ' ', $taskLd);
                 $taskLd = preg_replace("/\n{3,}/", "\n\n", trim($taskLd));
             @endphp
-            <div class="task-ld">{!! nl2br(e($taskLd)) !!}</div>
+            @foreach(array_chunk(preg_split("/\n{2,}/", $taskLd), 4) as $chunk)
+      <tr class="content-row">
+        <td>
+            <div class="task-ld-chunk">{!! nl2br(e(implode("\n\n", array_filter($chunk, fn($line) => trim($line) !== '')))) !!}</div>
+        </td>
+      </tr>
+            @endforeach
             @endif
-          </div>
           @endforeach
         @endif
 
+      <tr class="content-row">
+        <td>
         <div class="jobcard-end-section">
           <table class="blue-table">
             <thead>
@@ -305,6 +326,10 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 
           @include('admin.maximo.partials.jobcard-hazard-table', ['hazards' => $hazards ?? []])
         </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
 
 <!-- ========== PAGE 2 ========== -->
