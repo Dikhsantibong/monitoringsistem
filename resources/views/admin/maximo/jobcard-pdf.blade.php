@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 15mm 0 10mm 0; 
+    margin: 18mm 0 15mm 0; 
     size: A4; 
 }
 body { 
@@ -128,6 +128,15 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 .jsa-tbl .jsa-tahapan { font-size:9.5px; line-height:1.45; padding:6px 8px 6px 15px; }
 .jsa-tbl .jsa-risk-col, .jsa-tbl .jsa-prec-col { font-size:8.5px; line-height:1.45; padding:6px 8px; }
 .jsa-tbl .jsa-empty { color:#666; text-align:center; }
+.jsa-tbl tbody tr.jsa-no-bottom td {
+    border-bottom: 0;
+}
+.jsa-tbl tbody tr.jsa-no-bottom + tr td {
+    border-top: 0;
+}
+.jsa-tbl tbody tr.jsa-group-end td {
+    border-bottom: 1px solid #000;
+}
 
 /* PERBAIKAN: kolom No dipersempit */
 .jsa-col-no      { width:3%; }
@@ -520,15 +529,21 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             }
             $jsaTahapanText = implode("\n\n", $jsaTahapanBlocks);
             $jsaTahapanRows = [];
-            foreach ($jsaTahapanBlocks as $block) {
-                $parts = preg_split("/\n{2,}/", trim($block));
-                foreach ($parts as $part) {
+            $hasMultipleJsaBlocks = count($jsaTahapanBlocks) > 1;
+            foreach ($jsaTahapanBlocks as $blockIndex => $block) {
+                $parts = array_values(array_filter(preg_split("/\n{2,}/", trim($block)), fn($part) => trim($part) !== ''));
+                foreach ($parts as $partIndex => $part) {
                     $part = trim($part);
-                    if ($part !== '') { $jsaTahapanRows[] = $part; }
+                    if ($part !== '') {
+                        $jsaTahapanRows[] = [
+                            'text' => $part,
+                            'is_group_end' => $hasMultipleJsaBlocks && $partIndex === count($parts) - 1 && $blockIndex < count($jsaTahapanBlocks) - 1,
+                        ];
+                    }
                 }
             }
             if (count($jsaTahapanRows) === 0 && trim($jsaTahapanText) !== '') {
-                $jsaTahapanRows[] = $jsaTahapanText;
+                $jsaTahapanRows[] = ['text' => $jsaTahapanText, 'is_group_end' => false];
             }
 
             $jsaRiskLines = [];
@@ -576,9 +591,9 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
           </thead>
           <tbody>
             @foreach($jsaTahapanRows as $rowIndex => $jsaTahapanRow)
-            <tr>
+            <tr class="{{ ($jsaTahapanRow['is_group_end'] ?? false) ? 'jsa-group-end' : 'jsa-no-bottom' }}">
               <td style="text-align:center;">{{ $rowIndex === 0 ? '1' : '' }}</td>
-              <td class="jsa-tahapan">{!! nl2br(e($jsaTahapanRow)) !!}</td>
+              <td class="jsa-tahapan">{!! nl2br(e($jsaTahapanRow['text'] ?? $jsaTahapanRow)) !!}</td>
               @if($rowIndex === 0 && $jsaHasHazards)
               <td class="jsa-risk-col">{!! nl2br(e($jsaRiskText)) !!}</td>
               <td class="jsa-prec-col">{!! nl2br(e($jsaPrecText)) !!}</td>
