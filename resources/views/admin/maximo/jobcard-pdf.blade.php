@@ -544,24 +544,38 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
             if (isset($hazards) && count($hazards) > 0) {
                 $n = 0;
                 foreach ($hazards as $hz) {
+                    $n++;
+                    $riskHtml = '<table style="width:100%; border:none; margin:0; padding:0; border-collapse:collapse;"><tr><td style="width:15px; border:none; padding:0 2px 0 0; vertical-align:top; font-size:8.5px;">' . $n . '</td><td style="border:none; border-left:1px solid #000; padding:0 0 0 5px; vertical-align:top; font-size:8.5px;">' . e($hz['description'] ?? '-') . '</td></tr></table>';
+                    
+                    $precHtml = '<table style="width:100%; border:none; margin:0; padding:0; border-collapse:collapse;">';
                     if (!empty($hz['precautions']) && count($hz['precautions']) > 0) {
+                        $pCount = 0;
                         foreach ($hz['precautions'] as $prec) {
-                            $n++;
-                            $precLabel = is_array($prec)
-                                ? ($prec['description'] ?? ($prec['precautionid'] ?? '-'))
-                                : $prec;
-                            $jsaRiskLines[] = $n . '. ' . ($hz['description'] ?? '-');
-                            $jsaPrecLines[] = $n . '. ' . $precLabel;
+                            $pCount++;
+                            $precId = is_array($prec) ? ($prec['precautionid'] ?? '') : '';
+                            $precDesc = is_array($prec) ? ($prec['description'] ?? '') : (is_string($prec) ? $prec : '');
+                            
+                            $precLabel = '';
+                            if ($precId && $precDesc) {
+                                $precLabel = $precId . ': ' . $precDesc;
+                            } elseif ($precDesc) {
+                                $precLabel = $precDesc;
+                            } else {
+                                $precLabel = '-';
+                            }
+                            
+                            $pbTop = ($pCount > 1) ? '4px' : '0';
+                            $precHtml .= '<tr><td style="width:15px; border:none; padding:' . $pbTop . ' 2px 0 0; vertical-align:top; font-size:8.5px;">' . $pCount . '</td><td style="border:none; border-left:1px solid #000; padding:' . $pbTop . ' 0 0 5px; vertical-align:top; font-size:8.5px;">' . e($precLabel) . '</td></tr>';
                         }
                     } else {
-                        $n++;
-                        $jsaRiskLines[] = $n . '. ' . ($hz['description'] ?? '-');
-                        $jsaPrecLines[] = $n . '. -';
+                        $precHtml .= '<tr><td style="width:15px; border:none; padding:0 2px 0 0; vertical-align:top; font-size:8.5px;">1</td><td style="border:none; border-left:1px solid #000; padding:0 0 0 5px; vertical-align:top; font-size:8.5px;">-</td></tr>';
                     }
+                    $precHtml .= '</table>';
+
+                    $jsaRiskLines[] = $riskHtml;
+                    $jsaPrecLines[] = $precHtml;
                 }
             }
-            $jsaRiskText  = implode("\n", $jsaRiskLines);
-            $jsaPrecText  = implode("\n", $jsaPrecLines);
             $jsaHasHazards = count($jsaRiskLines) > 0;
         @endphp
 
