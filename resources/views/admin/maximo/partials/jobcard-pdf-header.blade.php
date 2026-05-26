@@ -1,7 +1,7 @@
 <table class="hdr-table">
   <tr>
     <td style="width:35%; vertical-align:middle;">
-      <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:110px; max-width:110px; height:auto;">
+      <img src="{{ public_path('logo/navlog1.png') }}" alt="PLN Logo" style="width:135px; max-width:135px; height:auto;">
     </td>
     <td style="width:35%; text-align:center; vertical-align:middle;">
       <div class="co">PLN Nusantara Power</div>
