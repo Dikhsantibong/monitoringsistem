@@ -1276,6 +1276,7 @@ class MaximoController extends Controller
                 'sr' => $srData,
                 'tasks' => $tasks,
                 'wplabors' => $wplabors,
+                'hazards' => $hazards,
             ]);
 
             // Simpan PDF ke storage public dengan nama deterministik (tanpa DB tambahan)
