@@ -7,7 +7,7 @@
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { 
-    margin: 10mm 15mm; 
+    margin: 10mm 0; 
     size: A4; 
 }
 body { 
@@ -24,7 +24,7 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 
 .page {
     width: 180mm;
-    margin: 0;
+    margin: 0 15mm;
     position: relative; 
     overflow: visible;
     page-break-inside: auto;
