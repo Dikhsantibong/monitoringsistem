@@ -40,6 +40,8 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
     overflow: visible;
     page-break-inside: auto;
     page-break-after: always; 
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
 }
 .page:last-child {
     page-break-after: auto;
@@ -90,11 +92,25 @@ table th, table td { line-height:1.35; overflow-wrap:break-word; word-wrap:break
 .detil-section { font-size:10px; line-height:1.65; margin-bottom:4px; }
 .detil-section p { margin-bottom:1px; }
 
-.task-section { margin-top:6px; }
-.task-block-head { page-break-inside:avoid; }
+.task-section {
+    margin-top:6px;
+    page-break-inside:auto;
+    break-inside:auto;
+}
+.task-block-head {
+    page-break-inside:avoid;
+    break-inside:avoid;
+}
 .task-id { font-weight:bold; font-size:12px; margin:5px 0 5px 0; }
 .task-nm { font-size:13px; font-weight:bold; font-style:italic; margin-top:3px; }
-.task-ld { margin-top:8px; font-size:9.5px; padding-left:15px; line-height:1.45; }
+.task-ld {
+    margin-top:8px;
+    font-size:9.5px;
+    padding-left:15px;
+    line-height:1.45;
+    page-break-inside:auto;
+    break-inside:auto;
+}
 .jobcard-end-section { margin-top:12px; }
 
 .step-t { font-weight:bold; margin:6px 0 2px; font-size:10px; }
@@ -103,7 +119,7 @@ ol { margin-left:16px; font-size:10px; line-height:1.7; }
 /* TABLES */
 .blue-table { width:100%; border-collapse:collapse; font-size:10px; margin:6px 0; table-layout:fixed; border:1px solid #000; page-break-inside:auto; }
 .blue-table thead { display:table-header-group; }
-.blue-table tr { page-break-inside:avoid; page-break-after:auto; }
+.blue-table tr { page-break-inside:auto; page-break-after:auto; }
 .blue-table th, .blue-table td { border:1px solid #000; padding:4px 6px; vertical-align:top; text-align:left; }
 .blue-table th { background:#4472C4; color:#fff; font-weight:bold; }
 .blue-table .blue-table-title th { text-align:center; }
