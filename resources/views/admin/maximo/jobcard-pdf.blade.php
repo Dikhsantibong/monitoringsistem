@@ -12,7 +12,7 @@
 }
 header {
     position: fixed;
-    top: -28mm;
+    top: 10mm;
     left: 0;
     right: 0;
     height: 25mm;
