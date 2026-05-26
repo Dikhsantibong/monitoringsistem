@@ -34,7 +34,10 @@ class MaximoJobcardHazards
 
                 $hazardDesc = $hazardId;
                 try {
-                    $hazardRec = DB::connection('oracle')->table('HAZARD')->where('HAZARDID', $hazardId)->first();
+                    $hazardRec = DB::connection('oracle')->table('HAZARD')
+                        ->where('HAZARDID', $hazardId)
+                        ->where('SITEID', 'KD')
+                        ->first();
                     if ($hazardRec) {
                         $hRecArr = self::normalizeRow($hazardRec);
                         $hazardDesc = $hRecArr['description'] ?? $hazardId;
@@ -47,11 +50,13 @@ class MaximoJobcardHazards
                     $woPrecs = DB::connection('oracle')->table('WOHAZARDPREC')
                         ->whereIn('WONUM', $allWOs)
                         ->where('HAZARDID', $hazardId)
+                        ->where('SITEID', 'KD')
                         ->get();
 
                     if ($woPrecs->isEmpty()) {
                         $woPrecs = DB::connection('oracle')->table('HAZARDPREC')
                             ->where('HAZARDID', $hazardId)
+                            ->where('SITEID', 'KD')
                             ->get();
                     }
 
@@ -63,7 +68,10 @@ class MaximoJobcardHazards
                         }
                         $precDesc = $precId;
                         try {
-                            $precRec = DB::connection('oracle')->table('PRECAUTION')->where('PRECAUTIONID', $precId)->first();
+                            $precRec = DB::connection('oracle')->table('PRECAUTION')
+                                ->where('PRECAUTIONID', $precId)
+                                ->where('SITEID', 'KD')
+                                ->first();
                             if ($precRec) {
                                 $pRecArr = self::normalizeRow($precRec);
                                 $precDesc = $pRecArr['description'] ?? $precId;

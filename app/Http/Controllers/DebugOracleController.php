@@ -181,6 +181,7 @@ class DebugOracleController extends Controller
         try {
             $woPrecs = DB::connection('oracle')->table('WOHAZARDPREC')
                 ->whereIn('WONUM', $allWOs)
+                ->where('SITEID', 'KD')
                 ->get();
             $tables['WOHAZARDPREC']['rows'] = $this->normalizeOracleRows($woPrecs);
             foreach ($tables['WOHAZARDPREC']['rows'] as $row) {
@@ -196,6 +197,7 @@ class DebugOracleController extends Controller
             try {
                 $hazardPrecs = DB::connection('oracle')->table('HAZARDPREC')
                     ->whereIn('HAZARDID', $hazardIds)
+                    ->where('SITEID', 'KD')
                     ->get();
                 $tables['HAZARDPREC']['rows'] = $this->normalizeOracleRows($hazardPrecs);
                 foreach ($tables['HAZARDPREC']['rows'] as $row) {
@@ -214,6 +216,7 @@ class DebugOracleController extends Controller
             try {
                 $precs = DB::connection('oracle')->table('PRECAUTION')
                     ->whereIn('PRECAUTIONID', $precautionIds)
+                    ->where('SITEID', 'KD')
                     ->get();
                 $tables['PRECAUTION']['rows'] = $this->normalizeOracleRows($precs);
             } catch (\Exception $e) {
