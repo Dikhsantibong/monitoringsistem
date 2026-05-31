@@ -88,13 +88,13 @@
             @endif
             <!-- End Data Master Dropdown -->
 
-            @if (Auth::check() && Auth::user()->email === 'admin@upkendari.com')
+            <!-- @if (Auth::check() && Auth::user()->email === 'admin@upkendari.com')
             <a href="{{ route('admin.machine-monitor') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.machine-monitor') || request()->routeIs('admin.machine-monitor.show') || request()->routeIs('admin.power-plants.index') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
                 <i class="fas fa-desktop w-6 h-6"></i>
                 <span class="ml-3 text-sm">Monitor Mesin</span>
             </a>
-            @endif
+            @endif -->
 
             {{-- <a href="{{ route('admin.daftar_hadir.index') }}"
                 class="flex items-center px-3 py-2.5 rounded-lg {{ request()->routeIs('admin.daftar_hadir.index') || request()->routeIs('admin.daftar_hadir.rekapitulasi') ? 'bg-white/10 text-white font-medium' : 'text-gray-100 hover:bg-white/10' }} text-sm">
