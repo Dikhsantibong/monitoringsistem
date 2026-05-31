@@ -147,6 +147,80 @@
     }
 
     .w-full { grid-column: span 2; }
+
+    .kpi-tooltip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%) translateY(-8px);
+        background: #1e293b;
+        color: white;
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+        line-height: 1.6;
+        width: 320px;
+        max-width: 90vw;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+        z-index: 100;
+        pointer-events: none;
+    }
+
+    .kpi-tooltip::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: 6px solid transparent;
+        border-top-color: #1e293b;
+    }
+
+    .kpi-card:hover .kpi-tooltip {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) translateY(0);
+    }
+
+    .tooltip-title {
+        font-weight: 700;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        color: #f1f5f9;
+        border-bottom: 1px solid #334155;
+        padding-bottom: 0.5rem;
+    }
+
+    .tooltip-section {
+        margin-bottom: 0.75rem;
+    }
+
+    .tooltip-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .tooltip-label {
+        font-weight: 600;
+        color: #cbd5e1;
+        margin-bottom: 0.25rem;
+    }
+
+    .tooltip-content {
+        color: #94a3b8;
+    }
+
+    .tooltip-list {
+        margin: 0.25rem 0;
+        padding-left: 1.25rem;
+        color: #94a3b8;
+    }
+
+    .tooltip-list li {
+        margin-bottom: 0.25rem;
+    }
 </style>
 
 <div class="mt-5 px-4 fade-in">
@@ -182,7 +256,32 @@
     <div class="kpi-grid">
         
         <!-- I6.6 PM Compliance -->
-        <div class="kpi-card">
+        <div class="kpi-card" style="position: relative;">
+            <div class="kpi-tooltip">
+                <div class="tooltip-title">I6.6.1 – PM Compliance</div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Deskripsi:</div>
+                    <div class="tooltip-content">Tingkat kepatuhan pelaksanaan PM yang selesai sesuai jadwal (actual finish dalam rentang schedule start dan schedule finish).</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kriteria Pengukuran:</div>
+                    <ul class="tooltip-list">
+                        <li>Seluruh pekerjaan PM yang telah closed</li>
+                        <li>Data: Actual completion date, Completion comment, Realisasi man-hour</li>
+                        <li>Nilai = (PM tepat waktu / Total PM closed) × 100%</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kategori Penilaian:</div>
+                    <ul class="tooltip-list">
+                        <li>≤ 70% → Skor 1</li>
+                        <li>> 70% → Skor 2</li>
+                        <li>> 80% → Skor 3</li>
+                        <li>> 90% → Skor 4</li>
+                        <li>= 100% → Skor 5</li>
+                    </ul>
+                </div>
+            </div>
             <div class="kpi-header">
                 <div class="kpi-title-group">
                     <span class="kpi-code">I6.6 - Maintenance Execution</span>
@@ -209,7 +308,33 @@
         </div>
 
         <!-- I6.7 WO Planned Backlog -->
-        <div class="kpi-card">
+        <div class="kpi-card" style="position: relative;">
+            <div class="kpi-tooltip">
+                <div class="tooltip-title">I6.7.2 – WO Planned Backlog</div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Deskripsi:</div>
+                    <div class="tooltip-content">Indikator untuk mengukur jumlah pekerjaan yang telah direncanakan dibandingkan dengan kapasitas tenaga kerja yang tersedia.</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Definisi:</div>
+                    <ul class="tooltip-list">
+                        <li><strong>Planned Work:</strong> Pekerjaan non-OH dalam identifikasi kebutuhan labor, material, tools, safety</li>
+                        <li><strong>Ready Work:</strong> Pekerjaan siap dieksekusi (perencanaan selesai)</li>
+                        <li><strong>Crew Capacity:</strong> Total labor hour tersedia per minggu</li>
+                        <li><strong>Planned Backlog:</strong> (Man-hour Planned + Ready) / Crew Capacity</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kategori Penilaian:</div>
+                    <ul class="tooltip-list">
+                        <li>Tidak terukur / tidak ada data → Skor 1</li>
+                        <li>Backlog ≥ 8 minggu → Skor 2</li>
+                        <li>Backlog 6 – < 8 minggu → Skor 3</li>
+                        <li>Backlog 4 – < 6 minggu → Skor 4</li>
+                        <li>Backlog < 4 minggu → Skor 5</li>
+                    </ul>
+                </div>
+            </div>
             <div class="kpi-header">
                 <div class="kpi-title-group">
                     <span class="kpi-code">I6.7 - Maintenance Planning</span>
@@ -236,7 +361,42 @@
         </div>
 
         <!-- I6.8 Schedule Compliance -->
-        <div class="kpi-card">
+        <div class="kpi-card" style="position: relative;">
+            <div class="kpi-tooltip">
+                <div class="tooltip-title">I6.8.1 – Schedule Compliance (WO Non Tactical)</div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Deskripsi:</div>
+                    <div class="tooltip-content">Tingkat kepatuhan penyelesaian pekerjaan Non Tactical terhadap jadwal yang telah ditetapkan.</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Jenis Pekerjaan:</div>
+                    <ul class="tooltip-list">
+                        <li>Corrective Maintenance (CR)</li>
+                        <li>Emergency Maintenance (EM)</li>
+                        <li>Inspection (EI)</li>
+                        <li>Normal Maintenance (NM)</li>
+                        <li>Shutdown/Service Function (SF)</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kriteria Pengukuran:</div>
+                    <ul class="tooltip-list">
+                        <li>Comply: selesai tepat waktu berdasarkan actual finish, schedule start, schedule finish</li>
+                        <li>Data: Completion comment, Realisasi man-hour</li>
+                        <li>Nilai = (Non Tactical tepat waktu / Total Non Tactical selesai) × 100%</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kategori Penilaian:</div>
+                    <ul class="tooltip-list">
+                        <li>0% – 30% → Skor 1</li>
+                        <li>> 30% – ≤ 50% → Skor 2</li>
+                        <li>> 50% – ≤ 70% → Skor 3</li>
+                        <li>> 70% – ≤ 80% → Skor 4</li>
+                        <li>> 80% → Skor 5</li>
+                    </ul>
+                </div>
+            </div>
             <div class="kpi-header">
                 <div class="kpi-title-group">
                     <span class="kpi-code">I6.8 - Maintenance Scheduling</span>
@@ -263,7 +423,41 @@
         </div>
 
         <!-- I6.9 Rework -->
-        <div class="kpi-card">
+        <div class="kpi-card" style="position: relative;">
+            <div class="kpi-tooltip">
+                <div class="tooltip-title">I6.9.2 – Jaminan Kualitas Hasil Pekerjaan (Rework)</div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Deskripsi:</div>
+                    <div class="tooltip-content">Mengukur kualitas hasil pekerjaan pemeliharaan berdasarkan jumlah pekerjaan yang harus diulang (rework) akibat kerusakan yang sama pada aset/peralatan yang sama dalam periode satu bulan.</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kriteria Pengukuran:</div>
+                    <ul class="tooltip-list">
+                        <li>Rasio WO berulang pada aset/peralatan yang sama</li>
+                        <li>Kerusakan harus jenis yang sama dengan pekerjaan sebelumnya</li>
+                        <li>Periode pengukuran: 1 bulan</li>
+                        <li>Nilai = (WO berulang / Total WO CR + EM) × 100%</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Tujuan:</div>
+                    <ul class="tooltip-list">
+                        <li>Menilai efektivitas dan kualitas pekerjaan perbaikan</li>
+                        <li>Mengurangi pekerjaan berulang akibat perbaikan tidak tuntas</li>
+                        <li>Meningkatkan reliability aset dan kualitas maintenance</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kategori Penilaian:</div>
+                    <ul class="tooltip-list">
+                        <li>> 20% atau tidak terukur/tidak ada data → Skor 1</li>
+                        <li>15% – < 20% → Skor 2</li>
+                        <li>10% – < 15% → Skor 3</li>
+                        <li>5% – < 10% → Skor 4</li>
+                        <li>≤ 5% → Skor 5</li>
+                    </ul>
+                </div>
+            </div>
             <div class="kpi-header">
                 <div class="kpi-title-group">
                     <span class="kpi-code">I6.9 - Maintenance Execution</span>
@@ -291,7 +485,55 @@
         </div>
 
         <!-- I6.10.1 Reactive Work -->
-        <div class="kpi-card">
+        <div class="kpi-card" style="position: relative;">
+            <div class="kpi-tooltip">
+                <div class="tooltip-title">I6.10.1 – Reactive Work</div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Deskripsi:</div>
+                    <div class="tooltip-content">Mengukur proporsi pekerjaan pemeliharaan yang bersifat reaktif (tidak direncanakan) dibandingkan dengan total pekerjaan pemeliharaan yang dilaksanakan.</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kriteria Pengukuran:</div>
+                    <ul class="tooltip-list">
+                        <li>Rasio WO Non Tactical terhadap total seluruh WO</li>
+                        <li>Total WO = WO Tactical + WO Non Tactical</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">WO Tactical (closed):</div>
+                    <ul class="tooltip-list">
+                        <li>Preventive Maintenance (PM)</li>
+                        <li>Predictive Maintenance (PdM)</li>
+                        <li>Engineering Inspection (EI)</li>
+                        <li>Operational Health (OH)</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">WO Non Tactical (issued):</div>
+                    <ul class="tooltip-list">
+                        <li>Corrective Maintenance (CR)</li>
+                        <li>Emergency Maintenance (EM)</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Tujuan:</div>
+                    <ul class="tooltip-list">
+                        <li>Mengukur tingkat perencanaan maintenance</li>
+                        <li>Menurunkan pekerjaan bersifat reaktif</li>
+                        <li>Meningkatkan proporsi pekerjaan terencana</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kategori Penilaian:</div>
+                    <ul class="tooltip-list">
+                        <li>> 20% atau tidak terukur/tidak ada data → Skor 1</li>
+                        <li>15% – < 20% → Skor 2</li>
+                        <li>10% – < 15% → Skor 3</li>
+                        <li>5% – < 10% → Skor 4 (+ tren penurunan vs semester sebelumnya)</li>
+                        <li>≤ 5% → Skor 5 (+ tren penurunan vs semester sebelumnya)</li>
+                    </ul>
+                </div>
+            </div>
             <div class="kpi-header">
                 <div class="kpi-title-group">
                     <span class="kpi-code">I6.10.1 - Maintenance Control</span>
@@ -318,7 +560,50 @@
         </div>
 
         <!-- I6.10.2 WR/SR Open/Queued -->
-        <div class="kpi-card">
+        <div class="kpi-card" style="position: relative;">
+            <div class="kpi-tooltip">
+                <div class="tooltip-title">I6.10.2 – Work Request / Service Request Status Open/Queued</div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Deskripsi:</div>
+                    <div class="tooltip-content">Mengukur jumlah WR/SR yang masih berstatus Open atau Queued melebihi batas waktu penyelesaian yang ditetapkan.</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kriteria Pengukuran:</div>
+                    <ul class="tooltip-list">
+                        <li>Jumlah WR/SR belum diproses/ditindaklanjuti dalam batas waktu</li>
+                        <li>Pengukuran sejak tanggal WR/SR diterbitkan hingga evaluasi</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Standar Batas Waktu:</div>
+                    <ul class="tooltip-list">
+                        <li>Service Request Normal: ≥ 30 hari</li>
+                        <li>Service Request Urgent: ≥ 7 hari</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Rumus Perhitungan:</div>
+                    <div class="tooltip-content">(Jumlah SR Open/Queued (Normal + Urgent) ÷ Total SR) × 100%</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Tujuan:</div>
+                    <ul class="tooltip-list">
+                        <li>Memastikan permintaan layanan ditindaklanjuti tepat waktu</li>
+                        <li>Mengurangi backlog permintaan layanan</li>
+                        <li>Meningkatkan kualitas pelayanan dan respons</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kategori Penilaian:</div>
+                    <ul class="tooltip-list">
+                        <li>≥ 5% Open/Queued (Normal ≥ 30 hari, Urgent ≥ 7 hari) → Skor 1</li>
+                        <li>< 5% Open/Queued (Normal ≥ 30 hari, Urgent ≥ 7 hari) → Skor 2</li>
+                        <li>< 2% Open/Queued (Normal ≥ 30 hari, Urgent ≥ 7 hari) → Skor 3</li>
+                        <li>< 1% Open/Queued (Normal ≥ 30 hari, Urgent ≥ 7 hari) → Skor 4</li>
+                        <li>0% Open/Queued (Normal ≥ 30 hari, Urgent ≥ 7 hari) → Skor 5</li>
+                    </ul>
+                </div>
+            </div>
             <div class="kpi-header">
                 <div class="kpi-title-group">
                     <span class="kpi-code">I6.10.2 - Maintenance Control</span>
@@ -345,7 +630,46 @@
         </div>
 
         <!-- I6.10.3 WO Ageing -->
-        <div class="kpi-card">
+        <div class="kpi-card" style="position: relative;">
+            <div class="kpi-tooltip">
+                <div class="tooltip-title">I6.10.3 – WO Ageing</div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Deskripsi:</div>
+                    <div class="tooltip-content">Mengukur jumlah WO yang masih berstatus aktif (open) dan telah berumur lebih dari 365 hari, kecuali WO type OH (Operational Health).</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kriteria Pengukuran:</div>
+                    <ul class="tooltip-list">
+                        <li>Umur WO = WO Creation Date hingga Today's Date</li>
+                        <li>Satuan pengukuran: jumlah hari</li>
+                        <li>Berlaku untuk seluruh jenis maintenance selain OH</li>
+                        <li>Fokus: WO masih berstatus open/aktif</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Rumus Perhitungan:</div>
+                    <div class="tooltip-content">(Jumlah WO Open umur > 365 hari ÷ Total WO Status Open) × 100%</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Tujuan:</div>
+                    <ul class="tooltip-list">
+                        <li>Mengurangi WO tertunda jangka panjang</li>
+                        <li>Memastikan penyelesaian backlog maintenance</li>
+                        <li>Meningkatkan efektivitas pengelolaan WO</li>
+                        <li>Menghindari akumulasi pekerjaan belum ditindaklanjuti</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kategori Penilaian:</div>
+                    <ul class="tooltip-list">
+                        <li>≥ 20% WO umur > 365 hari → Skor 1</li>
+                        <li>15% – < 20% → Skor 2</li>
+                        <li>10% – < 15% → Skor 3</li>
+                        <li>5% – < 10% → Skor 4</li>
+                        <li>≤ 5% → Skor 5</li>
+                    </ul>
+                </div>
+            </div>
             <div class="kpi-header">
                 <div class="kpi-title-group">
                     <span class="kpi-code">I6.10.3 - Maintenance Control</span>
@@ -372,7 +696,55 @@
         </div>
 
         <!-- I6.10.4 Post Impl Review -->
-        <div class="kpi-card">
+        <div class="kpi-card" style="position: relative;">
+            <div class="kpi-tooltip">
+                <div class="tooltip-title">I6.10.4 – Post Implementation Review</div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Deskripsi:</div>
+                    <div class="tooltip-content">Evaluasi setelah program pemeliharaan, Asset Improvement (AI), atau proyek selesai untuk memastikan hasil sesuai tujuan yang direncanakan.</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Aspek Dievaluasi:</div>
+                    <ul class="tooltip-list">
+                        <li>Scope, Time, Cost/Biaya, Quality, Risk, Benefit</li>
+                        <li>Perbandingan rencana vs realisasi</li>
+                        <li>Hasil pengukuran dan pencapaian target</li>
+                        <li>Analisis GAP target vs realisasi</li>
+                        <li>Lesson Learned dan rekomendasi perbaikan</li>
+                        <li>Evidence dan dokumentasi hasil evaluasi</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Periode Evaluasi:</div>
+                    <ul class="tooltip-list">
+                        <li>Setiap tahun</li>
+                        <li>Seluruh program AI dan proyek selesai dieksekusi</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Referensi:</div>
+                    <div class="tooltip-content">ISO 55001 – Asset Management Standard, Klausul 9.3 – Management Review</div>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Tujuan:</div>
+                    <ul class="tooltip-list">
+                        <li>Mengukur efektivitas program dan proyek</li>
+                        <li>Mengetahui kesesuaian rencana vs hasil aktual</li>
+                        <li>Mengidentifikasi peluang perbaikan berkelanjutan</li>
+                        <li>Dasar pengambilan keputusan program berikutnya</li>
+                    </ul>
+                </div>
+                <div class="tooltip-section">
+                    <div class="tooltip-label">Kategori Penilaian:</div>
+                    <ul class="tooltip-list">
+                        <li>< 50% program RKAU dilakukan PIR → Skor 1</li>
+                        <li>50% – < 75% program dilakukan PIR → Skor 2</li>
+                        <li>75% – < 100% program dilakukan PIR → Skor 3</li>
+                        <li>100% program dilakukan PIR → Skor 4</li>
+                        <li>Skor 5: Skor 4 + hasil aktual sesuai/melebihi target</li>
+                    </ul>
+                </div>
+            </div>
             <div class="kpi-header">
                 <div class="kpi-title-group">
                     <span class="kpi-code">I6.10.4 - Maintenance Control</span>
