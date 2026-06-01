@@ -504,9 +504,10 @@ class KinerjaPemeliharaanController extends Controller
         $nonPmFastApprRate = $nonPmApproved > 0 ? round(($nonPmFastAppr / $nonPmApproved) * 100, 2) : 0;
 
         // 4. Planned Backlog (Manhours)
-        $backlogHrs = (clone $woQuery)->whereIn('STATUS', ['WAPPR', 'WSCH', 'WMATL'])->whereBetween('REPORTDATE', [$startDate, $endDate])->sum('ESTLABHRS');
+        $plannedBacklogData = $this->calculatePlannedBacklog($startDate, $endDate);
+        $backlogHrs = $plannedBacklogData['total_manhours'];
         $availableHrs = 2660; // From image example
-        $backlogWeeks = $availableHrs > 0 ? round($backlogHrs / $availableHrs, 2) : 0;
+        $backlogWeeks = $plannedBacklogData['weeks'];
 
         // 5. Wrench Time (Placeholder)
         $wrenchTime = 83.68;
