@@ -12,7 +12,7 @@
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
         border: 1px solid #edf2f7;
         transition: transform 0.2s, box-shadow 0.2s;
-        overflow: visible;
+        overflow: hidden;
         display: flex;
         flex-direction: column;
     }
@@ -150,39 +150,47 @@
 
     .kpi-tooltip {
         position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%) translateY(-8px);
-        background: #1e293b;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(30, 41, 59, 0.96);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
         color: white;
-        padding: 1rem;
-        border-radius: 8px;
+        padding: 1.5rem;
         font-size: 0.8125rem;
         line-height: 1.6;
-        width: 320px;
-        max-width: 90vw;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.2s, visibility 0.2s, transform 0.2s;
+        transition: opacity 0.3s ease, visibility 0.3s ease;
         z-index: 100;
-        pointer-events: none;
+        pointer-events: auto;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
     }
 
-    .kpi-tooltip::after {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border: 6px solid transparent;
-        border-top-color: #1e293b;
+    .kpi-tooltip::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .kpi-tooltip::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .kpi-tooltip::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 3px;
+    }
+    
+    .kpi-tooltip::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.3);
     }
 
     .kpi-card:hover .kpi-tooltip {
         opacity: 1;
         visibility: visible;
-        transform: translateX(-50%) translateY(0);
     }
 
     .tooltip-title {
