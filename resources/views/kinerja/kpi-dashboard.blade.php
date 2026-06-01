@@ -12,7 +12,7 @@
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
         border: 1px solid #edf2f7;
         transition: transform 0.2s, box-shadow 0.2s;
-        overflow: hidden;
+        overflow: visible;
         display: flex;
         flex-direction: column;
     }
