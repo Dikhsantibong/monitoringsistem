@@ -5,41 +5,9 @@
     <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-      
-
-        /* Hero section adjustments */
-        .hexagon-background {
-            position: relative;
-            margin-top: -80px;
-            background-image: url('{{ asset('background/background.png') }}');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            min-height: 100vh;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
-        }
-
-        /* Tambahkan overlay gelap untuk meningkatkan kontras */
-        .hexagon-background::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            /* background: rgba(0, 0, 0, 0.5); Sesuaikan opacity sesuai kebutuhan */
-            z-index: 1;
-        }
-
-        /* Pastikan konten hero berada di atas overlay */
-        .hexagon-background > * {
-            position: relative;
-            z-index: 2;
+        /* Override global navbar body padding for homepage so hero goes to the top */
+        body {
+            padding-top: 0 !important;
         }
 
         /* Pastikan section di bawah hero memiliki background putih */
@@ -1278,7 +1246,6 @@
     <div id="page-content" class="page-transition">
         <div class="w-full">
            @include('components.navbar')
-            <div class="h-[80px]"></div>
             @php
                 $statusLabels = [
                     'machine_status_logs' => 'Status Mesin',
@@ -1291,105 +1258,167 @@
                     'score_card_daily' => false,
                 ];
             @endphp
-            <div class="w-full">
+            <div class="w-full relative">
                 {{-- Hero section --}}
-                <div class="min-h-screen flex flex-col justify-center items-center hexagon-background">
+                <div class="min-h-[calc(100vh-100px)] w-full relative flex flex-col items-center justify-start bg-cover bg-center bg-no-repeat pb-16 pt-12" style="background-image: url('{{ asset('background/background.png') }}');">
+                    <!-- Overlay Gradient -->
+                    <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none"></div>
+
+                    <style>
+                        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
+                    </style>
+
                     <!-- Content wrapper -->
-                    <div class="relative z-10 mt-16">
-                        <!-- Header -->
-                        <h2 class="text-9xl font-bold mb-8 text-center" style="color: #FFCC00; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); line-height: 1;">
-                            M<span style="display: inline-flex; align-items: center;"><i class="fas fa-cog fa-spin" style="color: #333333;"></i></span>NDAY
-                            <span class="text-6xl block mt-2" style="color: #FFCC00; font-weight: 600; letter-spacing: 2px;">
-                                MONITORING DAILY
-                                <span class="block text-3xl mt-1" style="color: #FFFFFF; letter-spacing: 1px;">UP KENDARI</span>
-                            </span>
-                        </h2>
-                        <div class="w-full flex justify-center mb-6">
-                            <div class="hero-digital-clock" aria-label="Jam digital">
-                                <div id="digitalClockTime" class="time">--:--:--</div>
-                                <div id="digitalClockDate" class="date">---</div>
+                    <div class="relative z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pt-16 mt-8 md:mt-16">
+                        
+                        <!-- Title & Clock Container -->
+                        <div class="mb-12 flex flex-col items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-10 py-6 shadow-xl backdrop-blur-md md:px-16">
+                            <div class="text-center text-xl font-black tracking-[0.2em] text-white md:text-4xl">
+                                MONITORING DAILY <span class="font-light">UP KENDARI</span>
+                            </div>
+                            
+                            <div class="mt-5 h-px w-2/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+                            
+                            <div class="mt-4 flex flex-col items-center">
+                                <div id="digitalClockTime" class="text-4xl font-bold tracking-widest text-white drop-shadow-md md:text-6xl" style="font-family: 'Orbitron', sans-serif; font-variant-numeric: tabular-nums;">
+                                    --:--:--
+                                </div>
+                                <div id="digitalClockDate" class="mt-2 text-sm font-medium tracking-wider text-white/80 md:text-base" style="font-family: 'Orbitron', sans-serif;">
+                                    ---
+                                </div>
                             </div>
                         </div>
-                        <div class="flex gap-2 lg:gap-0 lg:grid grid-cols-2 lg:grid-cols-3">
-                            <div>
+
+                        <!-- Hexagons Section -->
+                        <div class="relative flex items-center justify-center scale-75 sm:scale-90 md:scale-100 lg:scale-100 origin-top">
+                            <!-- Left Column -->
+                            <div class="flex flex-col gap-4">
+                                <!-- ULPLTD WUA-WUA -->
                                 <a href="{{ route('login', ['unit' => 'mysql_wua_wua']) }}" class="block">
-                                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
-                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> WUA-WUA</h5>
-                                        @php $status = $unitUpdateStatuses['mysql_wua_wua'] ?? $defaultUnitStatus; @endphp
-                                        <div class="status-indicators text-white text-[10px] md:text-xs">
-                                            @foreach ($statusLabels as $key => $label)
-                                                @php $ok = $status[$key] ?? false; @endphp
-                                                <div class="flex items-center gap-1">
-                                                    <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
-                                                    <span class="font-semibold leading-tight">{{ $label }}</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </a>
-                                <a href="{{ route('login', ['unit' => 'mysql_poasia']) }}" class="block">
-                                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44">
-                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> POASIA</h5>
-                                        @php $status = $unitUpdateStatuses['mysql_poasia'] ?? $defaultUnitStatus; @endphp
-                                        <div class="status-indicators text-white text-[10px] md:text-xs">
-                                            @foreach ($statusLabels as $key => $label)
-                                                @php $ok = $status[$key] ?? false; @endphp
-                                                <div class="flex items-center gap-1">
-                                                    <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
-                                                    <span class="font-semibold leading-tight">{{ $label }}</span>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-                            <div class="flex items-center justify-center">
-                                <div class="hidden lg:block md:block">
-                                    <a href="{{ route('login', ['unit' => 'mysql']) }}" class="block">
-                                        <div class="hexagon bg-[#0A749B] flex flex-col items-center justify-center h-36 w-40 md:w-56 md:h-44">
-                                            <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">UP <br> KENDARI</h5>
-                                            @php $status = $unitUpdateStatuses['mysql'] ?? $defaultUnitStatus; @endphp
-                                            <div class="status-indicators text-white text-[10px] md:text-xs">
+                                    <div class="group relative h-[210px] w-[240px] cursor-pointer transition-all duration-500 hover:scale-105" style="filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));">
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center transition-colors bg-white/85 group-hover:bg-white"
+                                            style="clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                                            <div class="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500 text-white shadow-md">
+                                                <i class="fas fa-industry text-lg"></i>
+                                            </div>
+                                            <h3 class="relative z-10 text-sm font-bold leading-tight text-slate-900 md:text-base mb-2">
+                                                ULPLTD WUA-WUA
+                                            </h3>
+                                            @php $status = $unitUpdateStatuses['mysql_wua_wua'] ?? $defaultUnitStatus; @endphp
+                                            <div class="flex flex-col gap-[2px] w-full px-5 text-slate-700 text-[10px] md:text-[11px]">
                                                 @foreach ($statusLabels as $key => $label)
                                                     @php $ok = $status[$key] ?? false; @endphp
-                                                    <div class="flex items-center gap-1">
-                                                        <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
-                                                        <span class="font-semibold leading-tight">{{ $label }}</span>
+                                                    <div class="flex items-center justify-between gap-1 w-full border-b border-slate-200 pb-[2px] last:border-0">
+                                                        <span class="font-semibold leading-tight text-left">{{ $label }}</span>
+                                                        <span class="flex items-center justify-center w-3.5 h-3.5 rounded-full text-white {{ $ok ? 'bg-green-500' : 'bg-red-500' }}" style="font-size: 8px;">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
                                                     </div>
                                                 @endforeach
                                             </div>
                                         </div>
-                                    </a>
-                                </div>
-                            </div>
-                            <div>
-                                <a href="{{ route('login', ['unit' => 'mysql_kolaka']) }}" class="block">
-                                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
-                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD/G <br> KOLAKA</h5>
-                                        @php $status = $unitUpdateStatuses['mysql_kolaka'] ?? $defaultUnitStatus; @endphp
-                                        <div class="status-indicators text-white text-[10px] md:text-xs">
-                                            @foreach ($statusLabels as $key => $label)
-                                                @php $ok = $status[$key] ?? false; @endphp
-                                                <div class="flex items-center gap-1">
-                                                    <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
-                                                    <span class="font-semibold leading-tight">{{ $label }}</span>
-                                                </div>
-                                            @endforeach
+                                    </div>
+                                </a>
+                                
+                                <!-- ULPLTD POASIA -->
+                                <a href="{{ route('login', ['unit' => 'mysql_poasia']) }}" class="block">
+                                    <div class="group relative h-[210px] w-[240px] cursor-pointer transition-all duration-500 hover:scale-105" style="filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));">
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center transition-colors bg-white/85 group-hover:bg-white"
+                                            style="clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                                            <div class="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500 text-white shadow-md">
+                                                <i class="fas fa-industry text-lg"></i>
+                                            </div>
+                                            <h3 class="relative z-10 text-sm font-bold leading-tight text-slate-900 md:text-base mb-2">
+                                                ULPLTD POASIA
+                                            </h3>
+                                            @php $status = $unitUpdateStatuses['mysql_poasia'] ?? $defaultUnitStatus; @endphp
+                                            <div class="flex flex-col gap-[2px] w-full px-5 text-slate-700 text-[10px] md:text-[11px]">
+                                                @foreach ($statusLabels as $key => $label)
+                                                    @php $ok = $status[$key] ?? false; @endphp
+                                                    <div class="flex items-center justify-between gap-1 w-full border-b border-slate-200 pb-[2px] last:border-0">
+                                                        <span class="font-semibold leading-tight text-left">{{ $label }}</span>
+                                                        <span class="flex items-center justify-center w-3.5 h-3.5 rounded-full text-white {{ $ok ? 'bg-green-500' : 'bg-red-500' }}" style="font-size: 8px;">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
                                 </a>
+                            </div>
+
+                            <!-- Center Column - Pulled in to interlock -->
+                            <div class="z-10 -mx-10 md:-mx-12 flex flex-col">
+                                <a href="{{ route('login', ['unit' => 'mysql']) }}" class="block">
+                                    <div class="group relative h-[210px] w-[240px] cursor-pointer transition-all duration-500 hover:scale-105" style="filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));">
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center transition-colors bg-white/95 group-hover:bg-white"
+                                            style="clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                                            <div class="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-white shadow-md">
+                                                <i class="fas fa-building text-lg"></i>
+                                            </div>
+                                            <h3 class="relative z-10 text-sm font-bold leading-tight text-slate-900 md:text-base mb-2">
+                                                UP KENDARI
+                                            </h3>
+                                            @php $status = $unitUpdateStatuses['mysql'] ?? $defaultUnitStatus; @endphp
+                                            <div class="flex flex-col gap-[2px] w-full px-5 text-slate-700 text-[10px] md:text-[11px]">
+                                                @foreach ($statusLabels as $key => $label)
+                                                    @php $ok = $status[$key] ?? false; @endphp
+                                                    <div class="flex items-center justify-between gap-1 w-full border-b border-slate-200 pb-[2px] last:border-0">
+                                                        <span class="font-semibold leading-tight text-left">{{ $label }}</span>
+                                                        <span class="flex items-center justify-center w-3.5 h-3.5 rounded-full text-white {{ $ok ? 'bg-green-500' : 'bg-red-500' }}" style="font-size: 8px;">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <!-- Right Column -->
+                            <div class="flex flex-col gap-4">
+                                <!-- ULPLTD/G KOLAKA -->
+                                <a href="{{ route('login', ['unit' => 'mysql_kolaka']) }}" class="block">
+                                    <div class="group relative h-[210px] w-[240px] cursor-pointer transition-all duration-500 hover:scale-105" style="filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));">
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center transition-colors bg-white/85 group-hover:bg-white"
+                                            style="clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                                            <div class="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500 text-white shadow-md">
+                                                <i class="fas fa-industry text-lg"></i>
+                                            </div>
+                                            <h3 class="relative z-10 text-sm font-bold leading-tight text-slate-900 md:text-base mb-2">
+                                                ULPLTD/G KOLAKA
+                                            </h3>
+                                            @php $status = $unitUpdateStatuses['mysql_kolaka'] ?? $defaultUnitStatus; @endphp
+                                            <div class="flex flex-col gap-[2px] w-full px-5 text-slate-700 text-[10px] md:text-[11px]">
+                                                @foreach ($statusLabels as $key => $label)
+                                                    @php $ok = $status[$key] ?? false; @endphp
+                                                    <div class="flex items-center justify-between gap-1 w-full border-b border-slate-200 pb-[2px] last:border-0">
+                                                        <span class="font-semibold leading-tight text-left">{{ $label }}</span>
+                                                        <span class="flex items-center justify-center w-3.5 h-3.5 rounded-full text-white {{ $ok ? 'bg-green-500' : 'bg-red-500' }}" style="font-size: 8px;">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    </div>
+                                </a>
+
+                                <!-- ULPLTD BAU-BAU -->
                                 <a href="{{ route('login', ['unit' => 'mysql_bau_bau']) }}" class="block">
-                                    <div class="hexagon bg-[#0A749B] bg-opacity-55 flex flex-col items-center justify-center hover:bg-opacity-100 h-36 w-40 md:w-56 md:h-44 border">
-                                        <h5 class="text-sm lg:text-2xl md:text-xl font-bold text-gray-50 text-center">ULPLTD <br> BAU-BAU</h5>
-                                        @php $status = $unitUpdateStatuses['mysql_bau_bau'] ?? $defaultUnitStatus; @endphp
-                                        <div class="status-indicators text-white text-[10px] md:text-xs">
-                                            @foreach ($statusLabels as $key => $label)
-                                                @php $ok = $status[$key] ?? false; @endphp
-                                                <div class="flex items-center gap-1">
-                                                    <span class="indicator-dot {{ $ok ? 'bg-green-500' : 'bg-red-500' }}">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
-                                                    <span class="font-semibold leading-tight">{{ $label }}</span>
-                                                </div>
-                                            @endforeach
+                                    <div class="group relative h-[210px] w-[240px] cursor-pointer transition-all duration-500 hover:scale-105" style="filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));">
+                                        <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center transition-colors bg-white/85 group-hover:bg-white"
+                                            style="clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                                            <div class="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-orange-500 text-white shadow-md">
+                                                <i class="fas fa-industry text-lg"></i>
+                                            </div>
+                                            <h3 class="relative z-10 text-sm font-bold leading-tight text-slate-900 md:text-base mb-2">
+                                                ULPLTD BAU-BAU
+                                            </h3>
+                                            @php $status = $unitUpdateStatuses['mysql_bau_bau'] ?? $defaultUnitStatus; @endphp
+                                            <div class="flex flex-col gap-[2px] w-full px-5 text-slate-700 text-[10px] md:text-[11px]">
+                                                @foreach ($statusLabels as $key => $label)
+                                                    @php $ok = $status[$key] ?? false; @endphp
+                                                    <div class="flex items-center justify-between gap-1 w-full border-b border-slate-200 pb-[2px] last:border-0">
+                                                        <span class="font-semibold leading-tight text-left">{{ $label }}</span>
+                                                        <span class="flex items-center justify-center w-3.5 h-3.5 rounded-full text-white {{ $ok ? 'bg-green-500' : 'bg-red-500' }}" style="font-size: 8px;">{!! $ok ? '&#10003;' : '&#10005;' !!}</span>
+                                                    </div>
+                                                @endforeach
+                                            </div>
                                         </div>
                                     </div>
                                 </a>
@@ -1397,14 +1426,13 @@
                         </div>
                     </div>
                 </div>
-
             </div>
 
             {{-- Map --}}
-            <h1 class="text-2xl font-semibold text-center mt-10  text-[#0A749B]">Peta Pembangkit</h1>
-            <div id="map"
-                style="height: 650px; border-radius: 20px; position: relative; margin: 30px 30px 0; padding: 0; "
-                class="z-0">
+            <h1 class="text-2xl font-semibold text-center mt-10 text-[#0A749B] mb-6">Peta Pembangkit</h1>
+            
+            <div class="relative mx-8 mb-4 rounded-2xl overflow-hidden shadow-lg border border-gray-100 z-0">
+                <div id="map" style="height: 650px; width: 100%; position: relative; z-index: 1;"></div>
             </div>
 
             <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -2008,6 +2036,7 @@
                     doubleClickZoom: true,
                     dragging: true,
                 }).setView([-4.0435, 122.4972], 8);
+                window.appMap = map;
 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
@@ -2021,15 +2050,15 @@
                     this._div.innerHTML = `
                         <div style="
                             background: rgba(255, 255, 255, 0.9);
-                            padding: 10px;
-                            border-radius: 5px;
-                            box-shadow: 0 1px 5px rgba(0,0,0,0.2);
+                            padding: 15px;
+                            border-radius: 8px;
+                            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
                             font-size: 13px;
-                            max-width: 200px;
+                            max-width: 500px;
                         ">
                             <div style="display: flex; align-items: center; margin-bottom: 8px;">
                                 <span style="color: #0095B7; margin-right: 5px;">ℹ️</span>
-                                <span style="font-weight: bold; color: #0095B7;">Petunjuk Peta</span>
+                                <span style="font-weight: bold; color: #0095B7;">Petunjuk Peta & Navigasi</span>
                             </div>
                             <div style="color: #4B5563; line-height: 1.4;">
                                 Klik marker <img src="{{ asset('images/marker-icon.png') }}" alt="marker" style="height: 16px; display: inline; vertical-align: middle;"> untuk melihat informasi detail unit pembangkit
@@ -2038,71 +2067,57 @@
                                 Status Unit:
                                 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px; margin-top: 4px;">
                                     <div style="display: flex; align-items: center;">
-                                        <span style="
-                                            display: inline-block;
-                                            width: 8px;
-                                            height: 8px;
-                                            border-radius: 50%;
-                                            background: #059669;
-                                            margin-right: 4px;
-                                        "></span>
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #059669; margin-right: 4px;"></span>
                                         <span>Operasi</span>
                                     </div>
                                     <div style="display: flex; align-items: center;">
-                                        <span style="
-                                            display: inline-block;
-                                            width: 8px;
-                                            height: 8px;
-                                            border-radius: 50%;
-                                            background: #6B7280;
-                                            margin-right: 4px;
-                                        "></span>
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #6B7280; margin-right: 4px;"></span>
                                         <span>Standby</span>
                                     </div>
                                     <div style="display: flex; align-items: center;">
-                                        <span style="
-                                            display: inline-block;
-                                            width: 8px;
-                                            height: 8px;
-                                            border-radius: 50%;
-                                            background: #DC2626;
-                                            margin-right: 4px;
-                                        "></span>
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #DC2626; margin-right: 4px;"></span>
                                         <span>Gangguan</span>
                                     </div>
                                     <div style="display: flex; align-items: center;">
-                                        <span style="
-                                            display: inline-block;
-                                            width: 8px;
-                                            height: 8px;
-                                            border-radius: 50%;
-                                            background: #0369A1;
-                                            margin-right: 4px;
-                                        "></span>
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #0369A1; margin-right: 4px;"></span>
                                         <span>Pemeliharaan</span>
                                     </div>
                                     <div style="display: flex; align-items: center;">
-                                        <span style="
-                                            display: inline-block;
-                                            width: 8px;
-                                            height: 8px;
-                                            border-radius: 50%;
-                                            background: #D97706;
-                                            margin-right: 4px;
-                                        "></span>
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #D97706; margin-right: 4px;"></span>
                                         <span>Mothballed</span>
                                     </div>
                                     <div style="display: flex; align-items: center;">
-                                        <span style="
-                                            display: inline-block;
-                                            width: 8px;
-                                            height: 8px;
-                                            border-radius: 50%;
-                                            background: #FF8C00;
-                                            margin-right: 4px;
-                                        "></span>
+                                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #FF8C00; margin-right: 4px;"></span>
                                         <span>Overhaul</span>
                                     </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Navigation Buttons -->
+                            <div style="margin-top: 15px; border-top: 1px solid #E5E7EB; padding-top: 10px;">
+                                <div style="font-weight: bold; color: #0095B7; margin-bottom: 8px;">Navigasi Unit</div>
+                                <div class="flex flex-wrap gap-2">
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-4.0435, 122.4972], 8)" class="px-2 py-1 text-[10px] font-bold bg-[#0A749B] border border-[#0A749B] text-white rounded hover:bg-blue-700 transition-colors shadow-sm whitespace-nowrap cursor-pointer"><i class="fas fa-globe mr-1"></i> Tampilkan Semua</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-4.15602970, 122.65645290], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTU Moramo</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-3.99566200, 122.49858140], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Wua Wua</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-3.98585800, 122.56931170], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Poasia</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-3.98340000, 122.53640000], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Poasia Cont.</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-4.06685370, 121.62072530], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Kolaka</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-3.45260980, 120.87518980], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Lanipa Nipa</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-4.73164380, 121.97668470], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Ladumpi</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-4.05380810, 121.70745890], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTM Sabilambo</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-3.22383970, 121.07465740], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTM Mikuasi</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-5.45786410, 122.59840340], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Bau Bau</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-5.49733520, 122.83954180], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Pasarwajo</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-5.40226080, 122.90159970], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTM Winning</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-4.87150000, 122.72180000], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Raha</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-5.31001700, 123.53513010], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Wangi-Wangi</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-4.02607610, 122.99205770], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Langara</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-4.77683420, 123.17879540], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTD Ereke</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-3.97790000, 122.51500000], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTMG Kendari</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-5.46780000, 122.62300000], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTU Baruta & Bau-Bau</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-3.99552700, 122.49960950], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">UP KENDARI</button>
+                                    <button onclick="if(window.appMap) window.appMap.flyTo([-5.52913260, 122.73729140], 15)" class="px-2 py-1 text-[10px] font-bold bg-yellow-400 border border-yellow-500 text-yellow-900 rounded hover:bg-yellow-500 transition-colors shadow-sm whitespace-nowrap cursor-pointer">PLTM Rongi</button>
                                 </div>
                             </div>
                         </div>
