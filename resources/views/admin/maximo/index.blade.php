@@ -427,6 +427,12 @@
                     {{-- ================= SERVICE REQUEST TAB ================= --}}
                     <div x-show="tab==='sr'">
                         <h2 class="text-lg font-semibold mb-3">Data Service Request</h2>
+                        
+                        @if(isset($srError) && $srError)
+                            <div class="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded" role="alert">
+                                <i class="fas fa-exclamation-triangle mr-2"></i> {{ $srError }}
+                            </div>
+                        @endif
 
                         <div class="overflow-x-auto">
                             <table class="min-w-full table-fixed divide-y divide-gray-200 border border-gray-200 whitespace-nowrap text-sm">

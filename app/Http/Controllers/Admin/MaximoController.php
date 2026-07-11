@@ -166,7 +166,18 @@ class MaximoController extends Controller
 
             $serviceRequestsQuery->orderBy('REPORTDATE', 'desc');
 
-            $serviceRequests = $serviceRequestsQuery->paginate(10, ['*'], 'sr_page', $serviceRequestPage);
+            $srError = null;
+            try {
+                $serviceRequests = $serviceRequestsQuery->paginate(10, ['*'], 'sr_page', $serviceRequestPage);
+                $serviceRequestsItems = $serviceRequests->items();
+            } catch (\Exception $e) {
+                $serviceRequests = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10, $serviceRequestPage, [
+                    'path' => $request->url(),
+                    'query' => $request->query(),
+                ]);
+                $serviceRequestsItems = [];
+                $srError = 'Akses data dibatasi oleh Maximo (MAXIMO.SR)';
+            }
 
             // Ambil Status Unit dari MySQL untuk WONUM yang ada
             $wonums = collect($workOrders->items())->pluck('wonum')->unique();
@@ -177,7 +188,7 @@ class MaximoController extends Controller
             return view('admin.maximo.index', [
                 'workOrders'      => $this->formatWorkOrders($workOrders->items(), $unitStatuses),
                 'workOrdersPaginator' => $workOrders,
-                'serviceRequests' => $this->formatServiceRequests($serviceRequests->items()),
+                'serviceRequests' => $this->formatServiceRequests($serviceRequestsItems),
                 'serviceRequestsPaginator' => $serviceRequests,
                 'search'          => $search,
                 'statusFilter'    => $woStatusFilter,
@@ -186,6 +197,7 @@ class MaximoController extends Controller
                 'stats'           => $stats,
                 'error'           => null,
                 'errorDetail'     => null,
+                'srError'         => $srError,
             ]);
 
         } catch (QueryException $e) {
