@@ -623,6 +623,9 @@
                 <div class="kpi-value-section">
                     <div class="kpi-value">{{ $wrSrOpen['percentage'] }}<span class="kpi-unit">%</span></div>
                     <div class="kpi-desc">{{ $wrSrOpen['description'] }}</div>
+                    @if(isset($wrSrOpen['error']) && $wrSrOpen['error'])
+                        <div class="evaluation-text text-red-500 font-semibold mt-2"><i class="fas fa-exclamation-triangle"></i> {{ $wrSrOpen['error'] }}</div>
+                    @endif
                 </div>
             </div>
             <div class="kpi-footer">

@@ -481,6 +481,11 @@
              <!-- SR Open -->
              <div class="bg-white p-4 rounded shadow border">
                 <h4 class="font-bold text-sm mb-2">Jumlah SR Open</h4>
+                @if(isset($metrics['sr_open']['error']) && $metrics['sr_open']['error'])
+                    <div class="text-xs text-red-500 font-semibold mb-2 p-2 bg-red-50 rounded border border-red-100">
+                        <i class="fas fa-exclamation-triangle mr-1"></i> {{ $metrics['sr_open']['error'] }}
+                    </div>
+                @endif
                 <table class="w-full text-xs border">
                     <tr class="bg-gray-100 font-semibold"><td>SR Open</td><td>Total SR</td><td>%</td></tr>
                     <tr>

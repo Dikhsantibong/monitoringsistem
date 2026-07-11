@@ -166,10 +166,16 @@ class KinerjaPemeliharaanController extends Controller
                 break;
         }
 
-        $results = $query ? $query->get() : collect();
+        $results = collect();
+        $dbError = null;
+        try {
+            $results = $query ? $query->get() : collect();
+        } catch (\Exception $e) {
+            $dbError = "Akses data dibatasi oleh Maximo.";
+        }
         $isSR = str_contains($type, 'sr');
 
-        return view('kinerja.detail', compact('results', 'title', 'isSR', 'startDate', 'endDate'));
+        return view('kinerja.detail', compact('results', 'title', 'isSR', 'startDate', 'endDate', 'dbError'));
     }
     
     private function getKinerjaDashboardData($startDate, $endDate)
@@ -538,9 +544,17 @@ class KinerjaPemeliharaanController extends Controller
         $ageingOhRate = $totalOhOpen > 0 ? round(($ageingOh / $totalOhOpen) * 100, 2) : 0;
         
         // 9. SR Open -- Snapshot within range
-        $srOpen = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereIn('STATUS', ['QUEUED'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
-        $srTotal = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
-        $srOpenRate = $srTotal > 0 ? round(($srOpen / $srTotal) * 100, 2) : 0;
+        try {
+            $srOpen = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereIn('STATUS', ['QUEUED'])->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
+            $srTotal = DB::connection('oracle')->table('SR')->where('SITEID', 'KD')->whereBetween('REPORTDATE', [$startDate, $endDate])->count();
+            $srOpenRate = $srTotal > 0 ? round(($srOpen / $srTotal) * 100, 2) : 0;
+            $srError = null;
+        } catch (\Exception $e) {
+            $srOpen = 0;
+            $srTotal = 0;
+            $srOpenRate = 0;
+            $srError = "Akses data dibatasi oleh Maximo";
+        }
 
         return [
             'pm_compliance' => ['val' => $pmCompliant, 'total' => $pmTotal, 'rate' => $pmComplianceRate],
@@ -554,7 +568,7 @@ class KinerjaPemeliharaanController extends Controller
             'non_pm_aptw' => ['val' => 45, 'total' => 53, 'rate' => 84.91], // Placeholder
             'ageing_site' => ['val' => $ageingSite, 'total' => $totalOpen, 'rate' => $ageingSiteRate],
             'ageing_oh' => ['val' => $ageingOh, 'total' => $totalOhOpen, 'rate' => $ageingOhRate],
-            'sr_open' => ['val' => $srOpen, 'total' => $srTotal, 'rate' => $srOpenRate],
+            'sr_open' => ['val' => $srOpen, 'total' => $srTotal, 'rate' => $srOpenRate, 'error' => $srError],
         ];
     }
     
@@ -845,35 +859,47 @@ class KinerjaPemeliharaanController extends Controller
     // I6.10.2 - WR/SR Open/Queued
     private function calculateWrSrOpen($startDate, $endDate)
     {
-        // 9. SR Open -- Snapshot within range
-        $srOpen = DB::connection('oracle')->table('SR')
-            ->where('SITEID', 'KD')
-            ->whereIn('STATUS', ['QUEUED'])
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
-            ->count();
+        try {
+            // 9. SR Open -- Snapshot within range
+            $srOpen = DB::connection('oracle')->table('SR')
+                ->where('SITEID', 'KD')
+                ->whereIn('STATUS', ['QUEUED'])
+                ->whereBetween('REPORTDATE', [$startDate, $endDate])
+                ->count();
+                
+            $srTotal = DB::connection('oracle')->table('SR')
+                ->where('SITEID', 'KD')
+                ->whereBetween('REPORTDATE', [$startDate, $endDate])
+                ->count();
+                
+            $percentage = $srTotal > 0 ? round(($srOpen / $srTotal) * 100, 2) : 0;
             
-        $srTotal = DB::connection('oracle')->table('SR')
-            ->where('SITEID', 'KD')
-            ->whereBetween('REPORTDATE', [$startDate, $endDate])
-            ->count();
+            // Level
+            $level = 1;
+            $desc = "> 5%";
+            if ($percentage == 0) { $level = 5; $desc = "0%"; }
+            elseif ($percentage <= 1) { $level = 4; $desc = "≤ 1%"; }
+            elseif ($percentage <= 2) { $level = 3; $desc = "≤ 2%"; }
+            elseif ($percentage <= 5) { $level = 2; $desc = "≤ 5%"; }
             
-        $percentage = $srTotal > 0 ? round(($srOpen / $srTotal) * 100, 2) : 0;
-        
-        // Level
-        $level = 1;
-        $desc = "> 5%";
-        if ($percentage == 0) { $level = 5; $desc = "0%"; }
-        elseif ($percentage <= 1) { $level = 4; $desc = "≤ 1%"; }
-        elseif ($percentage <= 2) { $level = 3; $desc = "≤ 2%"; }
-        elseif ($percentage <= 5) { $level = 2; $desc = "≤ 5%"; }
-        
-        return [
-            'total' => $srTotal,
-            'overdue' => $srOpen,
-            'percentage' => $percentage,
-            'level' => $level,
-            'description' => $desc
-        ];
+            return [
+                'total' => $srTotal,
+                'overdue' => $srOpen,
+                'percentage' => $percentage,
+                'level' => $level,
+                'description' => $desc,
+                'error' => null
+            ];
+        } catch (\Exception $e) {
+            return [
+                'total' => 0,
+                'overdue' => 0,
+                'percentage' => 0,
+                'level' => 1,
+                'description' => "Akses data dibatasi oleh Maximo",
+                'error' => "Akses dibatasi (MAXIMO.SR)"
+            ];
+        }
     }
     
     // I6.10.3 - WO Ageing
