@@ -70,12 +70,15 @@
 
      <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
  </head>
     <!-- Custom Styles -->
     @yield('styles')
 </head>
-<body class="m-0 p-0 w-full">
+<body class="m-0 p-0 w-full" style="font-family: 'Inter', sans-serif;">
     @include('sweetalert::alert')
 
     <!-- Tambahkan form logout tersembunyi -->

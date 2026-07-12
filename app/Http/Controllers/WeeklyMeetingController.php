@@ -39,31 +39,42 @@ class WeeklyMeetingController extends Controller
         if ($mode === 'calendar') {
             $firstDay = Carbon::create($year, $month, 1);
             $lastDay = $firstDay->copy()->endOfMonth();
+            $dbError = null;
 
             // Fetch Work Orders for the month
-            $workOrders = DB::connection('oracle')->table('WORKORDER')
-                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'SCHEDSTART', 'SCHEDFINISH', 'STATUSDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
-                ->where('SITEID', 'KD')
-                ->where('WONUM', 'LIKE', 'WO%')
-                ->when($unitFilter, function($q) use ($unitFilter) {
-                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-                })
-                ->where(function($q) use ($firstDay, $lastDay) {
-                    $q->whereBetween('REPORTDATE', [$firstDay, $lastDay])
-                      ->orWhereBetween('SCHEDSTART', [$firstDay, $lastDay])
-                      ->orWhereBetween('STATUSDATE', [$firstDay, $lastDay]);
-                })
-                ->get();
+            $workOrders = collect();
+            try {
+                $workOrders = DB::connection('oracle')->table('WORKORDER')
+                    ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'SCHEDSTART', 'SCHEDFINISH', 'STATUSDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
+                    ->where('SITEID', 'KD')
+                    ->where('WONUM', 'LIKE', 'WO%')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->where(function($q) use ($firstDay, $lastDay) {
+                        $q->whereBetween('REPORTDATE', [$firstDay, $lastDay])
+                          ->orWhereBetween('SCHEDSTART', [$firstDay, $lastDay])
+                          ->orWhereBetween('STATUSDATE', [$firstDay, $lastDay]);
+                    })
+                    ->get();
+            } catch (\Exception $e) {
+                $dbError = "Akses data dibatasi oleh Maximo.";
+            }
 
             // Fetch Service Requests for the month
-            $serviceRequests = DB::connection('oracle')->table('SR')
-                ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
-                ->where('SITEID', 'KD')
-                ->when($unitFilter, function($q) use ($unitFilter) {
-                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-                })
-                ->whereBetween('REPORTDATE', [$firstDay, $lastDay])
-                ->get();
+            $serviceRequests = collect();
+            try {
+                $serviceRequests = DB::connection('oracle')->table('SR')
+                    ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
+                    ->where('SITEID', 'KD')
+                    ->when($unitFilter, function($q) use ($unitFilter) {
+                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                    })
+                    ->whereBetween('REPORTDATE', [$firstDay, $lastDay])
+                    ->get();
+            } catch (\Exception $e) {
+                $dbError = "Akses data dibatasi oleh Maximo.";
+            }
 
             // Group data by date for the calendar
             $events = collect();
@@ -107,7 +118,7 @@ class WeeklyMeetingController extends Controller
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            return view('weekly-meeting.index', compact('mode', 'month', 'year', 'events', 'firstDay', 'lastDay', 'powerPlants', 'unitFilter', 'weeklyDiscussions'));
+            return view('weekly-meeting.index', compact('mode', 'month', 'year', 'events', 'firstDay', 'lastDay', 'powerPlants', 'unitFilter', 'weeklyDiscussions', 'dbError'));
         }
 
         // --- EXISTING LIST LOGIC ---
@@ -127,94 +138,127 @@ class WeeklyMeetingController extends Controller
         $nextWeekStart = $currentWeekEnd->copy()->addDay(); // Monday of next week
         $nextWeekEnd = $nextWeekStart->copy()->endOfWeek(Carbon::SUNDAY);
 
+        $emptyPaginator = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
+        $dbError = null;
+
         // --- 1. REVIEW PHASE (MINGGU LALU) ---
 
         // A. Pekerjaan Completed (WO Closed/Comp) di Minggu Lalu
-        $reviewCompletedWOs = DB::connection('oracle')->table('WORKORDER')
-            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'STATUSDATE', 'WORKTYPE', 'ASSETNUM', 'LOCATION', 'ACTFINISH')
-            ->where('SITEID', 'KD')
-            ->where('WONUM', 'LIKE', 'WO%')
-            ->when($unitFilter, function($q) use ($unitFilter) {
-                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-            })
-            ->whereIn('STATUS', ['COMP', 'CLOSE'])
-            ->whereBetween('STATUSDATE', [$lastWeekStart, $lastWeekEnd])
-            ->orderBy('STATUSDATE', 'desc')
-            ->paginate(10, ['*'], 'review_completed_page');
+        try {
+            $reviewCompletedWOs = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'STATUSDATE', 'WORKTYPE', 'ASSETNUM', 'LOCATION', 'ACTFINISH')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->when($unitFilter, function($q) use ($unitFilter) {
+                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                })
+                ->whereIn('STATUS', ['COMP', 'CLOSE'])
+                ->whereBetween('STATUSDATE', [$lastWeekStart, $lastWeekEnd])
+                ->orderBy('STATUSDATE', 'desc')
+                ->paginate(10, ['*'], 'review_completed_page');
+        } catch (\Exception $e) {
+            $reviewCompletedWOs = clone $emptyPaginator;
+            $dbError = "Akses data dibatasi oleh Maximo.";
+        }
 
         // B. WO Terbit (Created) di Minggu Lalu
-        $reviewCreatedWOs = DB::connection('oracle')->table('WORKORDER')
-            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'LOCATION')
-            ->where('SITEID', 'KD')
-            ->where('WONUM', 'LIKE', 'WO%')
-            ->when($unitFilter, function($q) use ($unitFilter) {
-                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-            })
-            ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
-            ->orderBy('REPORTDATE', 'desc')
-            ->paginate(10, ['*'], 'review_created_page');
+        try {
+            $reviewCreatedWOs = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'LOCATION')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->when($unitFilter, function($q) use ($unitFilter) {
+                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                })
+                ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
+                ->orderBy('REPORTDATE', 'desc')
+                ->paginate(10, ['*'], 'review_created_page');
+        } catch (\Exception $e) {
+            $reviewCreatedWOs = clone $emptyPaginator;
+            $dbError = "Akses data dibatasi oleh Maximo.";
+        }
 
         // B.2. SR Terbit (Created) di Minggu Lalu
-        $reviewCreatedSRs = DB::connection('oracle')->table('SR')
-            ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
-            ->where('SITEID', 'KD')
-            ->when($unitFilter, function($q) use ($unitFilter) {
-                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-            })
-            ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
-            ->orderBy('REPORTDATE', 'desc')
-            ->paginate(10, ['*'], 'review_created_sr_page');
+        try {
+            $reviewCreatedSRs = DB::connection('oracle')->table('SR')
+                ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
+                ->where('SITEID', 'KD')
+                ->when($unitFilter, function($q) use ($unitFilter) {
+                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                })
+                ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
+                ->orderBy('REPORTDATE', 'desc')
+                ->paginate(10, ['*'], 'review_created_sr_page');
+        } catch (\Exception $e) {
+            $reviewCreatedSRs = clone $emptyPaginator;
+            $dbError = "Akses data dibatasi oleh Maximo.";
+        }
 
         // --- 2. PLANNING PHASE (MINGGU DEPAN) ---
 
         // A. Rencana Pekerjaan Rutin (PM)
-        $planPMs = DB::connection('oracle')->table('WORKORDER')
-            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'ASSETNUM', 'LOCATION')
-            ->where('SITEID', 'KD')
-            ->where('WONUM', 'LIKE', 'WO%')
-            ->when($unitFilter, function($q) use ($unitFilter) {
-                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-            })
-            ->where('WORKTYPE', 'PM')
-            ->whereNotIn('STATUS', ['COMP', 'CLOSE', 'CAN']) // Active PMs
-            ->where(function($q) use ($nextWeekStart, $nextWeekEnd) {
-                // Sched Start falls in next week
-                $q->whereBetween('SCHEDSTART', [$nextWeekStart, $nextWeekEnd])
-                  ->orWhereBetween('SCHEDFINISH', [$nextWeekStart, $nextWeekEnd]);
-            })
-            ->orderBy('SCHEDSTART', 'asc')
-            ->paginate(10, ['*'], 'plan_pm_page');
+        try {
+            $planPMs = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'SCHEDSTART', 'SCHEDFINISH', 'WORKTYPE', 'ASSETNUM', 'LOCATION')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->when($unitFilter, function($q) use ($unitFilter) {
+                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                })
+                ->where('WORKTYPE', 'PM')
+                ->whereNotIn('STATUS', ['COMP', 'CLOSE', 'CAN']) // Active PMs
+                ->where(function($q) use ($nextWeekStart, $nextWeekEnd) {
+                    // Sched Start falls in next week
+                    $q->whereBetween('SCHEDSTART', [$nextWeekStart, $nextWeekEnd])
+                      ->orWhereBetween('SCHEDFINISH', [$nextWeekStart, $nextWeekEnd]);
+                })
+                ->orderBy('SCHEDSTART', 'asc')
+                ->paginate(10, ['*'], 'plan_pm_page');
+        } catch (\Exception $e) {
+            $planPMs = clone $emptyPaginator;
+            $dbError = "Akses data dibatasi oleh Maximo.";
+        }
 
         // B. Daftar WO Backlog
         $openStatuses = ['WAPPR', 'APPR', 'WSCH', 'WMATL', 'WPCOND', 'INPRG'];
         
-        $planBacklog = DB::connection('oracle')->table('WORKORDER')
-            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
-            ->where('SITEID', 'KD')
-            ->where('WONUM', 'LIKE', 'WO%')
-            ->when($unitFilter, function($q) use ($unitFilter) {
-                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-            })
-            ->where('WORKTYPE', '!=', 'PM') // Exclude routine PM
-            ->whereIn('STATUS', $openStatuses)
-            ->orderBy('WOPRIORITY', 'asc')
-            ->orderBy('REPORTDATE', 'asc')
-            ->paginate(10, ['*'], 'plan_backlog_page');
+        try {
+            $planBacklog = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->when($unitFilter, function($q) use ($unitFilter) {
+                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                })
+                ->where('WORKTYPE', '!=', 'PM') // Exclude routine PM
+                ->whereIn('STATUS', $openStatuses)
+                ->orderBy('WOPRIORITY', 'asc')
+                ->orderBy('REPORTDATE', 'asc')
+                ->paginate(10, ['*'], 'plan_backlog_page');
+        } catch (\Exception $e) {
+            $planBacklog = clone $emptyPaginator;
+            $dbError = "Akses data dibatasi oleh Maximo.";
+        }
 
         // C. Urgent / Daily Focus
-        $urgentWork = DB::connection('oracle')->table('WORKORDER')
-            ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
-            ->where('SITEID', 'KD')
-            ->where('WONUM', 'LIKE', 'WO%')
-            ->when($unitFilter, function($q) use ($unitFilter) {
-                return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-            })
-            ->whereIn('STATUS', $openStatuses)
-            ->where(function($q) {
-                $q->where('WOPRIORITY', 1)
-                  ->orWhere('WOPRIORITY', '1');
-            })
-            ->paginate(10, ['*'], 'plan_urgent_page');
+        try {
+            $urgentWork = DB::connection('oracle')->table('WORKORDER')
+                ->select('WONUM', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'WORKTYPE', 'WOPRIORITY', 'ASSETNUM', 'LOCATION')
+                ->where('SITEID', 'KD')
+                ->where('WONUM', 'LIKE', 'WO%')
+                ->when($unitFilter, function($q) use ($unitFilter) {
+                    return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                })
+                ->whereIn('STATUS', $openStatuses)
+                ->where(function($q) {
+                    $q->where('WOPRIORITY', 1)
+                      ->orWhere('WOPRIORITY', '1');
+                })
+                ->paginate(10, ['*'], 'plan_urgent_page');
+        } catch (\Exception $e) {
+            $urgentWork = clone $emptyPaginator;
+            $dbError = "Akses data dibatasi oleh Maximo.";
+        }
 
         // D. Daftar Pembahasan Weekly
         $weeklyDiscussions = \App\Models\OtherDiscussion::with(['commitments' => function($q) {
@@ -229,7 +273,7 @@ class WeeklyMeetingController extends Controller
             'mode', 'lastWeekStart', 'lastWeekEnd', 'nextWeekStart', 'nextWeekEnd',
             'reviewCompletedWOs', 'reviewCreatedWOs', 'reviewCreatedSRs',
             'planPMs', 'planBacklog', 'urgentWork', 'powerPlants', 'unitFilter',
-            'weeklyDiscussions'
+            'weeklyDiscussions', 'dbError'
         ));
     }
 }

@@ -14,9 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
         mainContent.classList.toggle("opacity-25")
     });
 
-    desktopMenuToggle.addEventListener("click", function () {
-        mobileMenu.classList.toggle("md:block");
-    });
+    // desktopMenuToggle handled in sidebar.blade.php for collapse mode
 
     document.addEventListener("click", function (event) {
         if (

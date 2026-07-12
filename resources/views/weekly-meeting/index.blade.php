@@ -310,6 +310,13 @@
         </div>
     </div>
 
+    @if(isset($dbError) && $dbError)
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 shadow-sm" role="alert">
+        <strong class="font-bold"><i class="fas fa-exclamation-circle mr-1"></i> Perhatian!</strong>
+        <span class="block sm:inline">{{ $dbError }} Saat ini menggunakan data fallback statis / kosong.</span>
+    </div>
+    @endif
+
     @if($mode === 'calendar')
         <!-- Calendar Mode View -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden fade-in">

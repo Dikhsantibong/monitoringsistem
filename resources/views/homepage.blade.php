@@ -1272,18 +1272,27 @@
                     <div class="relative z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pt-16 mt-8 md:mt-16">
                         
                         <!-- Title & Clock Container -->
-                        <div class="mb-12 flex flex-col items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-10 py-6 shadow-xl backdrop-blur-md md:px-16">
-                            <div class="text-center text-xl font-black tracking-[0.2em] text-white md:text-4xl">
-                                MONITORING DAILY <span class="font-light">UP KENDARI</span>
+                        <div class="mb-10 flex flex-col items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-8 py-4 shadow-xl backdrop-blur-md md:px-12">
+                            
+                            <!-- Top Line: M O N D A Y with spinning gear -->
+                            <div class="flex items-center justify-center text-center text-2xl font-black tracking-[0.25em] text-white md:text-4xl">
+                                <span>M</span>
+                                <i class="fas fa-cog fa-spin mx-2 text-xl md:text-3xl text-white"></i>
+                                <span>NDAY</span>
                             </div>
                             
-                            <div class="mt-5 h-px w-2/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
+                            <!-- Bottom Line: MONITORING DAILY UP KENDARI -->
+                            <div class="mt-1 text-center text-xs font-normal tracking-[0.1em] text-white/90 md:text-sm">
+                                MONITORING DAILY UP KENDARI
+                            </div>
+                            
+                            <div class="mt-4 h-px w-2/3 bg-gradient-to-r from-transparent via-white/40 to-transparent"></div>
                             
                             <div class="mt-4 flex flex-col items-center">
-                                <div id="digitalClockTime" class="text-4xl font-bold tracking-widest text-white drop-shadow-md md:text-6xl" style="font-family: 'Orbitron', sans-serif; font-variant-numeric: tabular-nums;">
+                                <div id="digitalClockTime" class="text-3xl font-bold tracking-widest text-white drop-shadow-md md:text-4xl" style="font-family: 'Orbitron', sans-serif; font-variant-numeric: tabular-nums;">
                                     --:--:--
                                 </div>
-                                <div id="digitalClockDate" class="mt-2 text-sm font-medium tracking-wider text-white/80 md:text-base" style="font-family: 'Orbitron', sans-serif;">
+                                <div id="digitalClockDate" class="mt-2 text-xs font-medium tracking-wider text-white/80 md:text-sm" style="font-family: 'Orbitron', sans-serif;">
                                     ---
                                 </div>
                             </div>
