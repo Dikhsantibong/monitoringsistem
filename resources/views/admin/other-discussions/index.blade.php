@@ -1594,18 +1594,24 @@
         });
 
         // Auto submit saat memilih unit
-        document.getElementById('unit-filter').addEventListener('change', function() {
-            this.form.submit();
-        });
+        const unitFilter = document.getElementById('unit-filter');
+        if (unitFilter) {
+            unitFilter.addEventListener('change', function() {
+                this.form.submit();
+            });
+        }
 
         // Debounce search
         let searchTimeout;
-        document.getElementById('search').addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                this.form.submit();
-            }, 500);
-        });
+        const searchElement = document.getElementById('search');
+        if (searchElement) {
+            searchElement.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    this.form.submit();
+                }, 500);
+            });
+        }
 
         // Set active tab from URL parameter or default to 'active'
         const urlParams = new URLSearchParams(window.location.search);
@@ -1840,7 +1846,7 @@
     function checkAndUpdateOverdueStatus() {
         console.log('Checking overdue status...');
         
-        fetch('{{ route('admin.overdue-discussions.check') }}', {
+        fetch("{{ route('admin.overdue-discussions.check', [], false) }}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -497,14 +497,19 @@ class OtherDiscussionController extends Controller
                     ->get();
 
                 // Fetch Service Requests for the month
-                $serviceRequests = DB::connection('oracle')->table('SR')
-                    ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
-                    ->where('SITEID', 'KD')
-                    ->when($unitFilter, function($q) use ($unitFilter) {
-                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-                    })
-                    ->whereBetween('REPORTDATE', [$firstDay, $lastDay])
-                    ->get();
+                try {
+                    $serviceRequests = DB::connection('oracle')->table('SR')
+                        ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
+                        ->where('SITEID', 'KD')
+                        ->when($unitFilter, function($q) use ($unitFilter) {
+                            return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                        })
+                        ->whereBetween('REPORTDATE', [$firstDay, $lastDay])
+                        ->get();
+                } catch (\Exception $e) {
+                    \Log::warning('Oracle SR query failed in apiIndex (calendar): ' . $e->getMessage());
+                    $serviceRequests = collect();
+                }
 
                 // Group data by date for the calendar
                 $events = collect();
@@ -582,15 +587,20 @@ class OtherDiscussionController extends Controller
                     ->orderBy('REPORTDATE', 'desc')
                     ->paginate(10, ['*'], 'review_created_page');
 
-                $reviewCreatedSRs = DB::connection('oracle')->table('SR')
-                    ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
-                    ->where('SITEID', 'KD')
-                    ->when($unitFilter, function($q) use ($unitFilter) {
-                        return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
-                    })
-                    ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
-                    ->orderBy('REPORTDATE', 'desc')
-                    ->paginate(10, ['*'], 'review_created_sr_page');
+                try {
+                    $reviewCreatedSRs = DB::connection('oracle')->table('SR')
+                        ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'REPORTDATE', 'REPORTEDBY', 'LOCATION')
+                        ->where('SITEID', 'KD')
+                        ->when($unitFilter, function($q) use ($unitFilter) {
+                            return $q->where('LOCATION', 'LIKE', strtoupper($unitFilter) . '%');
+                        })
+                        ->whereBetween('REPORTDATE', [$lastWeekStart, $lastWeekEnd])
+                        ->orderBy('REPORTDATE', 'desc')
+                        ->paginate(10, ['*'], 'review_created_sr_page');
+                } catch (\Exception $e) {
+                    \Log::warning('Oracle SR query failed in apiIndex (list): ' . $e->getMessage());
+                    $reviewCreatedSRs = new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
+                }
 
                 // --- 2. PLANNING PHASE (MINGGU DEPAN) ---
                 $planPMs = DB::connection('oracle')->table('WORKORDER')
@@ -1074,18 +1084,22 @@ class OtherDiscussionController extends Controller
             }
 
             // Search in SR
-            $serviceRequest = DB::connection('oracle')->table('SR')
-                ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'LOCATION', 'REPORTDATE', 'REPORTEDBY')
-                ->where('SITEID', 'KD')
-                ->where('TICKETID', $number)
-                ->first();
+            try {
+                $serviceRequest = DB::connection('oracle')->table('SR')
+                    ->select('TICKETID', 'DESCRIPTION', 'STATUS', 'LOCATION', 'REPORTDATE', 'REPORTEDBY')
+                    ->where('SITEID', 'KD')
+                    ->where('TICKETID', $number)
+                    ->first();
 
-            if ($serviceRequest) {
-                return response()->json([
-                    'success' => true,
-                    'type' => 'SR',
-                    'data' => $serviceRequest
-                ]);
+                if ($serviceRequest) {
+                    return response()->json([
+                        'success' => true,
+                        'type' => 'SR',
+                        'data' => $serviceRequest
+                    ]);
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Oracle SR query failed in searchOracleData: ' . $e->getMessage());
             }
 
             return response()->json([
