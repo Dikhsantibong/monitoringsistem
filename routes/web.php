@@ -698,6 +698,10 @@ Route::post('/admin/other-discussions/generate-no-pembahasan', [App\Http\Control
     ->name('admin.other-discussions.generate-no-pembahasan')
     ->middleware(['auth']);
 
+Route::post('/admin/other-discussions/generate-from-audio', [App\Http\Controllers\Admin\OtherDiscussionController::class, 'generateFromAudio'])
+    ->name('admin.other-discussions.generate-audio')
+    ->middleware(['auth']);
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/public/attendance/generate-qr', [AttendanceController::class, 'generateQRCode'])

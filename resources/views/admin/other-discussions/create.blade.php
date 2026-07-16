@@ -173,9 +173,20 @@
 
                         <!-- Topik -->
                         <div class="mb-4">
-                            <label class="block text-gray-700 text-sm font-bold mb-2" for="topic">
-                                Topik <span class="text-red-500">*</span>
-                            </label>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="block text-gray-700 text-sm font-bold" for="topic">
+                                    Topik <span class="text-red-500">*</span>
+                                </label>
+                                <div class="flex gap-2">
+                                    <button type="button" id="btn-start-record" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 py-1 px-3 rounded text-xs font-semibold flex items-center transition-colors">
+                                        <i class="fas fa-microphone mr-1"></i> Rekam AI
+                                    </button>
+                                    <button type="button" id="btn-stop-record" class="bg-red-100 hover:bg-red-200 text-red-700 py-1 px-3 rounded text-xs font-semibold flex items-center transition-colors hidden">
+                                        <i class="fas fa-stop-circle mr-1 animate-pulse"></i> Hentikan & Proses
+                                    </button>
+                                    <span id="recording-status" class="text-xs text-gray-500 hidden items-center"><i class="fas fa-spinner fa-spin mr-1"></i> Merangkum...</span>
+                                </div>
+                            </div>
                             <input type="text" 
                                    name="topic" 
                                    id="topic" 
@@ -2092,6 +2103,141 @@ document.addEventListener('DOMContentLoaded', function() {
             tbody.innerHTML = `<tr><td colspan="7" class="px-6 py-4 text-center text-red-500 text-sm"><i class="fas fa-exclamation-triangle mr-2"></i>Gagal memuat data</td></tr>`;
             paginationContainer.innerHTML = '';
         }
+    }
+
+    // --- AI Meeting Assistant (Voice to Notulen) ---
+    let mediaRecorder;
+    let audioChunks = [];
+    const btnStartRecord = document.getElementById('btn-start-record');
+    const btnStopRecord = document.getElementById('btn-stop-record');
+    const recordingStatus = document.getElementById('recording-status');
+
+    if (btnStartRecord) {
+        btnStartRecord.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.addEventListener('dataavailable', event => {
+                    audioChunks.push(event.data);
+                });
+
+                mediaRecorder.addEventListener('stop', async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    
+                    // Stop all microphone tracks
+                    stream.getTracks().forEach(track => track.stop());
+
+                    // Prepare form data
+                    const formData = new FormData();
+                    formData.append('audio', audioBlob, 'recording.webm');
+                    formData.append('_token', document.querySelector('input[name="_token"]').value);
+
+                    // Show loading status
+                    btnStopRecord.classList.add('hidden');
+                    recordingStatus.classList.remove('hidden');
+                    recordingStatus.classList.add('flex');
+                    
+                    Swal.fire({
+                        title: 'Memproses Audio...',
+                        text: 'AI sedang mengubah suara menjadi teks dan membuat rangkuman.',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+
+                    try {
+                        const response = await fetch("{{ route('admin.other-discussions.generate-audio') }}", {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        
+                        Swal.close();
+                        recordingStatus.classList.add('hidden');
+                        btnStartRecord.classList.remove('hidden');
+
+                        if (response.ok && result.success) {
+                            // Isi otomatis Topik
+                            document.getElementById('topic').value = result.topik;
+                            
+                            // Jika ada action items, buat baris commitment baru
+                            if (result.action_items && result.action_items.length > 0) {
+                                // Clear existing empty row if no value
+                                const firstInput = document.querySelector('input[name="commitments[]"]');
+                                if (firstInput && firstInput.value === '') {
+                                    // Remove the first empty row
+                                    const firstRow = document.querySelector('.commitment-row');
+                                    if(firstRow) firstRow.remove();
+                                }
+
+                                result.action_items.forEach(item => {
+                                    const id = 'row_' + Math.random().toString(36).substr(2, 9);
+                                    const row = document.createElement('div');
+                                    row.className = 'commitment-row flex gap-2 items-start';
+                                    row.id = id;
+                                    row.innerHTML = `
+                                        <div class="flex-1">
+                                            <input type="text" 
+                                                   name="commitments[]" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                   value="${item.target.replace(/"/g, '&quot;')}"
+                                                   placeholder="Deskripsi Tindak Lanjut" required>
+                                        </div>
+                                        <div class="w-48">
+                                            <input type="text" 
+                                                   name="pics[]" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                                   value="${(item.pic || '').replace(/"/g, '&quot;')}"
+                                                   placeholder="Nama/Jabatan PIC">
+                                        </div>
+                                        <button type="button" 
+                                                onclick="removeCommitment('${id}')"
+                                                class="px-3 py-2 bg-red-50 text-red-500 rounded-md hover:bg-red-100 transition-colors">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    `;
+                                    document.getElementById('commitments_container').appendChild(row);
+                                });
+                            }
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Berhasil!',
+                                text: 'Transkrip dan rangkuman berhasil dibuat.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire('Gagal', result.error || 'Terjadi kesalahan saat memproses audio.', 'error');
+                        }
+                    } catch (error) {
+                        Swal.close();
+                        recordingStatus.classList.add('hidden');
+                        btnStartRecord.classList.remove('hidden');
+                        Swal.fire('Error', 'Gagal menghubungi server.', 'error');
+                        console.error('Upload Error:', error);
+                    }
+                });
+
+                mediaRecorder.start();
+                btnStartRecord.classList.add('hidden');
+                btnStopRecord.classList.remove('hidden');
+
+            } catch (err) {
+                console.error("Error accessing microphone: ", err);
+                Swal.fire('Akses Ditolak', 'Tidak dapat mengakses mikrofon. Pastikan Anda memberikan izin akses mikrofon di browser.', 'warning');
+            }
+        });
+
+        btnStopRecord.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state === 'recording') {
+                mediaRecorder.stop();
+            }
+        });
     }
 </script>
 

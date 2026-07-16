@@ -1269,7 +1269,7 @@
                     </style>
 
                     <!-- Content wrapper -->
-                    <div class="relative z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pt-4 mt-2 md:mt-4">
+                    <div class="relative z-10 flex w-full max-w-6xl flex-1 flex-col items-center justify-center px-4 pt-12 mt-6 md:mt-10">
                         
                         <!-- Title & Clock Container -->
                         <div class="mb-10 flex flex-col items-center justify-center rounded-2xl border border-white/20 bg-white/10 px-8 py-4 shadow-xl backdrop-blur-md md:px-12">

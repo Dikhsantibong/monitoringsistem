@@ -1954,4 +1954,88 @@ class OtherDiscussionController extends Controller
             return back()->with('error', 'Gagal memproses print laporan weekly.');
         }
     }
-}   
+
+    public function generateFromAudio(\Illuminate\Http\Request $request)
+    {
+        try {
+            $request->validate([
+                'audio' => 'required|file|max:20480', // max 20MB
+            ]);
+
+            $audioFile = $request->file('audio');
+
+            // 1. Transcribe using OpenAI Whisper API
+            $responseSTT = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+            ])->attach(
+                'file', file_get_contents($audioFile->getRealPath()), $audioFile->getClientOriginalName()
+            )->post('https://api.openai.com/v1/audio/transcriptions', [
+                'model' => 'whisper-1',
+                'language' => 'id'
+            ]);
+
+            if ($responseSTT->failed()) {
+                \Log::error('OpenAI Whisper Error: ' . $responseSTT->body());
+                return response()->json(['error' => 'Gagal mengubah suara menjadi teks. Pastikan API Key valid.'], 500);
+            }
+
+            $transcript = $responseSTT->json('text');
+
+            if (empty($transcript)) {
+                return response()->json(['error' => 'Tidak ada suara yang terdeteksi.'], 400);
+            }
+
+            // 2. Summarize using GPT-4o
+            $systemPrompt = "Anda adalah asisten notulen meeting profesional. Tugas Anda adalah merangkum transkrip rapat (yang mungkin mengandung istilah kelistrikan/PLN seperti Maximo, SR, WO, Backlog, PM, CM, PLTD) ke dalam format JSON dengan struktur berikut:\n" .
+                "{\n" .
+                "  \"topik\": \"Rangkuman topik pembahasan utama secara detail dan profesional.\",\n" .
+                "  \"action_items\": [\n" .
+                "    { \"target\": \"Tugas / Tindak Lanjut yang harus dilakukan secara spesifik\", \"pic\": \"Nama/Jabatan PIC jika disebutkan (kosongkan jika tidak ada)\" }\n" .
+                "  ]\n" .
+                "}\n" .
+                "Pastikan output HANYA berupa JSON murni yang valid tanpa teks markdown pembuka/penutup seperti ```json.";
+
+            $responseLLM = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => 'Bearer ' . env('OPENAI_API_KEY'),
+                'Content-Type' => 'application/json'
+            ])->post('https://api.openai.com/v1/chat/completions', [
+                'model' => 'gpt-4o',
+                'messages' => [
+                    ['role' => 'system', 'content' => $systemPrompt],
+                    ['role' => 'user', 'content' => 'Transkrip: ' . $transcript]
+                ],
+                'temperature' => 0.2
+            ]);
+
+            if ($responseLLM->failed()) {
+                \Log::error('OpenAI GPT Error: ' . $responseLLM->body());
+                return response()->json(['error' => 'Gagal membuat rangkuman dari teks.'], 500);
+            }
+
+            $content = $responseLLM->json('choices.0.message.content');
+            $content = trim($content);
+            if (str_starts_with($content, '```json')) {
+                $content = preg_replace('/^```json|```$/i', '', $content);
+            }
+            $content = trim($content);
+            
+            $data = json_decode($content, true);
+            
+            if (!$data) {
+                \Log::error('OpenAI JSON Parse Error: ' . $content);
+                return response()->json(['error' => 'Gagal memparsing hasil AI.'], 500);
+            }
+
+            return response()->json([
+                'success' => true,
+                'transcript' => $transcript,
+                'topik' => $data['topik'] ?? '',
+                'action_items' => $data['action_items'] ?? []
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Audio processing error: ' . $e->getMessage());
+            return response()->json(['error' => 'Terjadi kesalahan sistem: ' . $e->getMessage()], 500);
+        }
+    }
+}
